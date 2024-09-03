@@ -51,10 +51,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [router]);
 
   const loginWithGoogle = async () => {
+    const redirectUrl = process.env.NODE_ENV === 'production'
+      ? 'https://suppstack.app/profile'
+      : `${window.location.origin}/profile`;
+
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/profile`,
+        redirectTo: redirectUrl,
       },
     });
   };
