@@ -29,7 +29,8 @@ export default function Profile() {
   const { user, logout } = useAuth() || {};
   const [dateOfBirth, setDateOfBirth] = useState<string>('');
   const [gender, setGender] = useState<string>('');
-  const [height, setHeight] = useState<number | ''>('');
+  const [heightFt, setHeightFt] = useState<number | ''>('');
+  const [heightIn, setHeightIn] = useState<number | ''>('');
   const [weight, setWeight] = useState<number | ''>('');
   const [regimen, setRegimen] = useState<RegimenItem[]>([]);
   const [totalSupplements, setTotalSupplements] = useState<number>(0);
@@ -124,8 +125,11 @@ export default function Profile() {
     } else if (profileData) {
       setDateOfBirth(profileData.date_of_birth || '');
       setGender(profileData.gender || '');
-      setHeight(profileData.height || '');
-      setWeight(profileData.weight || '');
+      if (profileData.height) {
+        setHeightFt(Math.floor(profileData.height / 30.48));
+        setHeightIn(Math.round((profileData.height % 30.48) / 2.54));
+      }
+      setWeight(profileData.weight ? Math.round(profileData.weight * 2.20462) : '');
     }
   }, [user]);
 
@@ -147,14 +151,17 @@ export default function Profile() {
     e.preventDefault();
     if (!user) return;
 
+    const heightCm = heightFt && heightIn ? (Number(heightFt) * 30.48) + (Number(heightIn) * 2.54) : null;
+    const weightKg = weight ? Number(weight) / 2.20462 : null;
+
     const { error: profileError } = await supabase
       .from('user_profiles')
       .upsert({
         id: user.id,
         date_of_birth: dateOfBirth,
         gender,
-        height,
-        weight
+        height: heightCm,
+        weight: weightKg
       });
 
     if (profileError) {
@@ -191,12 +198,68 @@ export default function Profile() {
             <p className="text-gray-600">{user.email}</p>
           </div>
         </div>
-        <button 
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-300 ease-in-out"
-        >
-          Logout
-        </button>
+        <form onSubmit={handleProfileUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700">Date of Birth</label>
+            <input
+              type="date"
+              id="dateOfBirth"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            />
+          </div>
+          <div>
+            <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
+            <select
+              id="gender"
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            >
+              <option value="">Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="height" className="block text-sm font-medium text-gray-700">Height (ft'in")</label>
+            <div className="flex space-x-2">
+              <input
+                type="number"
+                id="heightFt"
+                value={heightFt}
+                onChange={(e) => setHeightFt(e.target.value ? Number(e.target.value) : '')}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                placeholder="ft"
+              />
+              <input
+                type="number"
+                id="heightIn"
+                value={heightIn}
+                onChange={(e) => setHeightIn(e.target.value ? Number(e.target.value) : '')}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                placeholder="in"
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="weight" className="block text-sm font-medium text-gray-700">Weight (lbs)</label>
+            <input
+              type="number"
+              id="weight"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value ? Number(e.target.value) : '')}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            />
+          </div>
+          <div className="col-span-2">
+            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">
+              Update Profile
+            </button>
+          </div>
+        </form>
       </section>
 
       <section className="mb-12 grid grid-cols-2 gap-6">
@@ -240,62 +303,12 @@ export default function Profile() {
         </div>
       </section>
 
-      <section className="mb-12 bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-semibold mb-6 text-blue-600">Additional Information</h2>
-        <form onSubmit={handleProfileUpdate}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700">Date of Birth</label>
-              <input
-                type="date"
-                id="dateOfBirth"
-                value={dateOfBirth}
-                onChange={(e) => setDateOfBirth(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </div>
-            <div>
-              <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
-              <select
-                id="gender"
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              >
-                <option value="">Select gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="height" className="block text-sm font-medium text-gray-700">Height (cm)</label>
-              <input
-                type="number"
-                id="height"
-                value={height}
-                onChange={(e) => setHeight(e.target.value ? Number(e.target.value) : '')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </div>
-            <div>
-              <label htmlFor="weight" className="block text-sm font-medium text-gray-700">Weight (kg)</label>
-              <input
-                type="number"
-                id="weight"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value ? Number(e.target.value) : '')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </div>
-          </div>
-          <div className="mt-6">
-            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">
-              Update Profile
-            </button>
-          </div>
-        </form>
-      </section>
+      <button 
+        onClick={handleLogout}
+        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-300 ease-in-out"
+      >
+        Logout
+      </button>
     </main>
   );
 }
