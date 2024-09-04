@@ -224,7 +224,7 @@ export default function Profile() {
             </select>
           </div>
           <div>
-            <label htmlFor="height" className="block text-sm font-medium text-gray-700">Height (ft'in")</label>
+            <label htmlFor="height" className="block text-sm font-medium text-gray-700">Height (ft&apos;in&quot;)</label>
             <div className="flex space-x-2">
               <input
                 type="number"

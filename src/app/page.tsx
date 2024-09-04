@@ -17,7 +17,7 @@ function truncateDescription(description: string, maxLength: number): string {
   return description.slice(0, maxLength).trim() + '...';
 }
 
-export default async function Home() {
+export default function Home() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8 text-center">Popular Supplements</h1>
