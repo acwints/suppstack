@@ -27,6 +27,10 @@ interface RegimenItem {
 
 export default function Profile() {
   const { user, logout } = useAuth() || {};
+  const [dateOfBirth, setDateOfBirth] = useState<string>('');
+  const [gender, setGender] = useState<string>('');
+  const [height, setHeight] = useState<number | ''>('');
+  const [weight, setWeight] = useState<number | ''>('');
   const [regimen, setRegimen] = useState<RegimenItem[]>([]);
   const [totalSupplements, setTotalSupplements] = useState<number>(0);
   const [monthlyCost, setMonthlyCost] = useState<number>(0);
@@ -102,17 +106,63 @@ export default function Profile() {
     }
   }, [user]);
 
+  const fetchUserProfile = useCallback(async () => {
+    if (!user) return;
+
+    const { data: profileData, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError) {
+      if (profileError.code === 'PGRST116') {
+        console.log('Profile not found, it may be created soon');
+      } else {
+        console.error('Error fetching user profile:', profileError);
+      }
+    } else if (profileData) {
+      setDateOfBirth(profileData.date_of_birth || '');
+      setGender(profileData.gender || '');
+      setHeight(profileData.height || '');
+      setWeight(profileData.weight || '');
+    }
+  }, [user]);
+
   useEffect(() => {
     if (!user) {
       router.push('/login');
     } else {
       fetchRegimen();
+      fetchUserProfile();
     }
-  }, [user, router, fetchRegimen]);
+  }, [user, router, fetchRegimen, fetchUserProfile]);
 
   const handleLogout = async () => {
     await logout?.();
     router.push('/');
+  };
+
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    const { error: profileError } = await supabase
+      .from('user_profiles')
+      .upsert({
+        id: user.id,
+        date_of_birth: dateOfBirth,
+        gender,
+        height,
+        weight
+      });
+
+    if (profileError) {
+      console.error('Error updating profile:', profileError);
+      return;
+    }
+
+    alert('Profile updated successfully!');
   };
 
   if (!user) {
@@ -188,6 +238,63 @@ export default function Profile() {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="mb-12 bg-white p-8 rounded-lg shadow-md">
+        <h2 className="text-2xl font-semibold mb-6 text-blue-600">Additional Information</h2>
+        <form onSubmit={handleProfileUpdate}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700">Date of Birth</label>
+              <input
+                type="date"
+                id="dateOfBirth"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              />
+            </div>
+            <div>
+              <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
+              <select
+                id="gender"
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="height" className="block text-sm font-medium text-gray-700">Height (cm)</label>
+              <input
+                type="number"
+                id="height"
+                value={height}
+                onChange={(e) => setHeight(e.target.value ? Number(e.target.value) : '')}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              />
+            </div>
+            <div>
+              <label htmlFor="weight" className="block text-sm font-medium text-gray-700">Weight (kg)</label>
+              <input
+                type="number"
+                id="weight"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value ? Number(e.target.value) : '')}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              />
+            </div>
+          </div>
+          <div className="mt-6">
+            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">
+              Update Profile
+            </button>
+          </div>
+        </form>
       </section>
     </main>
   );
