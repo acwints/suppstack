@@ -28,7 +28,7 @@ export default function Header() {
             {!loading && (
               <li>
                 {user ? (
-                  <Link href="/profile" className="hover:text-blue-200 transition duration-300">My Profile</Link>
+                  <Link href="/profile" className="hover:text-blue-200 transition duration-300">My Stack</Link>
                 ) : (
                   <button onClick={handleAuth} className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-blue-100 transition duration-300">
                     Log In / Sign Up

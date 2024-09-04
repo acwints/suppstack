@@ -10,12 +10,12 @@ import Image from 'next/image';
 
 interface RegimenItem {
   product_id: string;
-  servings_per_day: number;
   products: {
     product_name: string;
     product_description: string | null;
     product_price: number;
-    total_servings: number;
+    servings_per_container: number;
+    servings_per_day: number;
     brands: {
       brand_name: string;
     };
@@ -43,12 +43,12 @@ export default function Profile() {
         .from('users_products')
         .select(`
           product_id,
-          servings_per_day,
           products (
             product_name,
             product_description,
             product_price,
-            total_servings,
+            servings_per_container,
+            servings_per_day,
             brands (brand_name),
             supplements (supplement_name)
           )
@@ -65,12 +65,12 @@ export default function Profile() {
         console.log('Raw data from Supabase:', JSON.stringify(data, null, 2));
         const mappedData = data.map((item: any) => ({
           product_id: item.product_id,
-          servings_per_day: item.servings_per_day,
           products: {
             product_name: item.products?.product_name || '',
             product_description: item.products?.product_description || '',
             product_price: item.products?.product_price || 0,
-            total_servings: item.products?.total_servings || 0,
+            servings_per_container: item.products?.servings_per_container || 0,
+            servings_per_day: item.products?.servings_per_day || 0,
             brands: {
               brand_name: item.products?.brands?.brand_name || '',
             },
@@ -86,8 +86,8 @@ export default function Profile() {
         const uniqueSupplements = new Set(mappedData.map(item => item.products.supplements.supplement_name));
         setTotalSupplements(uniqueSupplements.size);
         const dailyCost = mappedData.reduce((sum, item) => {
-          const pricePerServing = item.products.product_price / item.products.total_servings;
-          const dailyCost = pricePerServing * item.servings_per_day;
+          const pricePerServing = item.products.product_price / item.products.servings_per_container;
+          const dailyCost = pricePerServing * item.products.servings_per_day;
           return sum + dailyCost;
         }, 0);
         setMonthlyCost(dailyCost * 30.437);
@@ -122,7 +122,7 @@ export default function Profile() {
   return (
     <main className="container mx-auto px-4 py-8">
       <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4 text-blue-600">My Profile</h1>
+        <h1 className="text-4xl font-bold mb-4 text-blue-600">My Stack</h1>
         <p className="text-xl text-gray-600">Manage your supplements and track your progress</p>
       </header>
 
@@ -169,21 +169,19 @@ export default function Profile() {
                 <th className="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">Product Name</th>
                 <th className="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">Supplement Name</th>
                 <th className="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">Brand Name</th>
-                <th className="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">Servings/Day</th>
-                <th className="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">Price/Day</th>
+                <th className="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">Cost/Month</th>
               </tr>
             </thead>
             <tbody>
               {regimen.map((item) => {
-                const pricePerServing = item.products.product_price / item.products.total_servings;
-                const pricePerDay = pricePerServing * item.servings_per_day;
+                const pricePerServing = item.products.product_price / item.products.servings_per_container;
+                const costPerMonth = pricePerServing * item.products.servings_per_day * 30.437;
                 return (
                   <tr key={item.product_id} className="hover:bg-gray-50">
                     <td className="py-3 px-4 border-b text-sm text-gray-800">{item.products.product_name}</td>
                     <td className="py-3 px-4 border-b text-sm text-gray-800">{item.products.supplements.supplement_name}</td>
                     <td className="py-3 px-4 border-b text-sm text-gray-800">{item.products.brands.brand_name}</td>
-                    <td className="py-3 px-4 border-b text-sm text-gray-800">{item.servings_per_day}</td>
-                    <td className="py-3 px-4 border-b text-sm text-gray-800">${pricePerDay.toFixed(2)}</td>
+                    <td className="py-3 px-4 border-b text-sm text-gray-800">${costPerMonth.toFixed(2)}</td>
                   </tr>
                 );
               })}
