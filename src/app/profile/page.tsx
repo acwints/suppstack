@@ -82,9 +82,9 @@ export default function Profile() {
         console.log('Mapped regimen data:', JSON.stringify(mappedData, null, 2));
         setRegimen(mappedData);
 
-        // Calculate total supplements and monthly cost
-        const uniqueSupplements = new Set(mappedData.map(item => item.products.supplements.supplement_name));
-        setTotalSupplements(uniqueSupplements.size);
+        // Calculate total products and monthly cost
+        const totalProducts = mappedData.length;
+        setTotalSupplements(totalProducts);
         const dailyCost = mappedData.reduce((sum, item) => {
           const pricePerServing = item.products.product_price / item.products.servings_per_container;
           const dailyCost = pricePerServing * item.products.servings_per_day;
