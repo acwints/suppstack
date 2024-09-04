@@ -10,19 +10,20 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#2563eb', // blue-600
-          light: '#60a5fa', // blue-400
-          dark: '#1e40af', // blue-800
+          DEFAULT: '#2563eb',
+          light: '#60a5fa',
+          dark: '#1e40af',
         },
         secondary: {
-          DEFAULT: '#4b5563', // gray-600
-          light: '#9ca3af', // gray-400
-          dark: '#1f2937', // gray-800
+          DEFAULT: '#4b5563',
+          light: '#9ca3af',
+          dark: '#1f2937',
         },
       },
       backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        'gradient-dark': 'linear-gradient(to bottom, rgba(0, 0, 0, 0.8), #222)',
       },
     },
   },
