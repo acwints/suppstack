@@ -31,6 +31,7 @@ function SupplementList() {
 
   useEffect(() => {
     async function fetchSupplements() {
+      console.log('Fetching supplements...');
       const { data, error } = await supabase
         .from('supplements')
         .select('*')
@@ -39,6 +40,7 @@ function SupplementList() {
       if (error) {
         console.error('Error fetching supplements:', error);
       } else {
+        console.log('Fetched supplements:', data);
         setSupplements(data);
       }
     }
@@ -50,9 +52,9 @@ function SupplementList() {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {supplements.map((supplement) => (
         <Link href={`/supplement/${supplement.supplement_id}`} key={supplement.supplement_id}>
-          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
-            <h2 className="text-2xl font-semibold mb-2">{supplement.supplement_name}</h2>
-            <p className="text-gray-600">{truncateDescription(supplement.supplement_description, 200)}</p>
+          <div className="bg-[#000040] p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+            <h2 className="text-amber-100 text-2xl font-semibold mb-2">{supplement.supplement_name}</h2>
+            <p>{truncateDescription(supplement.supplement_description, 200)}</p>
           </div>
         </Link>
       ))}
