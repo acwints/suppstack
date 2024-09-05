@@ -54,7 +54,7 @@ function SupplementList() {
         <Link href={`/supplement/${supplement.supplement_id}`} key={supplement.supplement_id}>
           <div className="bg-[#000040] p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
             <h2 className="text-amber-100 text-2xl font-semibold mb-2">{supplement.supplement_name}</h2>
-            <p>{truncateDescription(supplement.supplement_description, 200)}</p>
+            <p className="text-white">{truncateDescription(supplement.supplement_description, 200)}</p>
           </div>
         </Link>
       ))}
