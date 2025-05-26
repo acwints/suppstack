@@ -1,4 +1,26 @@
-import { supabase } from '../app/supabase';
+import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config({ path: '.env.local' });
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+console.log('🔧 Environment check:');
+console.log('- Supabase URL:', supabaseUrl ? 'Found' : 'Missing');
+console.log('- Supabase Key:', supabaseAnonKey ? 'Found' : 'Missing');
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false
+  },
+  global: {
+    fetch: (url, options) => {
+      return fetch(url, { ...options, cache: 'no-store' })
+    }
+  }
+});
 
 const popularBrands = [
   {
@@ -55,6 +77,32 @@ const popularBrands = [
 
 async function seedBrands() {
   console.log('🏢 Starting brand seeding...');
+  
+  // Test Supabase connection and check schema
+  try {
+    const { data, error } = await supabase.from('brands').select('*').limit(1);
+    if (error) {
+      console.error('❌ Supabase connection test failed:', error);
+      throw error;
+    }
+    console.log('✅ Supabase connection successful');
+    
+    // Check what columns exist in the brands table
+    if (data && data.length > 0) {
+      console.log('📋 Brands table columns:', Object.keys(data[0]));
+    } else {
+      console.log('📋 Brands table is empty, checking table structure...');
+      // Try to get table structure by attempting to select all columns
+      const { data: emptyData, error: emptyError } = await supabase.from('brands').select('*').limit(0);
+      if (emptyError) {
+        console.log('❌ Could not determine table structure:', emptyError);
+      }
+    }
+  } catch (error) {
+    console.error('❌ Failed to connect to Supabase:', error);
+    throw error;
+  }
+  
   const brandIds: { [key: string]: number } = {};
   
   for (const brand of popularBrands) {
@@ -72,7 +120,9 @@ async function seedBrands() {
     
     const { data: newBrand, error } = await supabase
       .from('brands')
-      .insert(brand)
+      .insert({
+        brand_name: brand.brand_name
+      })
       .select('brand_id')
       .single();
     
@@ -401,4 +451,12 @@ async function seedAmazonProductsMain() {
 
 export { seedAmazonProductsMain };
 
-seedAmazonProductsMain().catch(console.error);
+// Run if called directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  seedAmazonProductsMain()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error('❌ Seeding failed:', error);
+      process.exit(1);
+    });
+}
