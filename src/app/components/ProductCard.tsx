@@ -112,12 +112,12 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <div 
-      className="bg-white rounded-lg shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 hover:border-blue-300 group"
+      className="card group hover:scale-105 transition-all duration-300 animate-fade-in"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Product Image */}
-      <div className="relative h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+      <div className="relative h-64 bg-gradient-to-br from-neutral-50 to-neutral-100 overflow-hidden rounded-t-xl">
         {product.product_image ? (
           <Image
             src={product.product_image}
@@ -127,8 +127,8 @@ export default function ProductCard({ product }: { product: Product }) {
           />
         ) : (
           <div className="flex items-center justify-center h-full">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-2xl font-bold text-blue-600">
+            <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center shadow-medium">
+              <span className="text-2xl font-bold text-primary-600">
                 {product.product_name.charAt(0)}
               </span>
             </div>
@@ -137,68 +137,68 @@ export default function ProductCard({ product }: { product: Product }) {
         
         {/* Badges */}
         <div className="absolute top-3 left-3">
-          <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+          <span className="badge badge-secondary">
             Best Seller
           </span>
         </div>
         
         {/* Quick Actions */}
         <div className={`absolute top-3 right-3 flex flex-col gap-2 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-          <button className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50">
-            <FaHeart className="w-3 h-3 text-gray-600" />
+          <button className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-medium hover:bg-neutral-50 transition-colors duration-200">
+            <FaHeart className="w-3 h-3 text-neutral-600" />
           </button>
-          <button className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50">
-            <FaShareAlt className="w-3 h-3 text-gray-600" />
+          <button className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-medium hover:bg-neutral-50 transition-colors duration-200">
+            <FaShareAlt className="w-3 h-3 text-neutral-600" />
           </button>
         </div>
 
         {/* Price Tag */}
-        <div className="absolute bottom-3 left-3 bg-blue-600 text-white px-3 py-1 rounded-lg font-bold">
+        <div className="absolute bottom-3 left-3 bg-primary-600 text-white px-3 py-1.5 rounded-xl font-bold shadow-medium">
           ${product.product_price?.toFixed(2) ?? '0.00'}
         </div>
       </div>
 
       {/* Product Details */}
-      <div className="p-5">
+      <div className="card-body">
         {/* Brand */}
-        <div className="text-sm text-blue-600 font-medium mb-1">
+        <div className="text-sm text-primary-600 font-semibold mb-2">
           {product.brands?.brand_name || 'Premium Brand'}
         </div>
 
         {/* Product Name */}
-        <h3 className="font-bold text-lg mb-2 text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+        <h3 className="font-bold text-lg mb-3 text-neutral-900 line-clamp-2 group-hover:text-primary-600 transition-colors">
           {product.product_name}
         </h3>
 
         {/* Rating */}
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-4">
           <div className="flex items-center">
             {[...Array(5)].map((_, i) => (
               <FaStar 
                 key={i} 
-                className={`w-4 h-4 ${i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-200'}`} 
+                className={`w-4 h-4 ${i < Math.floor(rating) ? 'text-accent-400' : 'text-neutral-200'}`} 
               />
             ))}
           </div>
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-neutral-600 font-medium">
             {rating.toFixed(1)} ({reviewCount.toLocaleString()})
           </span>
         </div>
 
         {/* Product Stats */}
         <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
-          <div className="bg-gray-50 rounded-lg p-2 text-center">
-            <div className="font-semibold text-gray-900">${costPerServing}</div>
-            <div className="text-gray-600">per serving</div>
+          <div className="bg-neutral-50 rounded-xl p-3 text-center border border-neutral-100">
+            <div className="font-bold text-neutral-900">${costPerServing}</div>
+            <div className="text-neutral-600">per serving</div>
           </div>
-          <div className="bg-gray-50 rounded-lg p-2 text-center">
-            <div className="font-semibold text-gray-900">${monthlyCost}</div>
-            <div className="text-gray-600">per month</div>
+          <div className="bg-neutral-50 rounded-xl p-3 text-center border border-neutral-100">
+            <div className="font-bold text-neutral-900">${monthlyCost}</div>
+            <div className="text-neutral-600">per month</div>
           </div>
         </div>
 
         {/* Serving Info */}
-        <div className="text-xs text-gray-600 mb-4">
+        <div className="text-xs text-neutral-500 mb-4 font-medium">
           {product.servings_per_container} servings • {product.servings_per_day} per day recommended
         </div>
 
@@ -206,10 +206,10 @@ export default function ProductCard({ product }: { product: Product }) {
         <button
           onClick={addToStack}
           disabled={isAdded || isLoading}
-          className={`w-full py-3 px-4 rounded-lg font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
+          className={`btn w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
             isAdded 
-              ? 'bg-green-100 text-green-700 border border-green-200' 
-              : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md'
+              ? 'bg-success-50 text-success-700 border border-success-200 hover:bg-success-100' 
+              : 'btn-primary'
           } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {isLoading ? (
@@ -234,7 +234,7 @@ export default function ProductCard({ product }: { product: Product }) {
               href={product.product_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 py-2 px-3 text-xs text-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="btn btn-outline flex-1 py-2 px-3 text-xs text-center rounded-xl transition-colors"
             >
               Official Store
             </a>
@@ -244,7 +244,7 @@ export default function ProductCard({ product }: { product: Product }) {
               href={product.amazon_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 py-2 px-3 text-xs text-center bg-yellow-400 hover:bg-yellow-500 rounded-lg transition-colors font-medium"
+              className="flex-1 py-2 px-3 text-xs text-center bg-accent-400 hover:bg-accent-500 text-white rounded-xl transition-colors font-semibold"
             >
               Amazon
             </a>
