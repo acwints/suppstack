@@ -1,4 +1,9 @@
-import { supabase } from '../app/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://iclidsxmazhoexdpktal.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljbGlkc3htYXpob2V4ZHBrdGFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjUzMjQ4NDgsImV4cCI6MjA0MDkwMDg0OH0.HuvNvP_419fWPb1z68EcJ8twZyagAx9uRU814mU8s-s';
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const popularBrands = [
   {
