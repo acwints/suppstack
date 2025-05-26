@@ -40,7 +40,7 @@ function SupplementList() {
       if (error) {
         console.error('Error fetching supplements:', error);
       } else {
-        console.log('Fetched supplements:', data);
+        console.log('Fetched supplements:', JSON.stringify(data, null, 2));
         setSupplements(data);
       }
     }
