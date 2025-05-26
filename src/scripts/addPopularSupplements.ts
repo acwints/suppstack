@@ -1,21 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
-import * as dotenv from 'dotenv';
 
-dotenv.config();
+const supabaseUrl = 'https://iclidsxmazhoexdpktal.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljbGlkc3htYXpob2V4ZHBrdGFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjUzMjQ4NDgsImV4cCI6MjA0MDkwMDg0OH0.HuvNvP_419fWPb1z68EcJ8twZyagAx9uRU814mU8s-s';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: false
-  },
-  global: {
-    fetch: (url, options) => {
-      return fetch(url, { ...options, cache: 'no-store' })
-    }
-  }
-});
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const popularSupplements = [
   {
@@ -77,66 +65,6 @@ const popularSupplements = [
   {
     supplement_name: 'Ashwagandha',
     supplement_description: 'Adaptogenic herb that helps manage stress and supports overall wellness.',
-  },
-  {
-    supplement_name: 'Melatonin',
-    supplement_description: 'Natural sleep aid that helps regulate sleep-wake cycles and improve sleep quality.',
-  },
-  {
-    supplement_name: 'Collagen',
-    supplement_description: 'Supports skin health, joint function, and overall connective tissue integrity.',
-  },
-  {
-    supplement_name: 'Multivitamin',
-    supplement_description: 'Comprehensive blend of essential vitamins and minerals for overall health support.',
-  },
-  {
-    supplement_name: 'Biotin',
-    supplement_description: 'Supports healthy hair, skin, and nails. Important for metabolism and nerve function.',
-  },
-  {
-    supplement_name: 'Glucosamine',
-    supplement_description: 'Supports joint health and cartilage maintenance. Popular for joint pain relief.',
-  },
-  {
-    supplement_name: 'BCAA',
-    supplement_description: 'Branched-chain amino acids that support muscle recovery and exercise performance.',
-  },
-  {
-    supplement_name: 'Green Tea Extract',
-    supplement_description: 'Antioxidant-rich extract that supports metabolism and overall wellness.',
-  },
-  {
-    supplement_name: 'Spirulina',
-    supplement_description: 'Nutrient-dense superfood algae packed with protein, vitamins, and minerals.',
-  },
-  {
-    supplement_name: 'Lion\'s Mane',
-    supplement_description: 'Medicinal mushroom that supports cognitive function and neurological health.',
-  },
-  {
-    supplement_name: 'Rhodiola',
-    supplement_description: 'Adaptogenic herb that helps manage stress and supports mental performance.',
-  },
-  {
-    supplement_name: 'Vitamin E',
-    supplement_description: 'Antioxidant vitamin that protects cells from damage and supports immune function.',
-  },
-  {
-    supplement_name: 'Vitamin K2',
-    supplement_description: 'Important for bone health and cardiovascular function. Works synergistically with vitamin D3.',
-  },
-  {
-    supplement_name: 'L-Theanine',
-    supplement_description: 'Amino acid found in tea that promotes relaxation without drowsiness. Often paired with caffeine.',
-  },
-  {
-    supplement_name: 'Glutamine',
-    supplement_description: 'Amino acid that supports muscle recovery, immune function, and gut health.',
-  },
-  {
-    supplement_name: 'MSM',
-    supplement_description: 'Organic sulfur compound that supports joint health, reduces inflammation, and aids recovery.',
   }
 ];
 
@@ -144,39 +72,17 @@ async function addPopularSupplements() {
   console.log('Adding popular supplements...');
   
   for (const supplement of popularSupplements) {
-    let attempts = 0;
-    const maxAttempts = 3;
-    let success = false;
-    
-    while (attempts < maxAttempts && !success) {
-      try {
-        const { data, error } = await supabase
-          .from('supplements')
-          .insert(supplement)
-          .select();
-        
-        if (error) {
-          console.error(`Attempt ${attempts + 1}: Error adding ${supplement.supplement_name}:`, error);
-        } else {
-          console.log(`Successfully added ${supplement.supplement_name}`);
-          success = true;
-        }
-      } catch (err) {
-        console.error(`Attempt ${attempts + 1}: Network error adding ${supplement.supplement_name}:`, err);
-      }
-      
-      attempts++;
-      
-      if (!success && attempts < maxAttempts) {
-        console.log(`Retrying in 2 seconds... (${attempts}/${maxAttempts})`);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-    }
-    
-    if (!success) {
-      console.error(`Failed to add ${supplement.supplement_name} after ${maxAttempts} attempts.`);
+    const { data, error } = await supabase
+      .from('supplements')
+      .insert(supplement)
+      .select();
+
+    if (error) {
+      console.error(`Error adding ${supplement.supplement_name}:`, error);
+    } else {
+      console.log(`Successfully added ${supplement.supplement_name}`);
     }
   }
 }
 
-addPopularSupplements().catch(console.error);        
+addPopularSupplements().catch(console.error); 
