@@ -1,9 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
 
-const supabaseUrl = 'https://iclidsxmazhoexdpktal.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljbGlkc3htYXpob2V4ZHBrdGFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjUzMjQ4NDgsImV4cCI6MjA0MDkwMDg0OH0.HuvNvP_419fWPb1z68EcJ8twZyagAx9uRU814mU8s-s';
+dotenv.config();
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false
+  },
+  global: {
+    fetch: (url, options) => {
+      return fetch(url, { ...options, cache: 'no-store' })
+    }
+  }
+});
 
 const popularSupplements = [
   {
@@ -132,17 +144,39 @@ async function addPopularSupplements() {
   console.log('Adding popular supplements...');
   
   for (const supplement of popularSupplements) {
-    const { data, error } = await supabase
-      .from('supplements')
-      .insert(supplement)
-      .select();
-
-    if (error) {
-      console.error(`Error adding ${supplement.supplement_name}:`, error);
-    } else {
-      console.log(`Successfully added ${supplement.supplement_name}`);
+    let attempts = 0;
+    const maxAttempts = 3;
+    let success = false;
+    
+    while (attempts < maxAttempts && !success) {
+      try {
+        const { data, error } = await supabase
+          .from('supplements')
+          .insert(supplement)
+          .select();
+        
+        if (error) {
+          console.error(`Attempt ${attempts + 1}: Error adding ${supplement.supplement_name}:`, error);
+        } else {
+          console.log(`Successfully added ${supplement.supplement_name}`);
+          success = true;
+        }
+      } catch (err) {
+        console.error(`Attempt ${attempts + 1}: Network error adding ${supplement.supplement_name}:`, err);
+      }
+      
+      attempts++;
+      
+      if (!success && attempts < maxAttempts) {
+        console.log(`Retrying in 2 seconds... (${attempts}/${maxAttempts})`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+    
+    if (!success) {
+      console.error(`Failed to add ${supplement.supplement_name} after ${maxAttempts} attempts.`);
     }
   }
 }
 
-addPopularSupplements().catch(console.error);  
+addPopularSupplements().catch(console.error);        

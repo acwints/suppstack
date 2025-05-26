@@ -1,9 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
 
-const supabaseUrl = 'https://iclidsxmazhoexdpktal.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljbGlkc3htYXpob2V4ZHBrdGFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjUzMjQ4NDgsImV4cCI6MjA0MDkwMDg0OH0.HuvNvP_419fWPb1z68EcJ8twZyagAx9uRU814mU8s-s';
+dotenv.config();
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false
+  },
+  global: {
+    fetch: (url, options) => {
+      return fetch(url, { ...options, cache: 'no-store' })
+    }
+  }
+});
 
 import { vitaminDProducts } from './productData/vitaminD';
 import { omega3Products } from './productData/omega3';
@@ -61,14 +73,37 @@ async function addAmazonProducts() {
   console.log(`Adding ${allProducts.length} Amazon products to database...`);
   
   for (const product of allProducts) {
-    const { error } = await supabase
-      .from('products')
-      .insert(product);
-
-    if (error) {
-      console.error(`Error adding ${product.product_name}:`, error);
-    } else {
-      console.log(`Successfully added ${product.product_name}`);
+    let attempts = 0;
+    const maxAttempts = 3;
+    let success = false;
+    
+    while (attempts < maxAttempts && !success) {
+      try {
+        const { error } = await supabase
+          .from('products')
+          .insert(product)
+          .select();
+        
+        if (error) {
+          console.error(`Attempt ${attempts + 1}: Error adding ${product.product_name}:`, error);
+        } else {
+          console.log(`Successfully added ${product.product_name}`);
+          success = true;
+        }
+      } catch (err) {
+        console.error(`Attempt ${attempts + 1}: Network error adding ${product.product_name}:`, err);
+      }
+      
+      attempts++;
+      
+      if (!success && attempts < maxAttempts) {
+        console.log(`Retrying in 2 seconds... (${attempts}/${maxAttempts})`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+    
+    if (!success) {
+      console.error(`Failed to add ${product.product_name} after ${maxAttempts} attempts.`);
     }
   }
   

@@ -1,4 +1,6 @@
-export const vitaminB12Products = (supplementMap, brandMap) => [
+import { SupplementMap, BrandMap, Product } from './types';
+
+export const vitaminB12Products = (supplementMap: SupplementMap, brandMap: BrandMap): Product[] => [
   {
     product_name: 'Garden of Life Vitamin B12',
     product_description: 'Whole food vitamin B12 supplement with probiotics and enzymes. Supports energy, metabolism, and blood cell formation.',

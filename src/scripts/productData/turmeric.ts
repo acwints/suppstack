@@ -1,4 +1,6 @@
-export const turmericProducts = (supplementMap, brandMap) => [
+import { SupplementMap, BrandMap, Product } from './types';
+
+export const turmericProducts = (supplementMap: SupplementMap, brandMap: BrandMap): Product[] => [
   {
     product_name: 'Sports Research Turmeric Curcumin C3 Complex',
     product_description: 'Standardized turmeric extract with BioPerine for enhanced absorption. Supports joint health and inflammatory response.',

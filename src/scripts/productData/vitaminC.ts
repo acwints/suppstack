@@ -1,4 +1,6 @@
-export const vitaminCProducts = (supplementMap, brandMap) => [
+import { SupplementMap, BrandMap, Product } from './types';
+
+export const vitaminCProducts = (supplementMap: SupplementMap, brandMap: BrandMap): Product[] => [
   {
     product_name: 'NOW Supplements Vitamin C-1000',
     product_description: 'High potency vitamin C with rose hips. Supports immune function and acts as an antioxidant protecting cells from free radical damage.',

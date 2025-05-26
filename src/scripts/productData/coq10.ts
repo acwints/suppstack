@@ -1,4 +1,6 @@
-export const coq10Products = (supplementMap, brandMap) => [
+import { SupplementMap, BrandMap, Product } from './types';
+
+export const coq10Products = (supplementMap: SupplementMap, brandMap: BrandMap): Product[] => [
   {
     product_name: 'Qunol Ultra CoQ10 100mg',
     product_description: 'Highly absorbable water and fat-soluble CoQ10. Supports heart health and cellular energy production.',

@@ -1,4 +1,6 @@
-export const magnesiumProducts = (supplementMap, brandMap) => [
+import { SupplementMap, BrandMap, Product } from './types';
+
+export const magnesiumProducts = (supplementMap: SupplementMap, brandMap: BrandMap): Product[] => [
   {
     product_name: 'Doctor\'s Best High Absorption Magnesium',
     product_description: 'Highly bioavailable magnesium glycinate lysinate chelate. Supports muscle, nerve, and heart function. Non-laxative formula.',

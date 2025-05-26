@@ -1,4 +1,6 @@
-export const otherProducts = (supplementMap, brandMap) => [
+import { SupplementMap, BrandMap, Product } from './types';
+
+export const otherProducts = (supplementMap: SupplementMap, brandMap: BrandMap): Product[] => [
   {
     product_name: 'Nature Made Melatonin 3 mg',
     product_description: 'Melatonin supplement that helps with occasional sleeplessness. Supports natural sleep cycle.',

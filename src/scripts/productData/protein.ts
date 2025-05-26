@@ -1,4 +1,6 @@
-export const proteinProducts = (supplementMap, brandMap) => [
+import { SupplementMap, BrandMap, Product } from './types';
+
+export const proteinProducts = (supplementMap: SupplementMap, brandMap: BrandMap): Product[] => [
   {
     product_name: 'Optimum Nutrition Gold Standard Whey',
     product_description: 'High-quality whey protein isolate and concentrate blend. 24g protein per serving with minimal fat and carbs.',

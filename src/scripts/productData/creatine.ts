@@ -1,4 +1,6 @@
-export const creatineProducts = (supplementMap, brandMap) => [
+import { SupplementMap, BrandMap, Product } from './types';
+
+export const creatineProducts = (supplementMap: SupplementMap, brandMap: BrandMap): Product[] => [
   {
     product_name: 'Optimum Nutrition Micronized Creatine Monohydrate',
     product_description: 'Pure creatine monohydrate powder that supports muscle strength, power, and recovery. 5g per serving.',

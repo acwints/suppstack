@@ -1,4 +1,6 @@
-export const probioticsProducts = (supplementMap, brandMap) => [
+import { SupplementMap, BrandMap, Product } from './types';
+
+export const probioticsProducts = (supplementMap: SupplementMap, brandMap: BrandMap): Product[] => [
   {
     product_name: 'Garden of Life Dr. Formulated Probiotics',
     product_description: 'High potency probiotic with 50 billion CFU and 16 probiotic strains. Supports digestive health and immune system function.',

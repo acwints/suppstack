@@ -1,4 +1,6 @@
-export const omega3Products = (supplementMap, brandMap) => [
+import { SupplementMap, BrandMap, Product } from './types';
+
+export const omega3Products = (supplementMap: SupplementMap, brandMap: BrandMap): Product[] => [
   {
     product_name: 'Nordic Naturals Ultimate Omega',
     product_description: 'High-quality fish oil supplement providing EPA and DHA omega-3 fatty acids. Supports heart, brain, and immune health.',

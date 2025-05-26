@@ -1,4 +1,6 @@
-export const zincProducts = (supplementMap, brandMap) => [
+import { SupplementMap, BrandMap, Product } from './types';
+
+export const zincProducts = (supplementMap: SupplementMap, brandMap: BrandMap): Product[] => [
   {
     product_name: 'NOW Supplements Zinc Picolinate',
     product_description: 'Highly absorbable form of zinc. Supports immune function, protein synthesis, and wound healing.',

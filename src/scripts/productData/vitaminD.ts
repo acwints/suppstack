@@ -1,4 +1,6 @@
-export const vitaminDProducts = (supplementMap, brandMap) => [
+import { SupplementMap, BrandMap, Product } from './types';
+
+export const vitaminDProducts = (supplementMap: SupplementMap, brandMap: BrandMap): Product[] => [
   {
     product_name: 'Nature Made Vitamin D3 2000 IU Softgels',
     product_description: 'High potency vitamin D3 supplements to support bone health and immune function. Each softgel provides 2000 IU of vitamin D3.',

@@ -1,4 +1,6 @@
-export const bComplexProducts = (supplementMap, brandMap) => [
+import { SupplementMap, BrandMap, Product } from './types';
+
+export const bComplexProducts = (supplementMap: SupplementMap, brandMap: BrandMap): Product[] => [
   {
     product_name: 'Thorne Basic B Complex',
     product_description: 'Comprehensive B vitamin complex. Supports energy production, nervous system health, and cellular metabolism.',
