@@ -5,15 +5,15 @@ export default function Navbar() {
     <nav className="bg-white shadow">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
-          <Link href="/">
-            <a className="text-xl font-bold text-indigo-600">Suppstack</a>
+          <Link href="/" className="text-xl font-bold text-indigo-600">
+            Suppstack
           </Link>
           <div className="space-x-4">
-            <Link href="/discover">
-              <a className="text-gray-700 hover:text-indigo-600">Discover</a>
+            <Link href="/discover" className="text-gray-700 hover:text-indigo-600">
+              Discover
             </Link>
-            <Link href="/profile">
-              <a className="text-gray-700 hover:text-indigo-600">Profile</a>
+            <Link href="/profile" className="text-gray-700 hover:text-indigo-600">
+              Profile
             </Link>
           </div>
         </div>
