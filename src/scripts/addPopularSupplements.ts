@@ -65,6 +65,66 @@ const popularSupplements = [
   {
     supplement_name: 'Ashwagandha',
     supplement_description: 'Adaptogenic herb that helps manage stress and supports overall wellness.',
+  },
+  {
+    supplement_name: 'Melatonin',
+    supplement_description: 'Natural sleep aid that helps regulate sleep-wake cycles and improve sleep quality.',
+  },
+  {
+    supplement_name: 'Collagen',
+    supplement_description: 'Supports skin health, joint function, and overall connective tissue integrity.',
+  },
+  {
+    supplement_name: 'Multivitamin',
+    supplement_description: 'Comprehensive blend of essential vitamins and minerals for overall health support.',
+  },
+  {
+    supplement_name: 'Biotin',
+    supplement_description: 'Supports healthy hair, skin, and nails. Important for metabolism and nerve function.',
+  },
+  {
+    supplement_name: 'Glucosamine',
+    supplement_description: 'Supports joint health and cartilage maintenance. Popular for joint pain relief.',
+  },
+  {
+    supplement_name: 'BCAA',
+    supplement_description: 'Branched-chain amino acids that support muscle recovery and exercise performance.',
+  },
+  {
+    supplement_name: 'Green Tea Extract',
+    supplement_description: 'Antioxidant-rich extract that supports metabolism and overall wellness.',
+  },
+  {
+    supplement_name: 'Spirulina',
+    supplement_description: 'Nutrient-dense superfood algae packed with protein, vitamins, and minerals.',
+  },
+  {
+    supplement_name: 'Lion\'s Mane',
+    supplement_description: 'Medicinal mushroom that supports cognitive function and neurological health.',
+  },
+  {
+    supplement_name: 'Rhodiola',
+    supplement_description: 'Adaptogenic herb that helps manage stress and supports mental performance.',
+  },
+  {
+    supplement_name: 'Vitamin E',
+    supplement_description: 'Antioxidant vitamin that protects cells from damage and supports immune function.',
+  },
+  {
+    supplement_name: 'Vitamin K2',
+    supplement_description: 'Important for bone health and cardiovascular function. Works synergistically with vitamin D3.',
+  },
+  {
+    supplement_name: 'L-Theanine',
+    supplement_description: 'Amino acid found in tea that promotes relaxation without drowsiness. Often paired with caffeine.',
+  },
+  {
+    supplement_name: 'Glutamine',
+    supplement_description: 'Amino acid that supports muscle recovery, immune function, and gut health.',
+  },
+  {
+    supplement_name: 'MSM',
+    supplement_description: 'Organic sulfur compound that supports joint health, reduces inflammation, and aids recovery.',
   }
 ];
 
@@ -85,4 +145,4 @@ async function addPopularSupplements() {
   }
 }
 
-addPopularSupplements().catch(console.error); 
+addPopularSupplements().catch(console.error);  
