@@ -7,12 +7,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "add-supplements": "ts-node src/scripts/addPopularSupplements.ts"
+    "add-supplements": "ts-node --project tsconfig.scripts.json src/scripts/addPopularSupplements.ts",
+    "add-brands": "ts-node --project tsconfig.scripts.json src/scripts/addPopularBrands.ts",
+    "add-products": "ts-node --project tsconfig.scripts.json src/scripts/addAmazonProducts.ts",
+    "seed-database": "npm run add-supplements && npm run add-brands && npm run add-products"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.3",
     "@tailwindcss/forms": "^0.5.8",
     "autoprefixer": "^10.4.20",
+    "dotenv": "^16.5.0",
     "next": "^14.2.7",
     "react": "^18",
     "react-dom": "^18",
