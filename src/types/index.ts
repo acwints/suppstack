@@ -89,6 +89,112 @@ export interface RegimenItem {
 }
 
 // ============================================================================
+// Supplement Logging & Tracking Types
+// ============================================================================
+
+export type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'night';
+export type SupplementStatus = 'active' | 'paused' | 'stopped';
+
+export interface SupplementLog {
+  log_id: string;
+  user_id: string;
+  product_id: string;
+  logged_at: string;
+  log_date: string;
+  time_of_day: TimeOfDay;
+  servings_taken: number;
+  notes?: string;
+  mood_before?: number;
+  mood_after?: number;
+  energy_level?: number;
+  side_effects?: string;
+  created_at: string;
+  // Relations
+  products?: Product;
+}
+
+export interface SupplementLogInput {
+  product_id: string;
+  time_of_day?: TimeOfDay;
+  servings_taken?: number;
+  notes?: string;
+  mood_before?: number;
+  mood_after?: number;
+  energy_level?: number;
+  side_effects?: string;
+}
+
+export interface UserSupplementSettings {
+  setting_id: string;
+  user_id: string;
+  product_id: string;
+  custom_dosage?: string;
+  servings_per_day: number;
+  schedule_times?: string[];
+  schedule_days?: number[];
+  take_with_food: boolean;
+  timing_notes?: string;
+  status: SupplementStatus;
+  start_date: string;
+  end_date?: string;
+  goal?: string;
+  target_duration_days?: number;
+  reminders_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+  // Relations
+  products?: Product;
+}
+
+export interface UserSupplementSettingsInput {
+  product_id: string;
+  custom_dosage?: string;
+  servings_per_day?: number;
+  schedule_times?: string[];
+  schedule_days?: number[];
+  take_with_food?: boolean;
+  timing_notes?: string;
+  status?: SupplementStatus;
+  goal?: string;
+  target_duration_days?: number;
+  reminders_enabled?: boolean;
+}
+
+export interface DailyTrackingSummary {
+  summary_id: string;
+  user_id: string;
+  summary_date: string;
+  supplements_planned: number;
+  supplements_taken: number;
+  completion_percentage: number;
+  current_streak: number;
+  overall_energy?: number;
+  overall_mood?: number;
+  sleep_quality?: number;
+  sleep_hours?: number;
+  daily_notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DailyWellnessInput {
+  overall_energy?: number;
+  overall_mood?: number;
+  sleep_quality?: number;
+  sleep_hours?: number;
+  daily_notes?: string;
+}
+
+export interface TrackingStats {
+  currentStreak: number;
+  longestStreak: number;
+  totalLogsThisWeek: number;
+  totalLogsThisMonth: number;
+  averageCompletion: number;
+  perfectDays: number;
+}
+
+// ============================================================================
 // Stack Types
 // ============================================================================
 
@@ -267,13 +373,18 @@ export interface SupplementCategory {
 
 export const SUPPLEMENT_CATEGORIES: SupplementCategory[] = [
   { id: 'all', name: 'All Supplements', icon: '🌟', keywords: [] },
-  { id: 'vitamins', name: 'Vitamins', icon: '💊', keywords: ['vitamin'] },
-  { id: 'minerals', name: 'Minerals', icon: '⚡', keywords: ['magnesium', 'zinc', 'calcium', 'iron', 'potassium'] },
-  { id: 'protein', name: 'Protein', icon: '💪', keywords: ['protein', 'whey', 'casein', 'collagen'] },
-  { id: 'herbs', name: 'Herbs', icon: '🌿', keywords: ['ashwagandha', 'turmeric', 'ginseng', 'rhodiola'] },
-  { id: 'omega', name: 'Omega & Fish Oil', icon: '🐟', keywords: ['omega', 'fish oil', 'krill'] },
-  { id: 'probiotics', name: 'Probiotics', icon: '🦠', keywords: ['probiotic', 'prebiotic', 'gut'] },
-  { id: 'performance', name: 'Performance', icon: '🏃', keywords: ['creatine', 'pre-workout', 'bcaa', 'beta-alanine'] },
+  { id: 'vitamins', name: 'Vitamins', icon: '💊', keywords: ['vitamin', 'multivitamin', 'biotin', 'folate', 'folic', 'niacin'] },
+  { id: 'minerals', name: 'Minerals', icon: '⚡', keywords: ['magnesium', 'zinc', 'calcium', 'iron', 'potassium', 'selenium', 'chromium', 'copper', 'iodine', 'boron', 'manganese', 'electrolytes'] },
+  { id: 'protein', name: 'Protein', icon: '💪', keywords: ['protein', 'whey', 'casein', 'collagen', 'keratin'] },
+  { id: 'herbs', name: 'Herbs & Adaptogens', icon: '🌿', keywords: ['ashwagandha', 'turmeric', 'curcumin', 'ginseng', 'rhodiola', 'maca', 'ginkgo', 'bacopa', 'holy basil', 'tulsi', 'milk thistle', 'elderberry', 'echinacea', 'valerian', 'st. john', 'saw palmetto', 'black seed', 'berberine', 'tongkat', 'fenugreek', 'lion\'s mane', 'reishi', 'cordyceps', 'mushroom', 'passionflower', 'lemon balm', 'chamomile', 'hawthorn', 'moringa', 'sea moss'] },
+  { id: 'omega', name: 'Omega & Fish Oil', icon: '🐟', keywords: ['omega', 'fish oil', 'krill', 'algal', 'cod liver', 'dha', 'epa'] },
+  { id: 'probiotics', name: 'Gut Health', icon: '🦠', keywords: ['probiotic', 'prebiotic', 'gut', 'digestive enzyme', 'psyllium', 'apple cider', 'ginger'] },
+  { id: 'performance', name: 'Performance', icon: '🏃', keywords: ['creatine', 'pre-workout', 'bcaa', 'beta-alanine', 'citrulline', 'hmb', 'beetroot', 'eaa', 'l-arginine', 'l-citrulline', 'taurine'] },
+  { id: 'amino', name: 'Amino Acids', icon: '🧬', keywords: ['l-theanine', 'l-glutamine', 'l-carnitine', 'l-tyrosine', 'glycine', 'gaba', '5-htp', 'nac', 'n-acetyl'] },
+  { id: 'cognitive', name: 'Brain & Focus', icon: '🧠', keywords: ['alpha-gpc', 'phosphatidylserine', 'acetyl-l-carnitine', 'cdp-choline', 'nootropic'] },
+  { id: 'sleep', name: 'Sleep & Relaxation', icon: '😴', keywords: ['melatonin', 'sleep', 'magnesium glycinate', 'apigenin'] },
+  { id: 'heart', name: 'Heart Health', icon: '❤️', keywords: ['coq10', 'nattokinase', 'garlic', 'red yeast', 'resveratrol'] },
+  { id: 'joints', name: 'Joint & Bone', icon: '🦴', keywords: ['glucosamine', 'chondroitin', 'msm', 'hyaluronic'] },
 ];
 
 export const USAGE_DURATION_OPTIONS = [
@@ -286,3 +397,26 @@ export const USAGE_DURATION_OPTIONS = [
 
 export const DEFAULT_PAGE_SIZE = 20;
 export const DAYS_PER_MONTH = 30.437; // Average days per month
+
+export const TIME_OF_DAY_OPTIONS = [
+  { value: 'morning', label: 'Morning', icon: '🌅', timeRange: '6am - 12pm' },
+  { value: 'afternoon', label: 'Afternoon', icon: '☀️', timeRange: '12pm - 5pm' },
+  { value: 'evening', label: 'Evening', icon: '🌆', timeRange: '5pm - 9pm' },
+  { value: 'night', label: 'Night', icon: '🌙', timeRange: '9pm - 6am' },
+] as const;
+
+export const SUPPLEMENT_STATUS_OPTIONS = [
+  { value: 'active', label: 'Currently Taking', color: 'green' },
+  { value: 'paused', label: 'Paused', color: 'yellow' },
+  { value: 'stopped', label: 'Stopped', color: 'gray' },
+] as const;
+
+export const DAYS_OF_WEEK = [
+  { value: 1, label: 'Monday', short: 'Mon' },
+  { value: 2, label: 'Tuesday', short: 'Tue' },
+  { value: 3, label: 'Wednesday', short: 'Wed' },
+  { value: 4, label: 'Thursday', short: 'Thu' },
+  { value: 5, label: 'Friday', short: 'Fri' },
+  { value: 6, label: 'Saturday', short: 'Sat' },
+  { value: 7, label: 'Sunday', short: 'Sun' },
+] as const;
