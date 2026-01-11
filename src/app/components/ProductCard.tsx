@@ -1,22 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FaPlus, FaCheck, FaShoppingCart, FaHeart, FaShareAlt } from 'react-icons/fa';
-import type { Product } from '@/types';
+import type { Product, ProductRatingStats } from '@/types';
 import { useAuth } from '../context/AuthContext';
 import { useProductInStack, usePriceCalculations } from '@/hooks';
-import { formatPrice, generateFakeRating, generateFakeReviewCount } from '@/lib/utils';
-import { Button, Badge } from '@/components/ui';
+import { formatPrice } from '@/lib/utils';
+import { Button, Badge, useToast } from '@/components/ui';
 import { Rating } from '@/components/composite/Rating';
+import { supabase } from '../supabase';
 
 interface ProductCardProps {
   product: Product;
+  ratingStats?: ProductRatingStats | null;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, ratingStats: initialStats }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [ratingStats, setRatingStats] = useState<ProductRatingStats | null>(initialStats || null);
   const { user } = useAuth();
+  const router = useRouter();
+  const toast = useToast();
 
   // Use custom hook for stack management
   const { isInStack, isUpdating, addToStack } = useProductInStack(product.product_id);
@@ -28,20 +35,37 @@ export default function ProductCard({ product }: ProductCardProps) {
     product.servings_per_day
   );
 
-  // Generate rating (will be replaced with real ratings from product_rating_stats)
-  const rating = generateFakeRating(product.product_name);
-  const reviewCount = generateFakeReviewCount(rating);
+  // Fetch real ratings from database if not provided
+  useEffect(() => {
+    if (initialStats !== undefined) return;
+
+    async function fetchRatings() {
+      const { data } = await supabase
+        .from('product_rating_stats')
+        .select('*')
+        .eq('product_id', product.product_id)
+        .single();
+
+      if (data) setRatingStats(data);
+    }
+    fetchRatings();
+  }, [product.product_id, initialStats]);
+
+  const rating = ratingStats?.average_rating || 0;
+  const reviewCount = ratingStats?.total_reviews || 0;
 
   const handleAddToStack = async () => {
     if (!user) {
-      alert('Please log in to add products to your stack');
+      toast.info('Please log in to add products to your stack');
+      router.push('/login');
       return;
     }
 
     try {
       await addToStack();
+      toast.success('Added to stack!');
     } catch (error) {
-      alert('Failed to add product to stack. Please try again.');
+      toast.error('Failed to add product to stack. Please try again.');
     }
   };
 
@@ -51,66 +75,57 @@ export default function ProductCard({ product }: ProductCardProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Product Image */}
-      <div className="relative h-64 bg-gradient-to-br from-neutral-50 to-neutral-100 overflow-hidden rounded-t-xl">
-        {product.product_image ? (
-          <Image
-            src={product.product_image}
-            alt={product.product_name}
-            fill
-            className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center shadow-medium">
-              <span className="text-2xl font-bold text-primary-600">
-                {product.product_name.charAt(0)}
-              </span>
+      {/* Clickable Product Link - wraps image and basic info */}
+      <Link href={`/product/${product.product_id}`} className="block">
+        {/* Product Image */}
+        <div className="relative h-64 bg-gradient-to-br from-neutral-50 to-neutral-100 overflow-hidden rounded-t-xl">
+          {product.product_image ? (
+            <Image
+              src={product.product_image}
+              alt={product.product_name}
+              fill
+              className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center shadow-medium">
+                <span className="text-2xl font-bold text-primary-600">
+                  {product.product_name.charAt(0)}
+                </span>
+              </div>
             </div>
+          )}
+
+          {/* Price Tag */}
+          <div className="absolute bottom-3 left-3 bg-primary-600 text-white px-3 py-1.5 rounded-xl font-bold shadow-medium">
+            ${formatPrice(product.product_price)}
           </div>
-        )}
-
-        {/* Badges */}
-        <div className="absolute top-3 left-3">
-          <Badge variant="secondary">Best Seller</Badge>
         </div>
 
-        {/* Quick Actions */}
-        <div className={`absolute top-3 right-3 flex flex-col gap-2 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-          <button className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-medium hover:bg-neutral-50 transition-colors duration-200">
-            <FaHeart className="w-3 h-3 text-neutral-600" />
-          </button>
-          <button className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-medium hover:bg-neutral-50 transition-colors duration-200">
-            <FaShareAlt className="w-3 h-3 text-neutral-600" />
-          </button>
+        {/* Product Info (clickable) */}
+        <div className="p-4 pb-0">
+          {/* Brand */}
+          <div className="text-sm text-primary-600 font-semibold mb-2">
+            {product.brands?.brand_name || 'Premium Brand'}
+          </div>
+
+          {/* Product Name */}
+          <h3 className="font-bold text-lg mb-3 text-neutral-900 line-clamp-2 group-hover:text-primary-600 transition-colors">
+            {product.product_name}
+          </h3>
+
+          {/* Rating */}
+          <div className="flex items-center gap-2 mb-4">
+            <Rating value={rating} size="md" />
+            <span className="text-sm text-neutral-600 font-medium">
+              {rating > 0 ? `${Number(rating).toFixed(1)} (${reviewCount.toLocaleString()})` : 'No reviews yet'}
+            </span>
+          </div>
         </div>
+      </Link>
 
-        {/* Price Tag */}
-        <div className="absolute bottom-3 left-3 bg-primary-600 text-white px-3 py-1.5 rounded-xl font-bold shadow-medium">
-          ${formatPrice(product.product_price)}
-        </div>
-      </div>
-
-      {/* Product Details */}
-      <div className="card-body">
-        {/* Brand */}
-        <div className="text-sm text-primary-600 font-semibold mb-2">
-          {product.brands?.brand_name || 'Premium Brand'}
-        </div>
-
-        {/* Product Name */}
-        <h3 className="font-bold text-lg mb-3 text-neutral-900 line-clamp-2 group-hover:text-primary-600 transition-colors">
-          {product.product_name}
-        </h3>
-
-        {/* Rating */}
-        <div className="flex items-center gap-2 mb-4">
-          <Rating value={rating} size="md" />
-          <span className="text-sm text-neutral-600 font-medium">
-            {rating.toFixed(1)} ({reviewCount.toLocaleString()})
-          </span>
-        </div>
-
+      {/* Non-clickable actions section */}
+      <div className="px-4 pb-4">
         {/* Product Stats */}
         <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
           <div className="bg-neutral-50 rounded-xl p-3 text-center border border-neutral-100">

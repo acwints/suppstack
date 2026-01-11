@@ -46,6 +46,7 @@ function formatDateKey(date: Date): string {
 }
 
 const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const shortDayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 export function WeeklyCalendar({
   logs,
@@ -122,26 +123,26 @@ export function WeeklyCalendar({
   };
 
   return (
-    <Card variant="modern" className={`p-6 ${className}`}>
+    <Card variant="modern" className={`p-4 sm:p-6 ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Weekly Overview</h3>
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900">Weekly Overview</h3>
+        <div className="flex items-center gap-1 sm:gap-2">
           <button
             onClick={() => setWeekOffset(prev => prev - 1)}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2.5 sm:p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
             aria-label="Previous week"
           >
             <FiChevronLeft size={20} />
           </button>
-          <span className="text-sm font-medium text-gray-600 min-w-[120px] text-center">
+          <span className="text-xs sm:text-sm font-medium text-gray-600 min-w-[80px] sm:min-w-[120px] text-center">
             {getWeekLabel()}
           </span>
           <button
             onClick={() => setWeekOffset(prev => Math.min(0, prev + 1))}
             disabled={weekOffset >= 0}
-            className={`p-2 rounded-lg transition-colors ${
-              weekOffset >= 0 ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100'
+            className={`p-2.5 sm:p-2 rounded-lg transition-colors touch-manipulation ${
+              weekOffset >= 0 ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 active:bg-gray-200'
             }`}
             aria-label="Next week"
           >
@@ -151,36 +152,37 @@ export function WeeklyCalendar({
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-2">
-        {weekData.map((day) => (
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
+        {weekData.map((day, index) => (
           <button
             key={day.date}
             onClick={() => onDateSelect?.(day.date)}
             disabled={day.isFuture}
             className={`
-              flex flex-col items-center p-3 rounded-xl transition-all
-              ${day.isToday ? 'ring-2 ring-orange-500 ring-offset-2' : ''}
+              flex flex-col items-center p-1.5 sm:p-3 rounded-lg sm:rounded-xl transition-all touch-manipulation active:scale-95
+              ${day.isToday ? 'ring-2 ring-orange-500 ring-offset-1 sm:ring-offset-2' : ''}
               ${selectedDate === day.date ? 'bg-orange-100' : ''}
-              ${day.isFuture ? 'cursor-not-allowed' : 'hover:bg-gray-50 cursor-pointer'}
+              ${day.isFuture ? 'cursor-not-allowed opacity-60' : 'hover:bg-gray-50 active:bg-gray-100 cursor-pointer'}
             `}
           >
-            <span className={`text-xs font-medium mb-1 ${day.isToday ? 'text-orange-600' : 'text-gray-500'}`}>
-              {day.dayOfWeek}
+            <span className={`text-[10px] sm:text-xs font-medium mb-0.5 sm:mb-1 ${day.isToday ? 'text-orange-600' : 'text-gray-500'}`}>
+              <span className="sm:hidden">{shortDayNames[index]}</span>
+              <span className="hidden sm:inline">{day.dayOfWeek}</span>
             </span>
             <div
               className={`
-                w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm
+                w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold text-xs sm:text-sm
                 ${statusColors[day.status]}
                 ${day.isToday ? 'ring-2 ring-orange-500' : ''}
               `}
             >
               {day.dayOfMonth}
             </div>
-            <div className="mt-2 flex items-center justify-center h-4">
+            <div className="mt-1 sm:mt-2 flex items-center justify-center h-3 sm:h-4">
               {!day.isFuture && statusIcons[day.status]}
             </div>
             {!day.isFuture && day.status !== 'future' && (
-              <span className="text-xs text-gray-500 mt-1">
+              <span className="text-[9px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">
                 {day.logsCount}/{plannedCount}
               </span>
             )}
@@ -189,18 +191,18 @@ export function WeeklyCalendar({
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-4 mt-6 pt-4 border-t border-gray-100">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-green-500" />
-          <span className="text-xs text-gray-600">Complete</span>
+      <div className="flex items-center justify-center gap-3 sm:gap-4 mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-100">
+        <div className="flex items-center gap-1 sm:gap-1.5">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500" />
+          <span className="text-[10px] sm:text-xs text-gray-600">Complete</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-yellow-400" />
-          <span className="text-xs text-gray-600">Partial</span>
+        <div className="flex items-center gap-1 sm:gap-1.5">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-yellow-400" />
+          <span className="text-[10px] sm:text-xs text-gray-600">Partial</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-gray-200" />
-          <span className="text-xs text-gray-600">Missed</span>
+        <div className="flex items-center gap-1 sm:gap-1.5">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-gray-200" />
+          <span className="text-[10px] sm:text-xs text-gray-600">Missed</span>
         </div>
       </div>
     </Card>

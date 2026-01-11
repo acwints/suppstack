@@ -29,7 +29,7 @@ export interface Product {
   brand_id?: string;
   // Relations
   brands?: { brand_name: string };
-  supplements?: { supplement_name: string };
+  supplements?: { supplement_id: number; supplement_name: string };
   // Extended fields for API data
   amazon_asin?: string;
   amazon_rating?: number;
@@ -228,6 +228,20 @@ export interface StackSupplement {
   order_index: number;
 }
 
+export interface StackLike {
+  like_id: string;
+  stack_id: string;
+  profile_id: string;
+  created_at: string;
+}
+
+export interface UserFollow {
+  follow_id: string;
+  follower_id: string;
+  following_id: string;
+  created_at: string;
+}
+
 // ============================================================================
 // Review Types
 // ============================================================================
@@ -310,6 +324,28 @@ export interface ProfileInput {
   weight?: number;
   display_name?: string;
   bio?: string;
+}
+
+export interface StackInput {
+  stack_name: string;
+  stack_description: string;
+  stack_image?: string;
+  is_public?: boolean;
+  source_title?: string;
+  source_url?: string;
+  source_type?: Stack['source_type'];
+  source_date?: string;
+  supplements: StackSupplementInput[];
+}
+
+export interface StackSupplementInput {
+  supplement_id: number;
+  dosage?: string;
+  frequency?: string;
+  timing?: string;
+  notes?: string;
+  is_core?: boolean;
+  order_index: number;
 }
 
 // ============================================================================

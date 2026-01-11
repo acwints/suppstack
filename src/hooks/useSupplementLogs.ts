@@ -7,6 +7,7 @@ import type {
   SupplementLog,
   SupplementLogInput,
   DailyTrackingSummary,
+  DailyWellnessInput,
   TrackingStats,
   TimeOfDay,
 } from '@/types';
@@ -28,6 +29,7 @@ export interface UseSupplementLogsResult {
   logSupplement: (input: SupplementLogInput) => Promise<SupplementLog>;
   unlogSupplement: (logId: string) => Promise<void>;
   updateLog: (logId: string, updates: Partial<SupplementLogInput>) => Promise<void>;
+  saveWellnessData: (data: DailyWellnessInput) => Promise<void>;
   isLoggedToday: (productId: string, timeOfDay?: TimeOfDay) => boolean;
   getLogsForDate: (date: string) => SupplementLog[];
   refreshLogs: () => Promise<void>;
@@ -304,6 +306,57 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
   // Get today's logs
   const todayLogs = logs.filter(log => log.log_date === today);
 
+  // Save wellness data (mood, energy, sleep)
+  const saveWellnessData = useCallback(async (data: DailyWellnessInput): Promise<void> => {
+    if (!user) {
+      throw new Error('Please log in to save wellness data');
+    }
+
+    const wellnessData = {
+      user_id: user.id,
+      summary_date: today,
+      overall_mood: data.overall_mood || null,
+      overall_energy: data.overall_energy || null,
+      sleep_quality: data.sleep_quality || null,
+      sleep_hours: data.sleep_hours || null,
+      daily_notes: data.daily_notes || null,
+    };
+
+    // Check if summary exists for today
+    const { data: existing } = await supabase
+      .from('daily_tracking_summary')
+      .select('summary_id')
+      .eq('user_id', user.id)
+      .eq('summary_date', today)
+      .single();
+
+    if (existing) {
+      // Update existing
+      const { error: updateError } = await supabase
+        .from('daily_tracking_summary')
+        .update({
+          overall_mood: wellnessData.overall_mood,
+          overall_energy: wellnessData.overall_energy,
+          sleep_quality: wellnessData.sleep_quality,
+          sleep_hours: wellnessData.sleep_hours,
+          daily_notes: wellnessData.daily_notes,
+        })
+        .eq('summary_id', existing.summary_id);
+
+      if (updateError) throw updateError;
+    } else {
+      // Insert new
+      const { error: insertError } = await supabase
+        .from('daily_tracking_summary')
+        .insert(wellnessData);
+
+      if (insertError) throw insertError;
+    }
+
+    // Refresh summary
+    await fetchDailySummary();
+  }, [user, today, fetchDailySummary]);
+
   // Refresh function
   const refreshLogs = useCallback(async () => {
     await Promise.all([fetchLogs(), fetchDailySummary(), fetchStats()]);
@@ -319,6 +372,7 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
     logSupplement,
     unlogSupplement,
     updateLog,
+    saveWellnessData,
     isLoggedToday,
     getLogsForDate,
     refreshLogs,

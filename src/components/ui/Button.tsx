@@ -1,31 +1,84 @@
 'use client';
 
-import { forwardRef } from 'react';
-import type { ButtonVariant, ButtonSize } from '@/types';
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { cn } from '@/lib/design-system';
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+export type ButtonSize = 'sm' | 'md' | 'lg';
+
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Visual variant */
   variant?: ButtonVariant;
+  /** Size preset */
   size?: ButtonSize;
+  /** Show loading spinner */
   isLoading?: boolean;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
+  /** Icon before text */
+  leftIcon?: ReactNode;
+  /** Icon after text */
+  rightIcon?: ReactNode;
+  /** Full width button */
   fullWidth?: boolean;
 }
 
-const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'btn-primary',
-  secondary: 'btn-secondary',
-  accent: 'bg-accent-400 hover:bg-accent-500 text-white',
-  outline: 'btn-outline',
-  ghost: 'btn-ghost',
+const variantStyles: Record<ButtonVariant, string> = {
+  primary: cn(
+    'bg-orange-500 text-white',
+    'hover:bg-orange-600',
+    'active:bg-orange-700',
+    'focus-visible:ring-orange-500',
+    'disabled:bg-orange-300'
+  ),
+  secondary: cn(
+    'bg-gray-100 text-gray-900',
+    'hover:bg-gray-200',
+    'active:bg-gray-300',
+    'focus-visible:ring-gray-500',
+    'disabled:bg-gray-100 disabled:text-gray-400'
+  ),
+  outline: cn(
+    'border-2 border-gray-300 bg-transparent text-gray-700',
+    'hover:border-gray-400 hover:bg-gray-50',
+    'active:bg-gray-100',
+    'focus-visible:ring-gray-500',
+    'disabled:border-gray-200 disabled:text-gray-400'
+  ),
+  ghost: cn(
+    'bg-transparent text-gray-700',
+    'hover:bg-gray-100',
+    'active:bg-gray-200',
+    'focus-visible:ring-gray-500',
+    'disabled:text-gray-400'
+  ),
+  danger: cn(
+    'bg-red-500 text-white',
+    'hover:bg-red-600',
+    'active:bg-red-700',
+    'focus-visible:ring-red-500',
+    'disabled:bg-red-300'
+  ),
 };
 
-const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2.5 text-sm',
-  lg: 'px-6 py-3 text-base',
+const sizeStyles: Record<ButtonSize, string> = {
+  sm: 'h-8 px-3 text-xs gap-1.5',
+  md: 'h-10 px-4 text-sm gap-2',
+  lg: 'h-12 px-6 text-base gap-2',
 };
 
+const iconSizeStyles: Record<ButtonSize, string> = {
+  sm: '[&_svg]:w-3.5 [&_svg]:h-3.5',
+  md: '[&_svg]:w-4 [&_svg]:h-4',
+  lg: '[&_svg]:w-5 [&_svg]:h-5',
+};
+
+/**
+ * Button component with multiple variants and sizes
+ *
+ * @example
+ * <Button variant="primary" size="md">Click me</Button>
+ * <Button variant="outline" leftIcon={<FiPlus />}>Add Item</Button>
+ * <Button isLoading>Saving...</Button>
+ */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -35,8 +88,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       leftIcon,
       rightIcon,
       fullWidth = false,
-      className = '',
       disabled,
+      className,
       children,
       ...props
     },
@@ -47,26 +100,34 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        className={`
-          btn
-          ${variantClasses[variant]}
-          ${sizeClasses[size]}
-          ${fullWidth ? 'w-full' : ''}
-          ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
-          flex items-center justify-center gap-2
-          font-semibold rounded-xl transition-all duration-300
-          ${className}
-        `}
         disabled={isDisabled}
+        className={cn(
+          // Base styles
+          'inline-flex items-center justify-center',
+          'font-semibold rounded-lg',
+          'transition-colors duration-200',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          'disabled:cursor-not-allowed',
+          // Variant & Size
+          variantStyles[variant],
+          sizeStyles[size],
+          iconSizeStyles[size],
+          // Modifiers
+          fullWidth && 'w-full',
+          className
+        )}
         {...props}
       >
         {isLoading ? (
-          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          <>
+            <LoadingSpinner size={size} />
+            {children && <span className="ml-2">{children}</span>}
+          </>
         ) : (
           <>
-            {leftIcon && <span className="flex-shrink-0">{leftIcon}</span>}
+            {leftIcon && <span className="shrink-0">{leftIcon}</span>}
             {children}
-            {rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
+            {rightIcon && <span className="shrink-0">{rightIcon}</span>}
           </>
         )}
       </button>
@@ -75,5 +136,37 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
+
+/** Internal loading spinner */
+function LoadingSpinner({ size }: { size: ButtonSize }) {
+  const sizeClasses = {
+    sm: 'w-3 h-3',
+    md: 'w-4 h-4',
+    lg: 'w-5 h-5',
+  };
+
+  return (
+    <svg
+      className={cn('animate-spin', sizeClasses[size])}
+      fill="none"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+      />
+    </svg>
+  );
+}
 
 export default Button;

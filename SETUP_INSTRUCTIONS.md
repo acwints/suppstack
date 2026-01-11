@@ -109,29 +109,45 @@ ALTER TABLE stack_supplements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE stack_likes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_follows ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies for public access (IMPORTANT: Allow both SELECT and INSERT for seeding)
+-- ============================================================================
+-- SECURE RLS POLICIES
+-- ============================================================================
+
 -- User Profiles Policies
 CREATE POLICY "Allow public read access to public profiles" ON user_profiles
   FOR SELECT USING (is_public = true);
 
-CREATE POLICY "Allow public insert for influencer profiles" ON user_profiles
-  FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can read own profile" ON user_profiles
+  FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Allow update for authenticated users" ON user_profiles
+CREATE POLICY "Users can insert own profile" ON user_profiles
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own profile" ON user_profiles
   FOR UPDATE USING (auth.uid() = user_id);
 
--- Stacks Policies  
+-- Stacks Policies
 CREATE POLICY "Allow public read access to public stacks" ON stacks
   FOR SELECT USING (is_public = true);
 
-CREATE POLICY "Allow public insert for featured stacks" ON stacks
-  FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can read own stacks" ON stacks
+  FOR SELECT USING (
+    profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+  );
 
-CREATE POLICY "Allow update for stack owners" ON stacks
+CREATE POLICY "Users can insert own stacks" ON stacks
+  FOR INSERT WITH CHECK (
+    profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+  );
+
+CREATE POLICY "Users can update own stacks" ON stacks
   FOR UPDATE USING (
-    profile_id IN (
-      SELECT profile_id FROM user_profiles WHERE user_id = auth.uid()
-    )
+    profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+  );
+
+CREATE POLICY "Users can delete own stacks" ON stacks
+  FOR DELETE USING (
+    profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
   );
 
 -- Stack Supplements Policies
@@ -140,30 +156,97 @@ CREATE POLICY "Allow public read access to stack supplements" ON stack_supplemen
     stack_id IN (SELECT stack_id FROM stacks WHERE is_public = true)
   );
 
-CREATE POLICY "Allow public insert for stack supplements" ON stack_supplements
-  FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can read own stack supplements" ON stack_supplements
+  FOR SELECT USING (
+    stack_id IN (
+      SELECT stack_id FROM stacks WHERE profile_id IN (
+        SELECT profile_id FROM user_profiles WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "Users can insert own stack supplements" ON stack_supplements
+  FOR INSERT WITH CHECK (
+    stack_id IN (
+      SELECT stack_id FROM stacks WHERE profile_id IN (
+        SELECT profile_id FROM user_profiles WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "Users can update own stack supplements" ON stack_supplements
+  FOR UPDATE USING (
+    stack_id IN (
+      SELECT stack_id FROM stacks WHERE profile_id IN (
+        SELECT profile_id FROM user_profiles WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "Users can delete own stack supplements" ON stack_supplements
+  FOR DELETE USING (
+    stack_id IN (
+      SELECT stack_id FROM stacks WHERE profile_id IN (
+        SELECT profile_id FROM user_profiles WHERE user_id = auth.uid()
+      )
+    )
+  );
 
 -- Stack Likes Policies
 CREATE POLICY "Allow public read access to stack likes" ON stack_likes
   FOR SELECT USING (true);
 
-CREATE POLICY "Allow public insert for stack likes" ON stack_likes
-  FOR INSERT WITH CHECK (true);
+CREATE POLICY "Authenticated users can like stacks" ON stack_likes
+  FOR INSERT WITH CHECK (
+    profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+  );
+
+CREATE POLICY "Users can remove own likes" ON stack_likes
+  FOR DELETE USING (
+    profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+  );
 
 -- User Follows Policies
 CREATE POLICY "Allow public read access to user follows" ON user_follows
   FOR SELECT USING (true);
 
-CREATE POLICY "Allow public insert for user follows" ON user_follows
-  FOR INSERT WITH CHECK (true);
+CREATE POLICY "Authenticated users can follow" ON user_follows
+  FOR INSERT WITH CHECK (
+    follower_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+  );
+
+CREATE POLICY "Users can unfollow" ON user_follows
+  FOR DELETE USING (
+    follower_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+  );
 ```
 
-## Step 2: Seed the Data
+## Step 2: Seed the Data (Admin Only)
 
-After running the SQL above, you can seed the influencer data by calling:
+Seeding influencer data requires admin access. Use **one** of these methods:
 
+### Option A: Supabase Dashboard (Recommended)
+Run the seed SQL directly in Supabase SQL Editor where you have full access.
+
+### Option B: Service Role Key (Server-Side Only)
+Create a server-side seeding script that uses `SUPABASE_SERVICE_ROLE_KEY`:
+
+```typescript
+// NEVER expose service role key to the client
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY! // Server-side only!
+);
+
+// Service role bypasses RLS - use with caution
+```
+
+### Option C: API Route with Auth Check
 ```bash
-curl -X POST http://localhost:3000/api/simple-setup
+curl -X POST http://localhost:3000/api/simple-setup \
+  -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
 ```
 
 ## Step 3: Verify Setup
@@ -192,4 +275,13 @@ The homepage will then display these as **Featured Stacks** with proper authenti
 
 ## Security Note
 
-The policies allow public INSERT operations for seeding influencer data. In production, you may want to restrict these to admin users only. For now, this allows the seeding API to work properly. 
+These RLS policies follow the principle of least privilege:
+
+- **SELECT**: Public profiles/stacks are readable by anyone; private data requires ownership
+- **INSERT/UPDATE/DELETE**: Requires authentication AND ownership verification
+- **Admin seeding**: Use service role key server-side (bypasses RLS) or Supabase dashboard
+
+**Important**: Never expose `SUPABASE_SERVICE_ROLE_KEY` to the client. It should only be used in:
+- Server-side API routes
+- Build/seed scripts
+- Supabase Edge Functions 

@@ -148,7 +148,7 @@ export function ConfirmModal({
   variant = 'info',
   isLoading = false,
 }: ConfirmModalProps) {
-  const confirmVariant = variant === 'danger' ? 'accent' : 'primary';
+  const confirmVariant = variant === 'danger' ? 'danger' : 'primary';
 
   return (
     <Modal

@@ -1,9 +1,42 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../supabase';
+import { createClient } from '@supabase/supabase-js';
 
-export async function POST() {
+// Admin client with service role key - bypasses RLS
+// SECURITY: Only use server-side, never expose to client
+function getAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Missing Supabase admin credentials. Set SUPABASE_SERVICE_ROLE_KEY in .env.local');
+  }
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false }
+  });
+}
+
+export async function POST(request: Request) {
   try {
-    console.log('🌟 Starting simple database setup...');
+    // SECURITY: Verify admin authorization
+    const authHeader = request.headers.get('Authorization');
+    const adminToken = process.env.ADMIN_SEED_TOKEN;
+
+    // Require either:
+    // 1. Matching admin token, OR
+    // 2. Running in development mode
+    const isDev = process.env.NODE_ENV === 'development';
+    const hasValidToken = adminToken && authHeader === `Bearer ${adminToken}`;
+
+    if (!isDev && !hasValidToken) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized. Admin access required.' },
+        { status: 401 }
+      );
+    }
+
+    const supabase = getAdminClient();
+    console.log('🌟 Starting simple database setup (admin mode)...');
 
     // Step 1: Check if we can access existing tables
     console.log('📋 Checking existing tables...');

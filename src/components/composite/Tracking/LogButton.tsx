@@ -49,16 +49,17 @@ export function LogButton({
 
   const buttonLoading = isLoading || isProcessing;
 
+  // Larger touch targets on mobile - minimum 44px recommended
   const sizeClasses = {
-    sm: 'p-1.5',
-    md: 'p-2',
-    lg: 'p-3',
+    sm: 'p-2 min-w-[36px] min-h-[36px] sm:p-1.5 sm:min-w-0 sm:min-h-0',
+    md: 'p-2.5 min-w-[40px] min-h-[40px] sm:p-2 sm:min-w-0 sm:min-h-0',
+    lg: 'p-3 min-w-[48px] min-h-[48px] sm:p-3 sm:min-w-0 sm:min-h-0',
   };
 
   const iconSizes = {
-    sm: 14,
-    md: 18,
-    lg: 22,
+    sm: 16,
+    md: 20,
+    lg: 24,
   };
 
   if (isLogged) {
@@ -67,9 +68,9 @@ export function LogButton({
         onClick={handleClick}
         disabled={buttonLoading}
         className={`
-          flex items-center gap-2 rounded-full
-          bg-green-100 text-green-700 hover:bg-green-200
-          transition-all duration-200
+          flex items-center justify-center gap-2 rounded-full
+          bg-green-100 text-green-700 hover:bg-green-200 active:bg-green-300
+          transition-all duration-200 touch-manipulation active:scale-95
           ${sizeClasses[size]}
           ${buttonLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           ${className}
@@ -81,7 +82,7 @@ export function LogButton({
         ) : (
           <FiCheck size={iconSizes[size]} />
         )}
-        {showLabel && <span className="text-sm font-medium pr-1">Taken</span>}
+        {showLabel && <span className="text-sm font-medium pr-1 hidden xs:inline">Taken</span>}
       </button>
     );
   }
@@ -91,9 +92,9 @@ export function LogButton({
       onClick={handleClick}
       disabled={buttonLoading}
       className={`
-        flex items-center gap-2 rounded-full
-        bg-gray-100 text-gray-600 hover:bg-orange-100 hover:text-orange-600
-        transition-all duration-200
+        flex items-center justify-center gap-2 rounded-full
+        bg-gray-100 text-gray-600 hover:bg-orange-100 hover:text-orange-600 active:bg-orange-200
+        transition-all duration-200 touch-manipulation active:scale-95
         ${sizeClasses[size]}
         ${buttonLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         ${className}
@@ -105,7 +106,7 @@ export function LogButton({
       ) : (
         <FiPlus size={iconSizes[size]} />
       )}
-      {showLabel && <span className="text-sm font-medium pr-1">Log</span>}
+      {showLabel && <span className="text-sm font-medium pr-1 hidden xs:inline">Log</span>}
     </button>
   );
 }

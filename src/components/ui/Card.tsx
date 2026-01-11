@@ -1,109 +1,170 @@
 'use client';
 
-import { createContext, useContext } from 'react';
-import type { CardVariant, CardHover } from '@/types';
+import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
+import { cn } from '@/lib/design-system';
 
-interface CardContextValue {
-  variant: CardVariant;
-}
+export type CardVariant = 'default' | 'outlined' | 'elevated' | 'ghost' | 'modern' | 'feature';
+export type CardPadding = 'none' | 'sm' | 'md' | 'lg';
 
-const CardContext = createContext<CardContextValue>({ variant: 'default' });
-
-export interface CardProps {
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  /** Visual variant */
   variant?: CardVariant;
-  hover?: CardHover;
-  padding?: 'none' | 'sm' | 'md' | 'lg';
-  className?: string;
-  children: React.ReactNode;
-  onClick?: () => void;
-  style?: React.CSSProperties;
+  /** Padding preset */
+  padding?: CardPadding;
+  /** Enable hover effect */
+  hoverable?: boolean;
+  /** Make card clickable (adds cursor and focus styles) */
+  interactive?: boolean;
+  /** As a link wrapper */
+  asChild?: boolean;
 }
 
-const variantClasses: Record<CardVariant, string> = {
-  default: 'card',
-  modern: 'modern-card',
-  feature: 'feature-highlight',
+const variantStyles: Record<CardVariant, string> = {
+  default: 'bg-white border border-gray-200',
+  outlined: 'bg-transparent border-2 border-gray-200',
+  elevated: 'bg-white shadow-md border border-gray-100',
+  ghost: 'bg-gray-50 border border-transparent',
+  // Legacy variants for backward compatibility
+  modern: 'bg-white border border-gray-200 shadow-sm',
+  feature: 'bg-gradient-to-br from-orange-50 to-pink-50 border border-orange-100',
 };
 
-const hoverClasses: Record<CardHover, string> = {
-  none: '',
-  lift: 'hover:scale-105 transition-all duration-300',
-  airbnb: 'airbnb-hover',
-};
-
-const paddingClasses = {
+const paddingStyles: Record<CardPadding, string> = {
   none: '',
   sm: 'p-4',
   md: 'p-6',
   lg: 'p-8',
 };
 
-export function Card({
-  variant = 'default',
-  hover = 'none',
-  padding = 'none',
-  className = '',
-  children,
-  onClick,
-  style,
-}: CardProps) {
-  return (
-    <CardContext.Provider value={{ variant }}>
+/**
+ * Card component - flexible container for content
+ *
+ * @example
+ * <Card variant="elevated" padding="md">
+ *   <Card.Header>Title</Card.Header>
+ *   <Card.Body>Content</Card.Body>
+ * </Card>
+ *
+ * @example
+ * <Card hoverable interactive onClick={handleClick}>
+ *   Clickable card
+ * </Card>
+ */
+export const Card = forwardRef<HTMLDivElement, CardProps>(
+  (
+    {
+      variant = 'default',
+      padding = 'none',
+      hoverable = false,
+      interactive = false,
+      className,
+      children,
+      onClick,
+      ...props
+    },
+    ref
+  ) => {
+    return (
       <div
-        className={`
-          ${variantClasses[variant]}
-          ${hoverClasses[hover]}
-          ${paddingClasses[padding]}
-          ${onClick ? 'cursor-pointer' : ''}
-          ${className}
-        `}
+        ref={ref}
         onClick={onClick}
-        style={style}
+        className={cn(
+          // Base styles
+          'rounded-2xl',
+          'transition-all duration-200',
+          // Variant & Padding
+          variantStyles[variant],
+          paddingStyles[padding],
+          // Interactive states
+          hoverable && 'hover:border-orange-300 hover:shadow-md',
+          interactive && 'cursor-pointer',
+          interactive && 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2',
+          onClick && 'cursor-pointer',
+          className
+        )}
+        tabIndex={interactive ? 0 : undefined}
+        role={interactive ? 'button' : undefined}
+        {...props}
       >
         {children}
       </div>
-    </CardContext.Provider>
-  );
+    );
+  }
+);
+
+Card.displayName = 'Card';
+
+// =============================================================================
+// Card Sub-components
+// =============================================================================
+
+export interface CardHeaderProps extends HTMLAttributes<HTMLDivElement> {
+  /** Border at bottom */
+  bordered?: boolean;
 }
 
-export interface CardHeaderProps {
-  className?: string;
-  children: React.ReactNode;
+export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
+  ({ bordered = true, className, children, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'px-6 py-4',
+          bordered && 'border-b border-gray-200',
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+
+CardHeader.displayName = 'CardHeader';
+
+export interface CardBodyProps extends HTMLAttributes<HTMLDivElement> {}
+
+export const CardBody = forwardRef<HTMLDivElement, CardBodyProps>(
+  ({ className, children, ...props }, ref) => {
+    return (
+      <div ref={ref} className={cn('p-6', className)} {...props}>
+        {children}
+      </div>
+    );
+  }
+);
+
+CardBody.displayName = 'CardBody';
+
+export interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
+  /** Border at top */
+  bordered?: boolean;
 }
 
-export function CardHeader({ className = '', children }: CardHeaderProps) {
-  return (
-    <div className={`card-header p-6 border-b border-gray-200 ${className}`}>
-      {children}
-    </div>
-  );
-}
+export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
+  ({ bordered = true, className, children, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'px-6 py-4',
+          bordered && 'border-t border-gray-200',
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
 
-export interface CardBodyProps {
-  className?: string;
-  children: React.ReactNode;
-}
+CardFooter.displayName = 'CardFooter';
 
-export function CardBody({ className = '', children }: CardBodyProps) {
-  return <div className={`card-body ${className}`}>{children}</div>;
-}
-
-export interface CardFooterProps {
-  className?: string;
-  children: React.ReactNode;
-}
-
-export function CardFooter({ className = '', children }: CardFooterProps) {
-  return (
-    <div className={`card-footer p-6 border-t border-gray-200 ${className}`}>
-      {children}
-    </div>
-  );
-}
-
-// Compound component pattern
-Card.Header = CardHeader;
-Card.Body = CardBody;
-Card.Footer = CardFooter;
-
-export default Card;
+// Compound component exports
+export default Object.assign(Card, {
+  Header: CardHeader,
+  Body: CardBody,
+  Footer: CardFooter,
+});

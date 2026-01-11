@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { FaStar, FaEdit, FaPlus } from 'react-icons/fa';
 import type { Review, ProductRatingStats, ReviewInput } from '@/types';
 import type { ReviewSortBy } from '@/hooks/useReviews';
-import { Button, Select, Skeleton } from '@/components/ui';
+import { Button, Select, Skeleton, ConfirmDialog } from '@/components/ui';
 import { RatingBreakdown } from '@/components/composite/Rating';
 import ReviewCard from './ReviewCard';
 import ReviewForm from './ReviewForm';
@@ -54,6 +54,8 @@ export function ReviewList({
 }: ReviewListProps) {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [isEditingReview, setIsEditingReview] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSubmitReview = async (review: ReviewInput) => {
     await onSubmitReview(review);
@@ -64,6 +66,17 @@ export function ReviewList({
     if (userReview) {
       await onUpdateReview(userReview.review_id, review);
       setIsEditingReview(false);
+    }
+  };
+
+  const handleDeleteReview = async () => {
+    if (!userReview) return;
+    setIsDeleting(true);
+    try {
+      await onDeleteReview(userReview.review_id);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -109,11 +122,7 @@ export function ReviewList({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  if (confirm('Are you sure you want to delete your review?')) {
-                    onDeleteReview(userReview.review_id);
-                  }
-                }}
+                onClick={() => setShowDeleteConfirm(true)}
               >
                 Delete
               </Button>
@@ -262,6 +271,18 @@ export function ReviewList({
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteReview}
+        title="Delete Review"
+        description="Are you sure you want to delete your review? This action cannot be undone."
+        confirmText="Delete"
+        danger
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

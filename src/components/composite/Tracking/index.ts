@@ -13,3 +13,6 @@ export type { WeeklyCalendarProps } from './WeeklyCalendar';
 
 export { SupplementSettingsModal } from './SupplementSettingsModal';
 export type { SupplementSettingsModalProps } from './SupplementSettingsModal';
+
+export { DailyWellnessCard } from './DailyWellnessCard';
+export type { DailyWellnessCardProps } from './DailyWellnessCard';

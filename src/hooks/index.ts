@@ -26,3 +26,13 @@ export type { UseSupplementLogsOptions, UseSupplementLogsResult } from './useSup
 
 export { useSupplementSettings } from './useSupplementSettings';
 export type { UseSupplementSettingsResult } from './useSupplementSettings';
+
+// Stacks & Social Hooks
+export { useStacks } from './useStacks';
+export type { UseStacksOptions, UseStacksResult, StackSortBy, StackFilter } from './useStacks';
+
+export { useStackLikes } from './useStackLikes';
+export type { UseStackLikesResult } from './useStackLikes';
+
+export { useUserFollows } from './useUserFollows';
+export type { UseUserFollowsResult } from './useUserFollows';

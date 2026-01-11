@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiX, FiClock, FiTarget, FiCalendar, FiAlertCircle } from 'react-icons/fi';
+import { FiX, FiClock, FiTarget, FiCalendar, FiBell } from 'react-icons/fi';
 import { Modal, Button, Input, Select } from '@/components/ui';
 import type { UserSupplementSettings, UserSupplementSettingsInput, SupplementStatus } from '@/types';
 import { SUPPLEMENT_STATUS_OPTIONS, DAYS_OF_WEEK, TIME_OF_DAY_OPTIONS } from '@/types';
@@ -35,6 +35,7 @@ export function SupplementSettingsModal({
   const [status, setStatus] = useState<SupplementStatus>('active');
   const [goal, setGoal] = useState('');
   const [targetDuration, setTargetDuration] = useState<number | ''>('');
+  const [remindersEnabled, setRemindersEnabled] = useState(false);
 
   // Initialize form from existing settings
   useEffect(() => {
@@ -48,6 +49,7 @@ export function SupplementSettingsModal({
       setStatus(existingSettings.status || 'active');
       setGoal(existingSettings.goal || '');
       setTargetDuration(existingSettings.target_duration_days || '');
+      setRemindersEnabled(existingSettings.reminders_enabled || false);
     } else {
       // Reset to defaults
       setCustomDosage('');
@@ -59,6 +61,7 @@ export function SupplementSettingsModal({
       setStatus('active');
       setGoal('');
       setTargetDuration('');
+      setRemindersEnabled(false);
     }
   }, [existingSettings, isOpen]);
 
@@ -78,6 +81,7 @@ export function SupplementSettingsModal({
         status,
         goal: goal || undefined,
         target_duration_days: targetDuration ? Number(targetDuration) : undefined,
+        reminders_enabled: remindersEnabled,
       });
       onClose();
     } catch (error) {
@@ -219,6 +223,43 @@ export function SupplementSettingsModal({
               </button>
             )}
           </div>
+        </div>
+
+        {/* Reminders Toggle */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-full ${remindersEnabled ? 'bg-orange-100' : 'bg-gray-200'}`}>
+                <FiBell className={`w-5 h-5 ${remindersEnabled ? 'text-orange-600' : 'text-gray-500'}`} />
+              </div>
+              <div>
+                <label htmlFor="remindersEnabled" className="font-medium text-gray-900 cursor-pointer">
+                  Enable Reminders
+                </label>
+                <p className="text-sm text-gray-500">Get notified at your scheduled times</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={remindersEnabled}
+              onClick={() => setRemindersEnabled(!remindersEnabled)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                remindersEnabled ? 'bg-orange-500' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  remindersEnabled ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+          {remindersEnabled && (
+            <p className="mt-3 text-xs text-gray-500 bg-orange-50 p-2 rounded">
+              Reminders will be sent at: {scheduleTimes.join(', ')}
+            </p>
+          )}
         </div>
 
         {/* Take with food */}

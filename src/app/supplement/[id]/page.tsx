@@ -1,10 +1,12 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { FiArrowLeft } from 'react-icons/fi';
 import { supabase } from '../../supabase';
 import ProductCard from '../../components/ProductCard';
 import type { Supplement, Product } from '@/types';
-import { Spinner } from '@/components/ui';
+import { Spinner, Button, EmptyState, Stack, Inline, Grid } from '@/components/ui';
 
 export default function SupplementPage({ params }: { params: { id: string } }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,7 +22,11 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
 
       const [supplementResult, productsResult] = await Promise.all([
         supabase.from('supplements').select('*').eq('supplement_id', supplementId).single(),
-        supabase.from('products').select('*, brands(brand_name), supplements(supplement_name)').eq('supplement_id', supplementId).order('product_name', { ascending: true }),
+        supabase
+          .from('products')
+          .select('*, brands(brand_name), supplements(supplement_name)')
+          .eq('supplement_id', supplementId)
+          .order('product_name', { ascending: true }),
       ]);
 
       if (supplementResult.error) {
@@ -42,9 +48,10 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   const displayedProducts = products.slice(0, currentPage * productsPerPage);
+  const hasMore = products.length > displayedProducts.length;
 
   const loadMoreProducts = () => {
-    setCurrentPage(prevPage => prevPage + 1);
+    setCurrentPage((prevPage) => prevPage + 1);
   };
 
   if (isLoading) {
@@ -57,43 +64,75 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
 
   if (!supplement) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <p className="text-gray-600">Supplement not found.</p>
-      </div>
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        <EmptyState
+          icon="404"
+          title="Supplement not found"
+          description="This supplement category doesn't exist or has been removed."
+          action={
+            <Link href="/">
+              <Button variant="primary">Back to Home</Button>
+            </Link>
+          }
+          size="lg"
+        />
+      </main>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-4xl font-bold mb-4 text-gradient">{supplement.supplement_name}</h1>
-      <p className="text-xl mb-8 text-gray-700">{supplement.supplement_description}</p>
+    <main className="max-w-7xl mx-auto px-4 py-8">
+      {/* Back Navigation */}
+      <Link
+        href="/"
+        className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+      >
+        <FiArrowLeft />
+        <span>Back to Supplements</span>
+      </Link>
 
-      <h2 className="text-2xl font-semibold mb-6 text-gray-900">
-        Available Products ({products.length})
-      </h2>
+      {/* Header */}
+      <Stack gap={2} className="mb-8">
+        <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
+          {supplement.supplement_name}
+        </h1>
+        <p className="text-xl text-gray-600">{supplement.supplement_description}</p>
+      </Stack>
 
-      {products.length === 0 ? (
-        <p className="text-gray-600">No products found for this supplement.</p>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayedProducts.map((product) => (
-              <ProductCard key={product.product_id} product={product} />
-            ))}
-          </div>
+      {/* Products Section */}
+      <Stack gap={6}>
+        <Inline justify="between" align="center">
+          <h2 className="text-2xl font-semibold text-gray-900">Available Products</h2>
+          <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">
+            {products.length} products
+          </span>
+        </Inline>
 
-          {products.length > displayedProducts.length && (
-            <div className="mt-8 flex justify-center">
-              <button
-                onClick={loadMoreProducts}
-                className="btn btn-primary"
-              >
-                Load More Products
-              </button>
-            </div>
-          )}
-        </>
-      )}
-    </div>
+        {products.length === 0 ? (
+          <EmptyState
+            icon="📦"
+            title="No products found"
+            description="We don't have any products for this supplement yet."
+            variant="card"
+          />
+        ) : (
+          <>
+            <Grid cols={{ sm: 1, md: 2, lg: 3 }} gap={6}>
+              {displayedProducts.map((product) => (
+                <ProductCard key={product.product_id} product={product} />
+              ))}
+            </Grid>
+
+            {hasMore && (
+              <div className="text-center pt-6">
+                <Button variant="outline" onClick={loadMoreProducts}>
+                  Load More Products
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+      </Stack>
+    </main>
   );
 }
