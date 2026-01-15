@@ -23,11 +23,11 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary: cn(
-    'bg-orange-500 text-white',
-    'hover:bg-orange-600',
-    'active:bg-orange-700',
-    'focus-visible:ring-orange-500',
-    'disabled:bg-orange-300'
+    'bg-gray-900 text-white',
+    'hover:bg-gray-800',
+    'active:bg-gray-700',
+    'focus-visible:ring-gray-900',
+    'disabled:bg-gray-300'
   ),
   secondary: cn(
     'bg-gray-100 text-gray-900',
@@ -37,8 +37,8 @@ const variantStyles: Record<ButtonVariant, string> = {
     'disabled:bg-gray-100 disabled:text-gray-400'
   ),
   outline: cn(
-    'border-2 border-gray-300 bg-transparent text-gray-700',
-    'hover:border-gray-400 hover:bg-gray-50',
+    'border border-gray-200 bg-white text-gray-700',
+    'hover:border-gray-300 hover:bg-gray-50',
     'active:bg-gray-100',
     'focus-visible:ring-gray-500',
     'disabled:border-gray-200 disabled:text-gray-400'
@@ -51,10 +51,10 @@ const variantStyles: Record<ButtonVariant, string> = {
     'disabled:text-gray-400'
   ),
   danger: cn(
-    'bg-red-500 text-white',
-    'hover:bg-red-600',
-    'active:bg-red-700',
-    'focus-visible:ring-red-500',
+    'bg-red-600 text-white',
+    'hover:bg-red-700',
+    'active:bg-red-800',
+    'focus-visible:ring-red-600',
     'disabled:bg-red-300'
   ),
 };
@@ -62,22 +62,17 @@ const variantStyles: Record<ButtonVariant, string> = {
 const sizeStyles: Record<ButtonSize, string> = {
   sm: 'h-8 px-3 text-xs gap-1.5',
   md: 'h-10 px-4 text-sm gap-2',
-  lg: 'h-12 px-6 text-base gap-2',
+  lg: 'h-11 px-6 text-sm gap-2',
 };
 
 const iconSizeStyles: Record<ButtonSize, string> = {
   sm: '[&_svg]:w-3.5 [&_svg]:h-3.5',
   md: '[&_svg]:w-4 [&_svg]:h-4',
-  lg: '[&_svg]:w-5 [&_svg]:h-5',
+  lg: '[&_svg]:w-4 [&_svg]:h-4',
 };
 
 /**
  * Button component with multiple variants and sizes
- *
- * @example
- * <Button variant="primary" size="md">Click me</Button>
- * <Button variant="outline" leftIcon={<FiPlus />}>Add Item</Button>
- * <Button isLoading>Saving...</Button>
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -104,8 +99,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           // Base styles
           'inline-flex items-center justify-center',
-          'font-semibold rounded-lg',
-          'transition-colors duration-200',
+          'font-medium rounded',
+          'transition-colors duration-150',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           'disabled:cursor-not-allowed',
           // Variant & Size
@@ -142,7 +137,7 @@ function LoadingSpinner({ size }: { size: ButtonSize }) {
   const sizeClasses = {
     sm: 'w-3 h-3',
     md: 'w-4 h-4',
-    lg: 'w-5 h-5',
+    lg: 'w-4 h-4',
   };
 
   return (

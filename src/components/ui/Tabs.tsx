@@ -17,8 +17,8 @@ export interface TabListProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const listVariantStyles = {
-  default: 'gap-2',
-  pills: 'gap-2',
+  default: 'gap-1',
+  pills: 'gap-1',
   underline: 'gap-0 border-b border-gray-200',
 };
 
@@ -64,24 +64,24 @@ export interface TabProps extends HTMLAttributes<HTMLButtonElement> {
 const tabBaseStyles = cn(
   'inline-flex items-center gap-2',
   'font-medium whitespace-nowrap',
-  'transition-colors duration-200',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2'
+  'transition-colors duration-150',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2'
 );
 
 const tabVariantStyles = {
   pills: {
-    base: 'rounded-full',
+    base: 'rounded',
     active: 'bg-gray-900 text-white',
-    inactive: 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+    inactive: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
   },
   default: {
-    base: 'rounded-lg',
-    active: 'bg-orange-100 text-orange-700',
-    inactive: 'text-gray-600 hover:bg-gray-100',
+    base: 'rounded',
+    active: 'bg-gray-100 text-gray-900',
+    inactive: 'text-gray-600 hover:bg-gray-50',
   },
   underline: {
     base: 'border-b-2 -mb-px',
-    active: 'border-orange-500 text-orange-600',
+    active: 'border-gray-900 text-gray-900',
     inactive: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
   },
 };

@@ -6,7 +6,6 @@ import {
   FiSettings,
   FiUser,
   FiDollarSign,
-  FiPieChart,
   FiGlobe,
   FiTwitter,
   FiInstagram,
@@ -16,10 +15,12 @@ import {
   FiTrash2,
   FiEye,
   FiLock,
+  FiBookOpen,
+  FiPackage,
 } from 'react-icons/fi';
 import { useAuth } from '@/app/context/AuthContext';
 import { supabase } from '../supabase';
-import type { RegimenItem, TimeOfDay, UserSupplementSettingsInput } from '@/types';
+import type { RegimenItem, UserSupplementSettingsInput } from '@/types';
 import { formatCurrency, feetInchesToCm, cmToFeetInches, lbsToKg, kgToLbs } from '@/lib/utils';
 import { useRegimenCost, useSupplementLogs, useSupplementSettings, useStacks } from '@/hooks';
 import Link from 'next/link';
@@ -30,7 +31,6 @@ import {
   Card,
   Spinner,
   Avatar,
-  StatCard,
   Tabs,
   EmptyState,
   Stack,
@@ -39,19 +39,13 @@ import {
   useToast,
   ConfirmDialog,
 } from '@/components/ui';
-import {
-  DailyLogCard,
-  DailyWellnessCard,
-  TrackingStats,
-  WeeklyCalendar,
-  SupplementSettingsModal,
-} from '@/components/composite/Tracking';
+import { SupplementSettingsModal } from '@/components/composite/Tracking';
 
-type TabType = 'tracking' | 'regimen' | 'stacks' | 'profile';
+type TabType = 'collection' | 'journal' | 'stacks' | 'profile';
 
 const tabItems: { id: TabType; label: string; icon?: React.ReactNode }[] = [
-  { id: 'tracking', label: 'Daily Tracking' },
-  { id: 'regimen', label: 'My Regimen' },
+  { id: 'collection', label: 'My Collection', icon: <FiPackage size={16} /> },
+  { id: 'journal', label: 'Journal', icon: <FiBookOpen size={16} /> },
   { id: 'stacks', label: 'My Stacks', icon: <FiLayers size={16} /> },
   { id: 'profile', label: 'Profile', icon: <FiUser size={16} /> },
 ];
@@ -62,7 +56,7 @@ export default function Profile() {
   const toast = useToast();
 
   // Active tab
-  const [activeTab, setActiveTab] = useState<TabType>('tracking');
+  const [activeTab, setActiveTab] = useState<TabType>('collection');
 
   // Profile form state
   const [dateOfBirth, setDateOfBirth] = useState('');
@@ -78,7 +72,7 @@ export default function Profile() {
   const [youtubeChannel, setYoutubeChannel] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  // Regimen state
+  // Collection state
   const [regimen, setRegimen] = useState<RegimenItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -92,21 +86,12 @@ export default function Profile() {
   );
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Tracking hooks
-  const {
-    logs,
-    todayLogs,
-    dailySummary,
-    stats,
-    logSupplement,
-    unlogSupplement,
-    saveWellnessData,
-    isLoading: logsLoading,
-  } = useSupplementLogs();
+  // Journal logs
+  const { logs, isLoading: logsLoading } = useSupplementLogs();
 
   const { settings, getSettings, createSettings } = useSupplementSettings();
 
-  // Stacks hook (filter: my_stacks shows both public and private)
+  // Stacks hook
   const {
     stacks: myStacks,
     isLoading: stacksLoading,
@@ -114,7 +99,7 @@ export default function Profile() {
     refetch: refetchStacks,
   } = useStacks({ filter: 'my_stacks' });
 
-  // Calculate costs using hook
+  // Calculate costs
   const regimenItems = regimen.map((item) => ({
     product_price: item.products.product_price,
     servings_per_container: item.products.servings_per_container,
@@ -231,7 +216,7 @@ export default function Profile() {
       });
 
       if (error) throw error;
-      toast.success('Profile updated successfully!');
+      toast.success('Profile updated');
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Failed to update profile');
@@ -243,22 +228,6 @@ export default function Profile() {
   const handleLogout = async () => {
     await logout?.();
     router.push('/');
-  };
-
-  const handleLogSupplement = async (productId: string, timeOfDay?: TimeOfDay) => {
-    try {
-      await logSupplement({ product_id: productId, time_of_day: timeOfDay });
-    } catch (error) {
-      console.error('Error logging supplement:', error);
-    }
-  };
-
-  const handleUnlogSupplement = async (logId: string) => {
-    try {
-      await unlogSupplement(logId);
-    } catch (error) {
-      console.error('Error unlogging supplement:', error);
-    }
   };
 
   const handleOpenSettings = (productId: string, productName: string) => {
@@ -277,7 +246,7 @@ export default function Profile() {
     try {
       await deleteStack(deleteConfirm.stackId);
       await refetchStacks();
-      toast.success('Stack deleted successfully');
+      toast.success('Stack deleted');
     } catch (error) {
       console.error('Error deleting stack:', error);
       toast.error('Failed to delete stack');
@@ -285,6 +254,15 @@ export default function Profile() {
       setIsDeleting(false);
       setDeleteConfirm(null);
     }
+  };
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
   };
 
   if (!user) return null;
@@ -298,155 +276,119 @@ export default function Profile() {
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-8">
-      {/* Header */}
-      <header className="mb-8">
-        <Inline justify="between" align="center">
-          <Inline gap={4} align="center">
-            <Avatar
-              src={user.user_metadata?.avatar_url}
-              alt={user.user_metadata?.full_name || 'User'}
-              size="xl"
-            />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {user.user_metadata?.full_name || 'Welcome back!'}
-              </h1>
-              <p className="text-gray-600">{user.email}</p>
+    <main className="min-h-screen bg-white">
+      <div className="max-w-6xl mx-auto px-4 py-12">
+        {/* Header */}
+        <header className="mb-12 pb-8 border-b border-gray-200">
+          <Inline justify="between" align="start">
+            <div className="flex items-start gap-6">
+              <Avatar
+                src={user.user_metadata?.avatar_url}
+                alt={user.user_metadata?.full_name || 'User'}
+                size="xl"
+              />
+              <div>
+                <h1 className="text-3xl font-serif text-gray-900 mb-1">
+                  {displayName || user.user_metadata?.full_name || 'Welcome'}
+                </h1>
+                <p className="text-gray-500 text-sm">{user.email}</p>
+                {bio && <p className="text-gray-600 mt-3 max-w-md">{bio}</p>}
+              </div>
             </div>
-          </Inline>
-          <Button variant="outline" onClick={handleLogout}>
-            Logout
-          </Button>
-        </Inline>
-      </header>
-
-      {/* Quick Stats Bar */}
-      <Grid cols={{ sm: 2, lg: 4 }} gap={4} className="mb-8">
-        <StatCard
-          icon={<FiPieChart size={20} />}
-          label="Today's Progress"
-          value={`${Math.round(dailySummary?.completion_percentage || 0)}%`}
-          variant="orange"
-        />
-        <StatCard
-          icon="🔥"
-          label="Current Streak"
-          value={`${stats?.currentStreak || 0} days`}
-          variant="green"
-        />
-        <StatCard
-          icon="💊"
-          label="Total Supplements"
-          value={itemCount}
-          variant="blue"
-        />
-        <StatCard
-          icon={<FiDollarSign size={20} />}
-          label="Monthly Cost"
-          value={formatCurrency(totalMonthlyCost)}
-          variant="purple"
-        />
-      </Grid>
-
-      {/* Tab Navigation */}
-      <Tabs.List variant="underline" className="mb-8">
-        {tabItems.map((tab) => (
-          <Tabs.Tab
-            key={tab.id}
-            isActive={activeTab === tab.id}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.icon && <span className="mr-1">{tab.icon}</span>}
-            {tab.label}
-          </Tabs.Tab>
-        ))}
-      </Tabs.List>
-
-      {/* Tab Content */}
-      {activeTab === 'tracking' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Tracking Area */}
-          <Stack gap={8} className="lg:col-span-2">
-            {/* Daily Wellness Check-in */}
-            <DailyWellnessCard
-              dailySummary={dailySummary}
-              onSave={saveWellnessData}
-              isLoading={logsLoading}
-            />
-
-            {/* Daily Log Card */}
-            <DailyLogCard
-              regimen={regimen}
-              todayLogs={todayLogs}
-              onLog={handleLogSupplement}
-              onUnlog={handleUnlogSupplement}
-              isLoading={logsLoading}
-            />
-
-            {/* Weekly Calendar */}
-            <WeeklyCalendar logs={logs} plannedCount={regimen.length} />
-          </Stack>
-
-          {/* Stats Sidebar */}
-          <div>
-            <TrackingStats stats={stats} dailySummary={dailySummary} />
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'regimen' && (
-        <section>
-          <Inline justify="between" align="center" className="mb-6">
-            <h2 className="text-2xl font-semibold text-gray-900">My Supplement Regimen</h2>
-            <Button variant="primary" onClick={() => router.push('/')}>
-              Add Supplements
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              Sign Out
             </Button>
           </Inline>
+        </header>
 
-          {regimen.length === 0 ? (
-            <EmptyState
-              icon="💊"
-              title="No Supplements Yet"
-              description="Start building your supplement stack to track your daily intake."
-              action={
-                <Button variant="primary" onClick={() => router.push('/')}>
-                  Browse Supplements
-                </Button>
-              }
-              variant="card"
-              size="lg"
-            />
-          ) : (
-            <Stack gap={4}>
-              {regimen.map((item) => {
-                const pricePerServing =
-                  item.products.product_price / item.products.servings_per_container;
-                const costPerMonth = pricePerServing * item.products.servings_per_day * 30.437;
-                const productSettings = getSettings(item.product_id);
+        {/* Stats Row */}
+        <div className="grid grid-cols-3 gap-8 mb-12 pb-8 border-b border-gray-100">
+          <div>
+            <p className="text-3xl font-serif text-gray-900">{itemCount}</p>
+            <p className="text-sm text-gray-500 mt-1">Supplements</p>
+          </div>
+          <div>
+            <p className="text-3xl font-serif text-gray-900">{formatCurrency(totalMonthlyCost)}</p>
+            <p className="text-sm text-gray-500 mt-1">Monthly Cost</p>
+          </div>
+          <div>
+            <p className="text-3xl font-serif text-gray-900">{myStacks.length}</p>
+            <p className="text-sm text-gray-500 mt-1">Stacks Created</p>
+          </div>
+        </div>
 
-                return (
-                  <Card key={item.product_id} padding="md">
-                    <Inline justify="between" align="center">
+        {/* Tab Navigation */}
+        <Tabs.List variant="underline" className="mb-10">
+          {tabItems.map((tab) => (
+            <Tabs.Tab
+              key={tab.id}
+              isActive={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.icon && <span className="mr-2">{tab.icon}</span>}
+              {tab.label}
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
+
+        {/* Tab Content */}
+        {activeTab === 'collection' && (
+          <section>
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h2 className="text-2xl font-serif text-gray-900">My Collection</h2>
+                <p className="text-gray-500 mt-1">Supplements you&apos;re currently taking</p>
+              </div>
+              <Button variant="primary" onClick={() => router.push('/')}>
+                Add Supplements
+              </Button>
+            </div>
+
+            {regimen.length === 0 ? (
+              <EmptyState
+                icon={<FiPackage size={32} className="text-gray-400" />}
+                title="No supplements yet"
+                description="Start building your collection to track what you're taking."
+                action={
+                  <Button variant="primary" onClick={() => router.push('/')}>
+                    Browse Supplements
+                  </Button>
+                }
+                variant="card"
+                size="lg"
+              />
+            ) : (
+              <div className="space-y-4">
+                {regimen.map((item) => {
+                  const pricePerServing =
+                    item.products.product_price / item.products.servings_per_container;
+                  const costPerMonth = pricePerServing * item.products.servings_per_day * 30.437;
+                  const productSettings = getSettings(item.product_id);
+
+                  return (
+                    <div
+                      key={item.product_id}
+                      className="flex items-center justify-between py-4 border-b border-gray-100 last:border-0"
+                    >
                       <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">{item.products.product_name}</h4>
-                        <p className="text-sm text-gray-500">
-                          {item.products.supplements.supplement_name} •{' '}
+                        <h4 className="font-medium text-gray-900">{item.products.product_name}</h4>
+                        <p className="text-sm text-gray-500 mt-0.5">
+                          {item.products.supplements.supplement_name} &middot;{' '}
                           {item.products.brands.brand_name}
                         </p>
-                        <Inline gap={4} className="mt-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
                           <span>{formatCurrency(costPerMonth)}/mo</span>
                           {productSettings?.custom_dosage && (
-                            <span>• {productSettings.custom_dosage}</span>
+                            <span>&middot; {productSettings.custom_dosage}</span>
                           )}
                           {productSettings?.goal && (
-                            <span className="text-orange-600">• Goal: {productSettings.goal}</span>
+                            <span className="text-accent-600">&middot; {productSettings.goal}</span>
                           )}
-                        </Inline>
+                        </div>
                       </div>
-                      <Inline gap={2}>
+                      <div className="flex items-center gap-2">
                         {productSettings?.status === 'paused' && (
-                          <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded">
+                          <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
                             Paused
                           </span>
                         )}
@@ -454,96 +396,148 @@ export default function Profile() {
                           onClick={() =>
                             handleOpenSettings(item.product_id, item.products.product_name)
                           }
-                          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                          className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                         >
                           <FiSettings size={18} />
                         </button>
-                      </Inline>
-                    </Inline>
-                  </Card>
-                );
-              })}
+                      </div>
+                    </div>
+                  );
+                })}
 
-              {/* Total Cost Summary */}
-              <Card padding="md" className="bg-gray-50">
-                <Inline justify="between" align="center">
+                {/* Total Cost Summary */}
+                <div className="flex items-center justify-between pt-6 mt-4 border-t border-gray-200">
                   <span className="font-medium text-gray-700">Total Monthly Cost</span>
-                  <span className="text-xl font-bold text-orange-600">
+                  <span className="text-xl font-serif text-gray-900">
                     {formatCurrency(totalMonthlyCost)}
                   </span>
-                </Inline>
-              </Card>
-            </Stack>
-          )}
-        </section>
-      )}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
-      {activeTab === 'stacks' && (
-        <section>
-          <Inline justify="between" align="center" className="mb-6">
-            <h2 className="text-2xl font-semibold text-gray-900">My Stacks</h2>
-            <Link href="/stacks/create">
-              <Button variant="primary" leftIcon={<FiPlus />}>
-                Create Stack
-              </Button>
-            </Link>
-          </Inline>
-
-          {stacksLoading ? (
-            <div className="flex justify-center py-12">
-              <Spinner size="lg" />
+        {activeTab === 'journal' && (
+          <section>
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h2 className="text-2xl font-serif text-gray-900">Journal</h2>
+                <p className="text-gray-500 mt-1">Notes and observations about your supplements</p>
+              </div>
             </div>
-          ) : myStacks.length === 0 ? (
-            <EmptyState
-              icon="📚"
-              title="No Stacks Yet"
-              description="Create and share your supplement routines with the community."
-              action={
-                <Link href="/stacks/create">
-                  <Button variant="primary" leftIcon={<FiPlus />}>
-                    Create Your First Stack
-                  </Button>
-                </Link>
-              }
-              variant="card"
-              size="lg"
-            />
-          ) : (
-            <Stack gap={4}>
-              {myStacks.map((stack) => (
-                <Card key={stack.stack_id} padding="md">
-                  <Inline justify="between" align="center">
+
+            {logsLoading ? (
+              <div className="flex justify-center py-12">
+                <Spinner size="lg" />
+              </div>
+            ) : logs.length === 0 ? (
+              <EmptyState
+                icon={<FiBookOpen size={32} className="text-gray-400" />}
+                title="No journal entries"
+                description="Log notes about how supplements are working for you."
+                variant="card"
+                size="lg"
+              />
+            ) : (
+              <div className="space-y-6">
+                {logs.slice(0, 20).map((log) => (
+                  <div key={log.log_id} className="py-4 border-b border-gray-100 last:border-0">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">{formatDate(log.logged_at)}</p>
+                        <h4 className="font-medium text-gray-900 mt-1">
+                          {log.products?.product_name || 'Supplement'}
+                        </h4>
+                        {log.notes && <p className="text-gray-600 mt-2">{log.notes}</p>}
+                        {(log.mood_before || log.mood_after || log.energy_level) && (
+                          <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                            {log.energy_level && <span>Energy: {log.energy_level}/5</span>}
+                            {log.mood_before && <span>Mood before: {log.mood_before}</span>}
+                            {log.mood_after && <span>Mood after: {log.mood_after}</span>}
+                          </div>
+                        )}
+                      </div>
+                      {log.time_of_day && (
+                        <span className="text-xs text-gray-400 capitalize">{log.time_of_day}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {activeTab === 'stacks' && (
+          <section>
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h2 className="text-2xl font-serif text-gray-900">My Stacks</h2>
+                <p className="text-gray-500 mt-1">Supplement combinations you&apos;ve created</p>
+              </div>
+              <Link href="/stacks/create">
+                <Button variant="primary" leftIcon={<FiPlus />}>
+                  Create Stack
+                </Button>
+              </Link>
+            </div>
+
+            {stacksLoading ? (
+              <div className="flex justify-center py-12">
+                <Spinner size="lg" />
+              </div>
+            ) : myStacks.length === 0 ? (
+              <EmptyState
+                icon={<FiLayers size={32} className="text-gray-400" />}
+                title="No stacks yet"
+                description="Create and share your supplement combinations with the community."
+                action={
+                  <Link href="/stacks/create">
+                    <Button variant="primary" leftIcon={<FiPlus />}>
+                      Create Your First Stack
+                    </Button>
+                  </Link>
+                }
+                variant="card"
+                size="lg"
+              />
+            ) : (
+              <div className="space-y-4">
+                {myStacks.map((stack) => (
+                  <div
+                    key={stack.stack_id}
+                    className="flex items-center justify-between py-4 border-b border-gray-100 last:border-0"
+                  >
                     <div className="flex-1 min-w-0">
-                      <Inline gap={2} align="center">
+                      <div className="flex items-center gap-2">
                         <Link
                           href={`/stacks/${stack.stack_id}`}
-                          className="font-semibold text-gray-900 hover:text-orange-600 truncate"
+                          className="font-medium text-gray-900 hover:text-accent-600 transition-colors truncate"
                         >
                           {stack.stack_name}
                         </Link>
                         {stack.is_public ? (
-                          <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                            <FiEye size={12} /> Public
+                          <span className="flex items-center gap-1 text-xs text-gray-500">
+                            <FiEye size={12} />
                           </span>
                         ) : (
-                          <span className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                            <FiLock size={12} /> Private
+                          <span className="flex items-center gap-1 text-xs text-gray-400">
+                            <FiLock size={12} />
                           </span>
                         )}
-                      </Inline>
+                      </div>
                       <p className="text-sm text-gray-500 mt-1 line-clamp-1">
                         {stack.stack_description || 'No description'}
                       </p>
-                      <Inline gap={4} className="mt-2 text-xs text-gray-500">
+                      <div className="flex gap-4 mt-2 text-xs text-gray-400">
                         <span>{stack.supplements?.length || 0} supplements</span>
                         <span>{stack.view_count || 0} views</span>
                         <span>{stack.like_count || 0} likes</span>
-                        <span>{stack.copy_count || 0} copies</span>
-                      </Inline>
+                      </div>
                     </div>
-                    <Inline gap={2} className="ml-4">
+                    <div className="flex items-center gap-2 ml-4">
                       <Link href={`/stacks/${stack.stack_id}`}>
-                        <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                        <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
                           <FiEye size={18} />
                         </button>
                       </Link>
@@ -551,207 +545,209 @@ export default function Profile() {
                         onClick={() =>
                           setDeleteConfirm({ stackId: stack.stack_id, stackName: stack.stack_name })
                         }
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                       >
                         <FiTrash2 size={18} />
                       </button>
-                    </Inline>
-                  </Inline>
-                </Card>
-              ))}
+                    </div>
+                  </div>
+                ))}
 
-              {/* Browse More */}
-              <div className="text-center pt-4">
-                <Link href="/stacks" className="text-sm text-orange-600 hover:text-orange-700">
-                  Browse all stacks →
-                </Link>
+                <div className="text-center pt-6">
+                  <Link href="/stacks" className="text-sm text-gray-500 hover:text-gray-900">
+                    Browse all stacks
+                  </Link>
+                </div>
               </div>
-            </Stack>
-          )}
-        </section>
-      )}
+            )}
+          </section>
+        )}
 
-      {activeTab === 'profile' && (
-        <Stack gap={6}>
-          {/* Personal Information */}
-          <Card padding="lg">
-            <h2 className="text-2xl font-semibold mb-6 text-gray-900">Personal Information</h2>
+        {activeTab === 'profile' && (
+          <section>
+            <div className="max-w-2xl">
+              <h2 className="text-2xl font-serif text-gray-900 mb-8">Profile Settings</h2>
 
-            <form onSubmit={handleProfileUpdate}>
-              <Stack gap={8}>
-                {/* Basic Info */}
-                <Grid cols={{ sm: 1, md: 2 }} gap={6}>
-                  <Input
-                    label="Display Name"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Your public display name"
-                  />
+              <form onSubmit={handleProfileUpdate}>
+                <Stack gap={8}>
+                  {/* Basic Info */}
+                  <div className="space-y-6">
+                    <h3 className="text-sm font-medium uppercase tracking-wider text-gray-500 pb-2 border-b border-gray-200">
+                      Basic Information
+                    </h3>
+                    <Grid cols={{ sm: 1, md: 2 }} gap={6}>
+                      <Input
+                        label="Display Name"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        placeholder="Your public display name"
+                      />
 
-                  <Input
-                    label="Date of Birth"
-                    type="date"
-                    value={dateOfBirth}
-                    onChange={(e) => setDateOfBirth(e.target.value)}
-                  />
+                      <Input
+                        label="Date of Birth"
+                        type="date"
+                        value={dateOfBirth}
+                        onChange={(e) => setDateOfBirth(e.target.value)}
+                      />
 
-                  <Select
-                    label="Gender"
-                    options={[
-                      { value: 'male', label: 'Male' },
-                      { value: 'female', label: 'Female' },
-                      { value: 'other', label: 'Other' },
-                    ]}
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                    placeholder="Select gender"
-                  />
+                      <Select
+                        label="Gender"
+                        options={[
+                          { value: 'male', label: 'Male' },
+                          { value: 'female', label: 'Female' },
+                          { value: 'other', label: 'Other' },
+                        ]}
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                        placeholder="Select gender"
+                      />
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Height (ft&apos;in&quot;)
+                        </label>
+                        <Inline gap={2}>
+                          <Input
+                            type="number"
+                            value={heightFt}
+                            onChange={(e) => setHeightFt(e.target.value ? Number(e.target.value) : '')}
+                            placeholder="ft"
+                          />
+                          <Input
+                            type="number"
+                            value={heightIn}
+                            onChange={(e) => setHeightIn(e.target.value ? Number(e.target.value) : '')}
+                            placeholder="in"
+                          />
+                        </Inline>
+                      </div>
+
+                      <Input
+                        label="Weight (lbs)"
+                        type="number"
+                        value={weight}
+                        onChange={(e) => setWeight(e.target.value ? Number(e.target.value) : '')}
+                      />
+                    </Grid>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                      <textarea
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        placeholder="Tell us about yourself..."
+                        rows={3}
+                        className="w-full px-4 py-3 border border-gray-200 rounded focus:ring-1 focus:ring-gray-900 focus:border-gray-900 resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Social Links */}
+                  <div className="space-y-6">
+                    <h3 className="text-sm font-medium uppercase tracking-wider text-gray-500 pb-2 border-b border-gray-200">
+                      Social Links
+                    </h3>
+                    <Grid cols={{ sm: 1, md: 2 }} gap={6}>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <FiGlobe className="inline mr-2 text-gray-400" size={14} />
+                          Website
+                        </label>
+                        <Input
+                          value={website}
+                          onChange={(e) => setWebsite(e.target.value)}
+                          placeholder="https://yourwebsite.com"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <FiTwitter className="inline mr-2 text-gray-400" size={14} />
+                          Twitter / X
+                        </label>
+                        <div className="flex">
+                          <span className="inline-flex items-center px-3 rounded-l border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm">
+                            @
+                          </span>
+                          <input
+                            value={twitterHandle}
+                            onChange={(e) => setTwitterHandle(e.target.value)}
+                            placeholder="username"
+                            className="flex-1 px-4 py-2 border border-gray-200 rounded-r focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <FiInstagram className="inline mr-2 text-gray-400" size={14} />
+                          Instagram
+                        </label>
+                        <div className="flex">
+                          <span className="inline-flex items-center px-3 rounded-l border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm">
+                            @
+                          </span>
+                          <input
+                            value={instagramHandle}
+                            onChange={(e) => setInstagramHandle(e.target.value)}
+                            placeholder="username"
+                            className="flex-1 px-4 py-2 border border-gray-200 rounded-r focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <FiYoutube className="inline mr-2 text-gray-400" size={14} />
+                          YouTube
+                        </label>
+                        <Input
+                          value={youtubeChannel}
+                          onChange={(e) => setYoutubeChannel(e.target.value)}
+                          placeholder="https://youtube.com/@channel"
+                        />
+                      </div>
+                    </Grid>
+                  </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Height (ft&apos;in&quot;)
-                    </label>
-                    <Inline gap={2}>
-                      <Input
-                        type="number"
-                        value={heightFt}
-                        onChange={(e) => setHeightFt(e.target.value ? Number(e.target.value) : '')}
-                        placeholder="ft"
-                      />
-                      <Input
-                        type="number"
-                        value={heightIn}
-                        onChange={(e) => setHeightIn(e.target.value ? Number(e.target.value) : '')}
-                        placeholder="in"
-                      />
-                    </Inline>
+                    <Button type="submit" variant="primary" isLoading={isSaving}>
+                      Save Changes
+                    </Button>
                   </div>
+                </Stack>
+              </form>
+            </div>
+          </section>
+        )}
 
-                  <Input
-                    label="Weight (lbs)"
-                    type="number"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value ? Number(e.target.value) : '')}
-                  />
+        {/* Settings Modal */}
+        {selectedProduct && (
+          <SupplementSettingsModal
+            isOpen={settingsModalOpen}
+            onClose={() => {
+              setSettingsModalOpen(false);
+              setSelectedProduct(null);
+            }}
+            productId={selectedProduct.id}
+            productName={selectedProduct.name}
+            existingSettings={getSettings(selectedProduct.id)}
+            onSave={handleSaveSettings}
+          />
+        )}
 
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-                    <textarea
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      placeholder="Tell us a bit about yourself and your health journey..."
-                      rows={3}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none"
-                    />
-                  </div>
-                </Grid>
-
-                {/* Social Links Section */}
-                <div>
-                  <Inline gap={2} className="text-lg font-medium text-gray-900 mb-4">
-                    <FiGlobe className="text-gray-500" />
-                    Social Links
-                  </Inline>
-                  <Grid cols={{ sm: 1, md: 2 }} gap={6}>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <FiGlobe className="inline mr-2 text-gray-400" />
-                        Website
-                      </label>
-                      <Input
-                        value={website}
-                        onChange={(e) => setWebsite(e.target.value)}
-                        placeholder="https://yourwebsite.com"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <FiTwitter className="inline mr-2 text-blue-400" />
-                        Twitter / X
-                      </label>
-                      <div className="flex">
-                        <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                          @
-                        </span>
-                        <input
-                          value={twitterHandle}
-                          onChange={(e) => setTwitterHandle(e.target.value)}
-                          placeholder="username"
-                          className="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <FiInstagram className="inline mr-2 text-pink-500" />
-                        Instagram
-                      </label>
-                      <div className="flex">
-                        <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                          @
-                        </span>
-                        <input
-                          value={instagramHandle}
-                          onChange={(e) => setInstagramHandle(e.target.value)}
-                          placeholder="username"
-                          className="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <FiYoutube className="inline mr-2 text-red-500" />
-                        YouTube Channel
-                      </label>
-                      <Input
-                        value={youtubeChannel}
-                        onChange={(e) => setYoutubeChannel(e.target.value)}
-                        placeholder="https://youtube.com/@channel"
-                      />
-                    </div>
-                  </Grid>
-                </div>
-
-                <div>
-                  <Button type="submit" variant="primary" isLoading={isSaving}>
-                    Update Profile
-                  </Button>
-                </div>
-              </Stack>
-            </form>
-          </Card>
-        </Stack>
-      )}
-
-      {/* Settings Modal */}
-      {selectedProduct && (
-        <SupplementSettingsModal
-          isOpen={settingsModalOpen}
-          onClose={() => {
-            setSettingsModalOpen(false);
-            setSelectedProduct(null);
-          }}
-          productId={selectedProduct.id}
-          productName={selectedProduct.name}
-          existingSettings={getSettings(selectedProduct.id)}
-          onSave={handleSaveSettings}
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={!!deleteConfirm}
+          onClose={() => setDeleteConfirm(null)}
+          onConfirm={handleDeleteStack}
+          title="Delete Stack"
+          description={`Are you sure you want to delete "${deleteConfirm?.stackName}"? This cannot be undone.`}
+          confirmText="Delete"
+          danger
+          isLoading={isDeleting}
         />
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={!!deleteConfirm}
-        onClose={() => setDeleteConfirm(null)}
-        onConfirm={handleDeleteStack}
-        title="Delete Stack"
-        description={`Are you sure you want to delete "${deleteConfirm?.stackName}"? This action cannot be undone.`}
-        confirmText="Delete"
-        danger
-        isLoading={isDeleting}
-      />
+      </div>
     </main>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useSupplements } from '@/hooks';
-import { SkeletonGrid, SkeletonCard, Stack, Inline, Grid, Card } from '@/components/ui';
+import { SkeletonGrid, SkeletonCard, Stack, Inline, Grid } from '@/components/ui';
 import { SearchBar } from '@/components/composite/Search';
 import { CategoryFilter, SortFilter } from '@/components/composite/Filter';
 import { SupplementGrid, FeaturedCategories } from '@/components/composite/Supplement';
@@ -20,75 +20,61 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-16 lg:py-24">
+      <div className="border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 py-16 lg:py-24">
           <Stack gap={8} align="center">
-            <div className="text-center">
-              <h1 className="text-4xl lg:text-6xl xl:text-7xl font-bold mb-6 text-gray-900 leading-tight">
-                <span className="inline-block animate-slide-up">Find Your</span>
+            <div className="text-center max-w-3xl">
+              <h1 className="text-4xl lg:text-6xl font-serif text-gray-900 mb-6 tracking-tight">
+                The Supplement
                 <br />
-                <span
-                  className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500 animate-slide-up"
-                  style={{ animationDelay: '0.2s' }}
-                >
-                  Perfect Supplements
-                </span>
+                <span className="italic">Discovery Platform</span>
               </h1>
-              <p
-                className="text-xl lg:text-2xl max-w-3xl mx-auto text-gray-600 leading-relaxed animate-fade-in"
-                style={{ animationDelay: '0.4s' }}
-              >
-                Discover science-backed supplements recommended by health professionals and trusted
-                by thousands.
+              <p className="text-lg lg:text-xl text-gray-600 leading-relaxed">
+                Research supplements, explore expert-curated stacks, and build your personalized
+                collection. Evidence-based insights for your wellness journey.
               </p>
             </div>
 
-            <div
-              className="w-full max-w-2xl animate-scale-in"
-              style={{ animationDelay: '0.6s' }}
-            >
+            <div className="w-full max-w-xl">
               <SearchBar value={searchTerm} onChange={setSearchTerm} />
             </div>
 
             {/* Stats */}
-            <Grid
-              cols={{ sm: 3 }}
-              gap={8}
-              className="max-w-lg w-full animate-fade-in"
-              style={{ animationDelay: '0.8s' }}
-            >
-              <div className="text-center">
-                <div className="text-3xl font-bold text-gray-900">{supplements.length}+</div>
-                <div className="text-sm text-gray-500">Supplements</div>
+            <div className="flex items-center gap-12 text-center pt-4">
+              <div>
+                <p className="text-2xl font-serif text-gray-900">{supplements.length}+</p>
+                <p className="text-sm text-gray-500">Supplements</p>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-orange-500">25K+</div>
-                <div className="text-sm text-gray-500">Users</div>
+              <div className="w-px h-8 bg-gray-200" />
+              <div>
+                <p className="text-2xl font-serif text-gray-900">500+</p>
+                <p className="text-sm text-gray-500">Stacks</p>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-yellow-500">4.9</div>
-                <div className="text-sm text-gray-500">Rating</div>
+              <div className="w-px h-8 bg-gray-200" />
+              <div>
+                <p className="text-2xl font-serif text-gray-900">25K+</p>
+                <p className="text-sm text-gray-500">Users</p>
               </div>
-            </Grid>
+            </div>
           </Stack>
         </div>
       </div>
 
       {/* Navigation & Filters */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-40 backdrop-blur-xl bg-white/95">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="border-b border-gray-100 sticky top-[65px] z-40 bg-white">
+        <div className="max-w-6xl mx-auto px-4 py-3">
           <Inline justify="between" align="center" wrap gap={4}>
             <CategoryFilter
               supplements={supplements}
               value={selectedCategory}
               onChange={setSelectedCategory}
             />
-            <Inline gap={6} align="center">
+            <Inline gap={4} align="center">
               <SortFilter value={sortBy} onChange={setSortBy} />
-              <span className="text-sm text-gray-500 font-medium bg-gray-100 px-3 py-1.5 rounded-full">
-                {filteredSupplements.length} supplements
+              <span className="text-sm text-gray-500">
+                {filteredSupplements.length} results
               </span>
             </Inline>
           </Inline>
@@ -96,38 +82,62 @@ export default function Home() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 py-12">
         {isLoading ? (
           <SkeletonGrid count={12} CardComponent={SkeletonCard} />
         ) : (
           <Stack gap={16}>
             {/* Featured Stacks */}
-            <FeaturedStacks />
+            <section>
+              <div className="section-header">
+                <h2>Featured Stacks</h2>
+              </div>
+              <FeaturedStacks />
+            </section>
 
             {/* Featured Categories */}
-            <FeaturedCategories supplements={supplements} />
+            <section>
+              <div className="section-header">
+                <h2>Browse by Category</h2>
+              </div>
+              <FeaturedCategories supplements={supplements} />
+            </section>
 
             {/* Product Grid */}
             <section>
-              <Stack gap={12}>
-                <div className="text-center">
-                  <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-                    Premium{' '}
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
-                      Supplements
-                    </span>
-                  </h2>
-                  <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Discover high-quality supplements trusted by health professionals and backed by
-                    science
-                  </p>
-                </div>
-                <SupplementGrid supplements={filteredSupplements} />
-              </Stack>
+              <div className="section-header">
+                <h2>All Supplements</h2>
+              </div>
+              <SupplementGrid supplements={filteredSupplements} />
             </section>
           </Stack>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 mt-16">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <p className="text-xl font-serif text-gray-900">SuppStack</p>
+              <p className="text-sm text-gray-500 mt-1">
+                The supplement discovery platform
+              </p>
+            </div>
+            <div className="flex gap-8 text-sm text-gray-500">
+              <a href="/terms" className="hover:text-gray-900 transition-colors">
+                Terms
+              </a>
+              <a href="/privacy" className="hover:text-gray-900 transition-colors">
+                Privacy
+              </a>
+              <a href="/contact" className="hover:text-gray-900 transition-colors">
+                Contact
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

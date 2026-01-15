@@ -24,33 +24,24 @@ export interface StatCardProps extends HTMLAttributes<HTMLDivElement> {
 
 const iconBgStyles: Record<StatCardVariant, string> = {
   default: 'bg-gray-100',
-  orange: 'bg-orange-100',
-  green: 'bg-green-100',
-  blue: 'bg-blue-100',
-  purple: 'bg-purple-100',
-  pink: 'bg-pink-100',
+  orange: 'bg-gray-100',
+  green: 'bg-gray-100',
+  blue: 'bg-gray-100',
+  purple: 'bg-gray-100',
+  pink: 'bg-gray-100',
 };
 
 const iconTextStyles: Record<StatCardVariant, string> = {
   default: 'text-gray-600',
-  orange: 'text-orange-600',
-  green: 'text-green-600',
-  blue: 'text-blue-600',
-  purple: 'text-purple-600',
-  pink: 'text-pink-600',
+  orange: 'text-gray-600',
+  green: 'text-gray-600',
+  blue: 'text-gray-600',
+  purple: 'text-gray-600',
+  pink: 'text-gray-600',
 };
 
 /**
  * StatCard component for displaying key metrics
- *
- * @example
- * <StatCard
- *   icon={<FiTrendingUp />}
- *   label="Total Views"
- *   value={1234}
- *   variant="blue"
- *   trend={{ value: 12, label: "vs last week" }}
- * />
  */
 export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
   (
@@ -71,7 +62,7 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
       <div
         ref={ref}
         className={cn(
-          'bg-white rounded-2xl border border-gray-200 p-4',
+          'bg-white rounded-lg border border-gray-100 p-4',
           className
         )}
         {...props}
@@ -80,7 +71,7 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
           {icon && (
             <div
               className={cn(
-                'p-2 rounded-lg shrink-0',
+                'p-2 rounded shrink-0',
                 iconBgStyles[variant]
               )}
             >
@@ -92,12 +83,12 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
           <div className="min-w-0 flex-1">
             <p className="text-sm text-gray-500 truncate">{label}</p>
             {isLoading ? (
-              <div className="h-7 w-16 bg-gray-200 rounded animate-pulse mt-1" />
+              <div className="h-7 w-16 bg-gray-100 rounded animate-pulse mt-1" />
             ) : (
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-xl font-serif text-gray-900">
                 {typeof value === 'number' ? value.toLocaleString() : value}
                 {suffix && (
-                  <span className="text-sm font-normal text-gray-500 ml-1">
+                  <span className="text-sm font-sans font-normal text-gray-500 ml-1">
                     {suffix}
                   </span>
                 )}

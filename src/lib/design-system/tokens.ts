@@ -1,40 +1,55 @@
 /**
  * Design System Tokens
- * Single source of truth for all design values
+ * Professional editorial theme inspired by NYT and Bloomberg
  */
 
 // =============================================================================
-// COLORS
+// COLORS - Professional editorial palette
 // =============================================================================
 
 export const colors = {
-  // Brand
+  // Brand - Understated, professional
   brand: {
-    50: '#fff7ed',
-    100: '#ffedd5',
-    200: '#fed7aa',
-    300: '#fdba74',
-    400: '#fb923c',
-    500: '#f97316', // Primary orange
-    600: '#ea580c',
-    700: '#c2410c',
-    800: '#9a3412',
-    900: '#7c2d12',
+    50: '#fafafa',
+    100: '#f5f5f5',
+    200: '#e5e5e5',
+    300: '#d4d4d4',
+    400: '#a3a3a3',
+    500: '#171717', // Primary black
+    600: '#0a0a0a',
+    700: '#000000',
+    800: '#000000',
+    900: '#000000',
   },
 
-  // Neutral (Gray)
+  // Accent - Subtle warm tone for highlights
+  accent: {
+    50: '#fef7f0',
+    100: '#fdeee0',
+    200: '#fad9bd',
+    300: '#f6be8a',
+    400: '#f09955',
+    500: '#e87a2e', // Warm accent (used sparingly)
+    600: '#d45f1a',
+    700: '#b04816',
+    800: '#8d3a19',
+    900: '#723217',
+  },
+
+  // Neutral (Gray) - Editorial grays
   neutral: {
     0: '#ffffff',
-    50: '#f9fafb',
-    100: '#f3f4f6',
-    200: '#e5e7eb',
-    300: '#d1d5db',
-    400: '#9ca3af',
-    500: '#6b7280',
-    600: '#4b5563',
-    700: '#374151',
-    800: '#1f2937',
-    900: '#111827',
+    50: '#fafafa',
+    100: '#f5f5f5',
+    200: '#e5e5e5',
+    300: '#d4d4d4',
+    400: '#a3a3a3',
+    500: '#737373',
+    600: '#525252',
+    700: '#404040',
+    800: '#262626',
+    900: '#171717',
+    950: '#0a0a0a',
   },
 
   // Semantic
@@ -60,11 +75,11 @@ export const colors = {
     700: '#b91c1c',
   },
   info: {
-    50: '#eff6ff',
-    100: '#dbeafe',
-    500: '#3b82f6',
-    600: '#2563eb',
-    700: '#1d4ed8',
+    50: '#f0f9ff',
+    100: '#e0f2fe',
+    500: '#0ea5e9',
+    600: '#0284c7',
+    700: '#0369a1',
   },
 
   // Social
@@ -107,19 +122,27 @@ export const spacing = {
 } as const;
 
 // =============================================================================
-// TYPOGRAPHY
+// TYPOGRAPHY - Editorial style
 // =============================================================================
+
+export const fontFamily = {
+  serif: ['Georgia', 'Cambria', '"Times New Roman"', 'Times', 'serif'],
+  sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+  mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'monospace'],
+} as const;
 
 export const fontSize = {
   xs: ['0.75rem', { lineHeight: '1rem' }],      // 12px
   sm: ['0.875rem', { lineHeight: '1.25rem' }],  // 14px
-  base: ['1rem', { lineHeight: '1.5rem' }],     // 16px
+  base: ['1rem', { lineHeight: '1.625rem' }],   // 16px - slightly more line-height for readability
   lg: ['1.125rem', { lineHeight: '1.75rem' }],  // 18px
   xl: ['1.25rem', { lineHeight: '1.75rem' }],   // 20px
   '2xl': ['1.5rem', { lineHeight: '2rem' }],    // 24px
   '3xl': ['1.875rem', { lineHeight: '2.25rem' }], // 30px
   '4xl': ['2.25rem', { lineHeight: '2.5rem' }], // 36px
-  '5xl': ['3rem', { lineHeight: '1' }],         // 48px
+  '5xl': ['3rem', { lineHeight: '1.1' }],       // 48px
+  '6xl': ['3.75rem', { lineHeight: '1.1' }],    // 60px
+  '7xl': ['4.5rem', { lineHeight: '1' }],       // 72px
 } as const;
 
 export const fontWeight = {
@@ -135,12 +158,12 @@ export const fontWeight = {
 
 export const borderRadius = {
   none: '0',
-  sm: '0.25rem',   // 4px
-  md: '0.375rem',  // 6px
-  lg: '0.5rem',    // 8px
-  xl: '0.75rem',   // 12px
-  '2xl': '1rem',   // 16px
-  '3xl': '1.5rem', // 24px
+  sm: '0.125rem',  // 2px - very subtle
+  md: '0.25rem',   // 4px
+  lg: '0.375rem',  // 6px
+  xl: '0.5rem',    // 8px
+  '2xl': '0.75rem', // 12px
+  '3xl': '1rem',   // 16px
   full: '9999px',
 } as const;
 
@@ -152,17 +175,17 @@ export const borderWidth = {
 } as const;
 
 // =============================================================================
-// SHADOWS
+// SHADOWS - Subtle, professional
 // =============================================================================
 
 export const shadows = {
   none: 'none',
-  sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-  md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-  lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-  xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
-  '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
-  inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
+  sm: '0 1px 2px 0 rgb(0 0 0 / 0.03)',
+  md: '0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05)',
+  lg: '0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
+  xl: '0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05)',
+  '2xl': '0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.05)',
+  inner: 'inset 0 1px 2px 0 rgb(0 0 0 / 0.03)',
 } as const;
 
 // =============================================================================
@@ -211,7 +234,7 @@ export const transitions = {
 export const components = {
   // Card variants
   card: {
-    borderRadius: borderRadius['2xl'],
+    borderRadius: borderRadius.lg,
     padding: {
       sm: spacing[4],
       md: spacing[6],
@@ -219,8 +242,8 @@ export const components = {
     },
     shadow: {
       default: shadows.none,
-      elevated: shadows.md,
-      hover: shadows.lg,
+      elevated: shadows.sm,
+      hover: shadows.md,
     },
   },
 
@@ -229,7 +252,7 @@ export const components = {
     height: {
       sm: '2rem',      // 32px
       md: '2.5rem',    // 40px
-      lg: '3rem',      // 48px
+      lg: '2.75rem',   // 44px
     },
     padding: {
       sm: `0 ${spacing[3]}`,
@@ -241,7 +264,7 @@ export const components = {
       md: '0.875rem',
       lg: '1rem',
     },
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.md,
   },
 
   // Input sizes
@@ -249,9 +272,9 @@ export const components = {
     height: {
       sm: '2rem',
       md: '2.5rem',
-      lg: '3rem',
+      lg: '2.75rem',
     },
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.md,
   },
 
   // Avatar sizes
@@ -275,7 +298,7 @@ export const components = {
       sm: '0.625rem', // 10px
       md: '0.75rem',  // 12px
     },
-    borderRadius: borderRadius.full,
+    borderRadius: borderRadius.sm,
   },
 
   // Modal
@@ -287,13 +310,13 @@ export const components = {
       xl: '36rem',   // 576px
       full: '100%',
     },
-    borderRadius: borderRadius['2xl'],
+    borderRadius: borderRadius.lg,
   },
 
   // Toast
   toast: {
     width: '22rem', // 352px
-    borderRadius: borderRadius.xl,
+    borderRadius: borderRadius.md,
   },
 } as const;
 
@@ -303,8 +326,8 @@ export const components = {
 
 export const tw = {
   // Commonly used class combinations
-  focusRing: 'focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2',
-  focusRingInset: 'focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-inset',
+  focusRing: 'focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2',
+  focusRingInset: 'focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-inset',
   transition: 'transition-all duration-200 ease-in-out',
   transitionFast: 'transition-all duration-150 ease-in-out',
   truncate: 'overflow-hidden text-ellipsis whitespace-nowrap',
