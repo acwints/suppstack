@@ -7,8 +7,8 @@ import { Providers } from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SuppStack",
-  description: "Your supplement tracking app",
+  title: "SuppStack - Supplement Discovery Platform",
+  description: "Research supplements, explore expert-curated stacks, and build your personalized collection.",
 };
 
 export default function RootLayout({
