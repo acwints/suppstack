@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { FaStar } from 'react-icons/fa';
 import type { Supplement } from '@/types';
 import { Badge } from '@/components/ui';
@@ -17,13 +18,23 @@ export function SupplementCard({ supplement, index = 0 }: SupplementCardProps) {
         className="modern-card group animate-fade-in airbnb-hover"
         style={{ animationDelay: `${index * 0.1}s` }}
       >
-        {/* Image placeholder with gradient */}
+        {/* Supplement Image */}
         <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden rounded-t-xl border-b border-gray-200">
-          <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-all duration-300">
-            <span className="text-2xl font-bold text-white">
-              {supplement.supplement_name.charAt(0)}
-            </span>
-          </div>
+          {supplement.image_url ? (
+            <Image
+              src={supplement.image_url}
+              alt={supplement.supplement_name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-all duration-300">
+              <span className="text-2xl font-bold text-white">
+                {supplement.supplement_name.charAt(0)}
+              </span>
+            </div>
+          )}
           <div className="absolute top-4 right-4">
             <Badge variant="primary">Verified</Badge>
           </div>

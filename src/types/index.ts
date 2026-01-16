@@ -13,6 +13,8 @@ export interface Supplement {
   supplement_id: number;
   supplement_name: string;
   supplement_description: string;
+  image_url?: string;
+  category?: string;
 }
 
 export interface Product {

@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS supplements (
   supplement_id SERIAL PRIMARY KEY,
   supplement_name VARCHAR(255) NOT NULL UNIQUE,
   supplement_description TEXT,
+  image_url VARCHAR(500),
+  category VARCHAR(100),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

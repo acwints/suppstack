@@ -51,7 +51,7 @@ const tabItems: { id: TabType; label: string; icon?: React.ReactNode }[] = [
 ];
 
 export default function Profile() {
-  const { user, logout } = useAuth() || {};
+  const { user, logout, loading: authLoading } = useAuth() || {};
   const router = useRouter();
   const toast = useToast();
 
@@ -181,6 +181,9 @@ export default function Profile() {
   }, [user]);
 
   useEffect(() => {
+    // Wait for auth to finish loading before checking user
+    if (authLoading) return;
+
     if (!user) {
       router.push('/login');
       return;
@@ -188,7 +191,7 @@ export default function Profile() {
 
     setIsLoading(true);
     Promise.all([fetchRegimen(), fetchUserProfile()]).finally(() => setIsLoading(false));
-  }, [user, router, fetchRegimen, fetchUserProfile]);
+  }, [user, authLoading, router, fetchRegimen, fetchUserProfile]);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -265,7 +268,13 @@ export default function Profile() {
     });
   };
 
-  if (!user) return null;
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
