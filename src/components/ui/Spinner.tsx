@@ -1,5 +1,7 @@
 'use client';
 
+import { cn } from '@/lib/design-system/utils';
+
 export interface SpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   color?: 'primary' | 'secondary' | 'white' | 'gray';
@@ -26,12 +28,12 @@ export function Spinner({
 }: SpinnerProps) {
   return (
     <div
-      className={`
-        ${sizeClasses[size]}
-        ${colorClasses[color]}
-        rounded-full animate-spin
-        ${className}
-      `}
+      className={cn(
+        sizeClasses[size],
+        colorClasses[color],
+        'rounded-full animate-spin',
+        className,
+      )}
       role="status"
       aria-label="Loading"
     />

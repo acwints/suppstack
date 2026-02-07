@@ -2,6 +2,7 @@
 
 import { forwardRef } from 'react';
 import type { InputSize } from '@/types';
+import { cn } from '@/lib/design-system/utils';
 
 export interface SelectOption {
   value: string;
@@ -44,7 +45,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     const selectId = id || `select-${Math.random().toString(36).slice(2, 9)}`;
 
     return (
-      <div className={`${fullWidth ? 'w-full' : ''}`}>
+      <div className={cn(fullWidth && 'w-full')}>
         {label && (
           <label
             htmlFor={selectId}
@@ -56,14 +57,16 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           id={selectId}
-          className={`
-            ${fullWidth ? 'w-full' : ''}
-            ${sizeClasses[selectSize]}
-            ${error ? 'border-red-500 focus:ring-red-200 focus:border-red-500' : 'border-gray-300 focus:ring-gray-200 focus:border-gray-400'}
-            bg-white border rounded-lg text-gray-900
-            focus:ring-2 focus:outline-none transition-all duration-300
-            ${className}
-          `}
+          className={cn(
+            fullWidth && 'w-full',
+            sizeClasses[selectSize],
+            error
+              ? 'border-red-500 focus:ring-red-200 focus:border-red-500'
+              : 'border-gray-300 focus:ring-gray-200 focus:border-gray-400',
+            'bg-white border rounded-lg text-gray-900',
+            'focus:ring-2 focus:outline-none transition-all duration-300',
+            className,
+          )}
           {...props}
         >
           {placeholder && (
