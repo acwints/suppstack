@@ -3,6 +3,7 @@
 import { useEffect, useCallback } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import Button from './Button';
+import { cn } from '@/lib/design-system/utils';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -71,11 +72,12 @@ export function Modal({
 
       {/* Modal */}
       <div
-        className={`
-          relative w-full ${sizeClasses[size]} mx-4
-          bg-white rounded-2xl shadow-xl
-          animate-scale-in
-        `}
+        className={cn(
+          'relative w-full mx-4',
+          sizeClasses[size],
+          'bg-white rounded-2xl shadow-xl',
+          'animate-scale-in',
+        )}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/app/supabase';
-import type { Supplement, SupplementCategory, SUPPLEMENT_CATEGORIES } from '@/types';
+import type { Supplement } from '@/types';
+import { SUPPLEMENT_CATEGORIES } from '@/types';
 
 export interface UseSupplementsOptions {
   searchTerm?: string;
@@ -71,18 +72,7 @@ export function useSupplements({
 
   // Calculate categories with counts
   const categories = useMemo((): CategoryWithCount[] => {
-    const categoryDefs: SupplementCategory[] = [
-      { id: 'all', name: 'All Supplements', icon: '🌟', keywords: [] },
-      { id: 'vitamins', name: 'Vitamins', icon: '💊', keywords: ['vitamin'] },
-      { id: 'minerals', name: 'Minerals', icon: '⚡', keywords: ['magnesium', 'zinc', 'calcium', 'iron', 'potassium'] },
-      { id: 'protein', name: 'Protein', icon: '💪', keywords: ['protein', 'whey', 'casein', 'collagen'] },
-      { id: 'herbs', name: 'Herbs', icon: '🌿', keywords: ['ashwagandha', 'turmeric', 'ginseng', 'rhodiola'] },
-      { id: 'omega', name: 'Omega & Fish Oil', icon: '🐟', keywords: ['omega', 'fish oil', 'krill'] },
-      { id: 'probiotics', name: 'Probiotics', icon: '🦠', keywords: ['probiotic', 'prebiotic', 'gut'] },
-      { id: 'performance', name: 'Performance', icon: '🏃', keywords: ['creatine', 'pre-workout', 'bcaa', 'beta-alanine'] },
-    ];
-
-    return categoryDefs.map(cat => ({
+    return SUPPLEMENT_CATEGORIES.map(cat => ({
       id: cat.id,
       name: cat.name,
       icon: cat.icon,
@@ -109,18 +99,9 @@ export function useSupplements({
 
     // Apply category filter
     if (categoryId && categoryId !== 'all') {
-      const category = categories.find(c => c.id === categoryId);
-      const categoryDef = [
-        { id: 'vitamins', keywords: ['vitamin'] },
-        { id: 'minerals', keywords: ['magnesium', 'zinc', 'calcium', 'iron', 'potassium'] },
-        { id: 'protein', keywords: ['protein', 'whey', 'casein', 'collagen'] },
-        { id: 'herbs', keywords: ['ashwagandha', 'turmeric', 'ginseng', 'rhodiola'] },
-        { id: 'omega', keywords: ['omega', 'fish oil', 'krill'] },
-        { id: 'probiotics', keywords: ['probiotic', 'prebiotic', 'gut'] },
-        { id: 'performance', keywords: ['creatine', 'pre-workout', 'bcaa', 'beta-alanine'] },
-      ].find(c => c.id === categoryId);
+      const categoryDef = SUPPLEMENT_CATEGORIES.find(c => c.id === categoryId);
 
-      if (categoryDef) {
+      if (categoryDef && categoryDef.keywords.length > 0) {
         result = result.filter(s =>
           categoryDef.keywords.some(k => s.supplement_name.toLowerCase().includes(k))
         );
@@ -130,8 +111,7 @@ export function useSupplements({
     // Apply sorting
     switch (sortBy) {
       case 'popular':
-        // Shuffle for "popular" - in real app would be based on usage count
-        result = result.sort(() => Math.random() - 0.5);
+        // Preserve DB insertion order as default when no popularity metrics are available
         break;
       case 'name':
       default:
@@ -139,7 +119,7 @@ export function useSupplements({
     }
 
     return result;
-  }, [supplements, searchTerm, categoryId, sortBy, categories]);
+  }, [supplements, searchTerm, categoryId, sortBy]);
 
   return {
     supplements,

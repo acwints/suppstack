@@ -2,6 +2,7 @@
 
 import { forwardRef } from 'react';
 import type { InputVariant, InputSize } from '@/types';
+import { cn } from '@/lib/design-system/utils';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   variant?: InputVariant;
@@ -45,7 +46,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputId = id || `input-${Math.random().toString(36).slice(2, 9)}`;
 
     return (
-      <div className={`${fullWidth ? 'w-full' : ''}`}>
+      <div className={cn(fullWidth && 'w-full')}>
         {label && (
           <label
             htmlFor={inputId}
@@ -63,17 +64,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             id={inputId}
-            className={`
-              ${fullWidth ? 'w-full' : ''}
-              ${variantClasses[variant]}
-              ${sizeClasses[inputSize]}
-              ${leftIcon ? 'pl-12' : ''}
-              ${rightIcon ? 'pr-12' : ''}
-              ${error ? 'border-red-500 focus:ring-red-200 focus:border-red-500' : ''}
-              bg-white text-gray-900 placeholder-gray-500
-              focus:outline-none transition-all duration-300
-              ${className}
-            `}
+            className={cn(
+              fullWidth && 'w-full',
+              variantClasses[variant],
+              sizeClasses[inputSize],
+              leftIcon && 'pl-12',
+              rightIcon && 'pr-12',
+              error && 'border-red-500 focus:ring-red-200 focus:border-red-500',
+              'bg-white text-gray-900 placeholder-gray-500',
+              'focus:outline-none transition-all duration-300',
+              className,
+            )}
             {...props}
           />
           {rightIcon && (

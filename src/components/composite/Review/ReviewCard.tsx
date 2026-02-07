@@ -6,6 +6,7 @@ import { FaThumbsUp, FaThumbsDown, FaCheckCircle, FaFlag } from 'react-icons/fa'
 import type { Review } from '@/types';
 import { formatRelativeTime, getInitials } from '@/lib/utils/format';
 import { getRatingLabel } from '@/lib/utils/rating';
+import { cn } from '@/lib/design-system/utils';
 import { Rating } from '@/components/composite/Rating';
 import { Badge, Button } from '@/components/ui';
 import { USAGE_DURATION_OPTIONS } from '@/types';
@@ -161,7 +162,7 @@ export function ReviewCard({
 
       {/* Recommendation */}
       {review.would_recommend !== undefined && (
-        <p className={`text-sm font-medium mb-4 ${review.would_recommend ? 'text-green-600' : 'text-red-600'}`}>
+        <p className={cn('text-sm font-medium mb-4', review.would_recommend ? 'text-green-600' : 'text-red-600')}>
           {review.would_recommend ? '✓ Would recommend' : '✗ Would not recommend'}
         </p>
       )}

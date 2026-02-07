@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { FiCheck, FiClock, FiSun, FiSunset, FiMoon } from 'react-icons/fi';
 import { Card, Stack, Inline } from '@/components/ui';
+import { cn } from '@/lib/design-system/utils';
 import { LogButton } from './LogButton';
 import type { RegimenItem, SupplementLog, TimeOfDay } from '@/types';
 import { TIME_OF_DAY_OPTIONS } from '@/types';
@@ -45,7 +46,14 @@ export function DailyLogCard({
     regimen.length > 0 && regimen.every((item) => loggedProductIds.has(item.product_id));
   const progress = regimen.length > 0 ? (loggedProductIds.size / regimen.length) * 100 : 0;
 
-  const filteredRegimen = regimen;
+  // Filter regimen by time of day based on when supplements were logged
+  const filteredRegimen = activeTimeFilter === 'all'
+    ? regimen
+    : regimen.filter((item) => {
+        const log = todayLogs.find((l) => l.product_id === item.product_id);
+        // Show items logged at the selected time, plus unlogged items
+        return !log || log.time_of_day === activeTimeFilter;
+      });
 
   const getLogForProduct = (productId: string): SupplementLog | undefined => {
     return todayLogs.find((log) => log.product_id === productId);
@@ -106,9 +114,10 @@ export function DailyLogCard({
             </Inline>
             <div className="h-2.5 sm:h-2 bg-gray-100 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  logsComplete ? 'bg-green-500' : 'bg-orange-500'
-                }`}
+                className={cn(
+                  'h-full rounded-full transition-all duration-500',
+                  logsComplete ? 'bg-green-500' : 'bg-orange-500',
+                )}
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -119,11 +128,12 @@ export function DailyLogCard({
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
               <button
                 onClick={() => setActiveTimeFilter('all')}
-                className={`px-3 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap snap-start shrink-0 ${
+                className={cn(
+                  'px-3 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap snap-start shrink-0',
                   activeTimeFilter === 'all'
                     ? 'bg-gray-900 text-white'
-                    : 'bg-gray-100 text-gray-600 active:bg-gray-200'
-                }`}
+                    : 'bg-gray-100 text-gray-600 active:bg-gray-200',
+                )}
               >
                 All
               </button>
@@ -131,11 +141,12 @@ export function DailyLogCard({
                 <button
                   key={option.value}
                   onClick={() => setActiveTimeFilter(option.value)}
-                  className={`px-3 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap snap-start shrink-0 ${
+                  className={cn(
+                    'px-3 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap snap-start shrink-0',
                     activeTimeFilter === option.value
                       ? 'bg-gray-900 text-white'
-                      : 'bg-gray-100 text-gray-600 active:bg-gray-200'
-                  }`}
+                      : 'bg-gray-100 text-gray-600 active:bg-gray-200',
+                  )}
                 >
                   {timeOfDayIcons[option.value]}
                   <span className="hidden xs:inline">{option.label}</span>
@@ -155,23 +166,26 @@ export function DailyLogCard({
           return (
             <div
               key={item.product_id}
-              className={`p-4 flex items-center gap-3 sm:gap-4 transition-colors active:bg-gray-50 ${
-                isLogged ? 'bg-green-50/50' : ''
-              }`}
+              className={cn(
+                'p-4 flex items-center gap-3 sm:gap-4 transition-colors active:bg-gray-50',
+                isLogged && 'bg-green-50/50',
+              )}
             >
               {/* Product Info */}
               <div className="flex-1 min-w-0">
                 <h4
-                  className={`font-medium text-sm sm:text-base truncate ${
-                    isLogged ? 'text-green-800' : 'text-gray-900'
-                  }`}
+                  className={cn(
+                    'font-medium text-sm sm:text-base truncate',
+                    isLogged ? 'text-green-800' : 'text-gray-900',
+                  )}
                 >
                   {item.products.product_name}
                 </h4>
                 <p
-                  className={`text-xs sm:text-sm truncate ${
-                    isLogged ? 'text-green-600' : 'text-gray-500'
-                  }`}
+                  className={cn(
+                    'text-xs sm:text-sm truncate',
+                    isLogged ? 'text-green-600' : 'text-gray-500',
+                  )}
                 >
                   {item.products.supplements.supplement_name}
                 </p>
