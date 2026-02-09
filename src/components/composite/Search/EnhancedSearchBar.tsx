@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { supabase } from '@/app/supabase';
 import { useDebounce } from '@/hooks';
 import { cn } from '@/lib/design-system/utils';
-import type { Supplement, Product } from '@/types';
 
 export interface EnhancedSearchBarProps {
   value: string;
@@ -112,7 +111,7 @@ export function EnhancedSearchBar({
         if (cancelled) return;
 
         const supplementSuggestions: SearchSuggestion[] = (supplementsResult.data || []).map(
-          (s: Supplement) => ({
+          (s) => ({
             type: 'supplement' as const,
             id: s.supplement_id,
             name: s.supplement_name,
