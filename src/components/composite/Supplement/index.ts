@@ -6,3 +6,6 @@ export type { SupplementGridProps } from './SupplementGrid';
 
 export { FeaturedCategories } from './FeaturedCategories';
 export type { FeaturedCategoriesProps } from './FeaturedCategories';
+
+export { CompareProducts } from './CompareProducts';
+export type { CompareProductsProps } from './CompareProducts';

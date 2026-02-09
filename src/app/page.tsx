@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSupplements } from '@/hooks';
 import { SkeletonGrid, SkeletonCard, Stack, Inline, Grid } from '@/components/ui';
-import { SearchBar } from '@/components/composite/Search';
+import { EnhancedSearchBar } from '@/components/composite/Search';
 import { CategoryFilter, SortFilter } from '@/components/composite/Filter';
 import { SupplementGrid, FeaturedCategories } from '@/components/composite/Supplement';
 import FeaturedStacks from './components/FeaturedStacks';
@@ -38,7 +38,7 @@ export default function Home() {
             </div>
 
             <div className="w-full max-w-xl">
-              <SearchBar value={searchTerm} onChange={setSearchTerm} />
+              <EnhancedSearchBar value={searchTerm} onChange={setSearchTerm} />
             </div>
 
             {/* Stats */}
