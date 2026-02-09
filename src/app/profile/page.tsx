@@ -39,12 +39,19 @@ import {
   useToast,
   ConfirmDialog,
 } from '@/components/ui';
-import { SupplementSettingsModal } from '@/components/composite/Tracking';
+import {
+  SupplementSettingsModal,
+  WellnessTrends,
+  EfficacyInsights,
+  RestockReminders,
+} from '@/components/composite/Tracking';
+import { FiActivity } from 'react-icons/fi';
 
-type TabType = 'collection' | 'journal' | 'stacks' | 'profile';
+type TabType = 'collection' | 'insights' | 'journal' | 'stacks' | 'profile';
 
 const tabItems: { id: TabType; label: string; icon?: React.ReactNode }[] = [
   { id: 'collection', label: 'My Collection', icon: <FiPackage size={16} /> },
+  { id: 'insights', label: 'Insights', icon: <FiActivity size={16} /> },
   { id: 'journal', label: 'Journal', icon: <FiBookOpen size={16} /> },
   { id: 'stacks', label: 'My Stacks', icon: <FiLayers size={16} /> },
   { id: 'profile', label: 'Profile', icon: <FiUser size={16} /> },
@@ -423,6 +430,25 @@ export default function Profile() {
                 </div>
               </div>
             )}
+          </section>
+        )}
+
+        {activeTab === 'insights' && (
+          <section>
+            <div className="mb-8">
+              <h2 className="text-2xl font-serif text-gray-900">Insights & Analytics</h2>
+              <p className="text-gray-500 mt-1">
+                Track your wellness trends and understand how supplements affect you
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <WellnessTrends />
+              <div className="space-y-6">
+                <EfficacyInsights />
+                <RestockReminders />
+              </div>
+            </div>
           </section>
         )}
 

@@ -27,7 +27,7 @@ import {
   Inline,
   useToast,
 } from '@/components/ui';
-import { StackCard } from '@/components/composite/Stack';
+import { StackCard, BuyStackPanel } from '@/components/composite/Stack';
 import type { Stack as StackType } from '@/types';
 
 const sourceIcons: Record<string, JSX.Element> = {
@@ -367,6 +367,14 @@ export default function StackDetailPage() {
 
         {/* Sidebar */}
         <Stack gap={6}>
+          {/* Buy Stack Panel */}
+          {stack.supplements && stack.supplements.length > 0 && (
+            <BuyStackPanel
+              stackId={stackId}
+              supplements={stack.supplements}
+            />
+          )}
+
           {/* Creator Profile */}
           {stack.profile && (
             <Card padding="md">

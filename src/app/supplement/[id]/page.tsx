@@ -1,24 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { FiArrowLeft } from 'react-icons/fi';
 import { supabase } from '../../supabase';
 import ProductCard from '../../components/ProductCard';
-import type { Supplement, Product } from '@/types';
+import type { Supplement, Product, ProductFilters, ProductSortBy } from '@/types';
 import { Spinner, Button, EmptyState, Stack, Inline, Grid } from '@/components/ui';
+import { ProductFilterPanel } from '@/components/composite/Filter';
+import { CompareProducts } from '@/components/composite/Supplement';
 
 export default function SupplementPage({ params }: { params: { id: string } }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [supplement, setSupplement] = useState<Supplement | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [filters, setFilters] = useState<ProductFilters>({});
+  const [sortBy, setSortBy] = useState<ProductSortBy>('name');
   const productsPerPage = 15;
+
+  const supplementId = parseInt(params.id);
 
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
-      const supplementId = parseInt(params.id);
 
       const [supplementResult, productsResult] = await Promise.all([
         supabase.from('supplements').select('*').eq('supplement_id', supplementId).single(),
@@ -45,14 +50,57 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
     }
 
     fetchData();
-  }, [params.id]);
+  }, [supplementId]);
 
-  const displayedProducts = products.slice(0, currentPage * productsPerPage);
-  const hasMore = products.length > displayedProducts.length;
+  // Apply client-side filtering and sorting
+  const filteredProducts = useMemo(() => {
+    let result = [...products];
+
+    if (filters.brandId) {
+      result = result.filter(p => p.brand_id === filters.brandId);
+    }
+    if (filters.minPrice !== undefined) {
+      result = result.filter(p => p.product_price >= filters.minPrice!);
+    }
+    if (filters.maxPrice !== undefined) {
+      result = result.filter(p => p.product_price <= filters.maxPrice!);
+    }
+    if (filters.searchTerm) {
+      const term = filters.searchTerm.toLowerCase();
+      result = result.filter(
+        p =>
+          p.product_name.toLowerCase().includes(term) ||
+          p.product_description?.toLowerCase().includes(term)
+      );
+    }
+
+    // Sort
+    switch (sortBy) {
+      case 'price_asc':
+        result.sort((a, b) => a.product_price - b.product_price);
+        break;
+      case 'price_desc':
+        result.sort((a, b) => b.product_price - a.product_price);
+        break;
+      case 'name':
+      default:
+        result.sort((a, b) => a.product_name.localeCompare(b.product_name));
+    }
+
+    return result;
+  }, [products, filters, sortBy]);
+
+  const displayedProducts = filteredProducts.slice(0, currentPage * productsPerPage);
+  const hasMore = filteredProducts.length > displayedProducts.length;
 
   const loadMoreProducts = () => {
     setCurrentPage((prevPage) => prevPage + 1);
   };
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, sortBy]);
 
   if (isLoading) {
     return (
@@ -101,19 +149,41 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
 
       {/* Products Section */}
       <Stack gap={6}>
-        <Inline justify="between" align="center">
-          <h2 className="text-2xl font-semibold text-gray-900">Available Products</h2>
-          <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">
-            {products.length} products
-          </span>
-        </Inline>
+        <h2 className="text-2xl font-semibold text-gray-900">Available Products</h2>
 
-        {products.length === 0 ? (
+        {/* Filter Panel */}
+        <ProductFilterPanel
+          supplementId={supplementId}
+          filters={filters}
+          sortBy={sortBy}
+          onFiltersChange={setFilters}
+          onSortChange={setSortBy}
+          totalResults={filteredProducts.length}
+        />
+
+        {filteredProducts.length === 0 ? (
           <EmptyState
             icon="📦"
-            title="No products found"
-            description="We don't have any products for this supplement yet."
+            title={products.length === 0 ? "No products found" : "No products match your filters"}
+            description={
+              products.length === 0
+                ? "We don't have any products for this supplement yet."
+                : "Try adjusting your filters to see more results."
+            }
             variant="card"
+            action={
+              products.length > 0 ? (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setFilters({});
+                    setSortBy('name');
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              ) : undefined
+            }
           />
         ) : (
           <>
@@ -126,11 +196,16 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
             {hasMore && (
               <div className="text-center pt-6">
                 <Button variant="outline" onClick={loadMoreProducts}>
-                  Load More Products
+                  Load More Products ({filteredProducts.length - displayedProducts.length} remaining)
                 </Button>
               </div>
             )}
           </>
+        )}
+
+        {/* Compare Products */}
+        {products.length >= 2 && (
+          <CompareProducts supplementId={supplementId} />
         )}
       </Stack>
     </main>
