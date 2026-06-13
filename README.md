@@ -45,6 +45,20 @@ SuppStack is a supplement tracking application that allows users to monitor thei
 - Discover popular supplements
 - Analyze your supplement data
 - User authentication with Google
+- Browse a catalog-backed supplement database when Supabase data is sparse
+- Compare products by serving cost, monthly cost, dosage context, and merchant channel
+- Prefer Shopify-ready checkout paths with official-store and Amazon fallbacks
+
+## Commerce Architecture
+
+SuppStack keeps supplement discovery, product comparison, and purchasing as separate layers:
+
+- `src/lib/catalog/supplement-catalog.ts` provides the universal supplement database and generated product offers for catalog gaps.
+- `src/lib/commerce/shopify-ucp.ts` resolves the preferred purchase path for every product, prioritizing Shopify/UCP metadata before official-store or Amazon URLs.
+- `src/scripts/addShopifyUcpCommerce.sql` adds optional Shopify product, variant, store, checkout, stock, badge, and subscription fields to Supabase.
+- UI components use the same card, badge, button, and pricing language across discovery, supplement detail, product detail, and stack checkout.
+
+Shopify UCP checkout requires merchant capability discovery and authenticated/signed checkout access. Until those credentials are connected, SuppStack stores UCP-ready metadata and hands shoppers to Shopify product discovery or merchant checkout URLs.
 
 ## Getting Started
 

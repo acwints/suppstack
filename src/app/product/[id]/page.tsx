@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft, FaShoppingCart, FaCheck, FaExternalLinkAlt } from 'react-icons/fa';
+import { FiShield } from 'react-icons/fi';
 import { supabase } from '../../supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useReviews } from '@/hooks/useReviews';
@@ -25,6 +26,13 @@ import {
 import { Rating } from '@/components/composite/Rating';
 import { ReviewList } from '@/components/composite/Review/ReviewList';
 import type { ReviewSortBy } from '@/hooks/useReviews';
+import { findCatalogProductById } from '@/lib/catalog/supplement-catalog';
+import {
+  canPurchase,
+  getInventoryLabel,
+  getPreferredPurchaseUrl,
+  getPurchaseLabel,
+} from '@/lib/commerce/shopify-ucp';
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
@@ -49,7 +57,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   } = useReviews({
     productId: params.id,
     sortBy,
-    enabled: !!params.id,
+    enabled: !!params.id && !params.id.startsWith('catalog-'),
   });
 
   // Stack management
@@ -65,6 +73,14 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     async function fetchProduct() {
       setIsLoading(true);
+
+      const catalogProduct = findCatalogProductById(params.id);
+      if (catalogProduct) {
+        setProduct(catalogProduct);
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('products')
         .select('*, brands(brand_name), supplements(supplement_id, supplement_name)')
@@ -125,6 +141,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   const rating = stats?.average_rating || 0;
   const reviewCount = stats?.total_reviews || 0;
+  const isCatalogProduct = product.data_source === 'catalog_fallback' || product.product_id.startsWith('catalog-');
+  const purchaseUrl = getPreferredPurchaseUrl(product);
+  const purchaseLabel = getPurchaseLabel(product);
+  const inventoryLabel = getInventoryLabel(product);
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8">
@@ -144,7 +164,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       {/* Product Header */}
       <Grid cols={{ sm: 1, lg: 2 }} gap={12} className="mb-12">
         {/* Product Image */}
-        <Card padding="lg" className="aspect-square relative bg-gradient-to-br from-gray-50 to-gray-100">
+        <Card padding="lg" className="aspect-square relative overflow-hidden bg-gray-50">
           {product.product_image ? (
             <Image
               src={product.product_image}
@@ -154,8 +174,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <div className="w-32 h-32 bg-orange-100 rounded-full flex items-center justify-center">
-                <span className="text-4xl font-bold text-orange-600">
+              <div className="w-32 h-32 rounded-full border border-gray-200 bg-white flex items-center justify-center">
+                <span className="text-4xl font-semibold text-gray-900">
                   {product.product_name.charAt(0)}
                 </span>
               </div>
@@ -166,12 +186,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         {/* Product Info */}
         <Stack gap={6}>
           {/* Brand */}
-          <span className="text-orange-600 font-semibold">
+          <span className="text-sm font-semibold uppercase tracking-wider text-gray-500">
             {product.brands?.brand_name || 'Premium Brand'}
           </span>
 
           {/* Product Name */}
-          <h1 className="text-3xl font-bold text-gray-900">{product.product_name}</h1>
+          <h1 className="text-3xl font-serif text-gray-900">{product.product_name}</h1>
 
           {/* Rating Summary */}
           <Inline gap={3} align="center">
@@ -185,26 +205,26 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           </Inline>
 
           {/* Price */}
-          <div className="text-4xl font-bold text-gray-900">
+          <div className="text-4xl font-semibold text-gray-900">
             ${formatPrice(product.product_price)}
           </div>
 
           {/* Stats Grid */}
           <Grid cols={{ sm: 3 }} gap={4}>
             <Card padding="md" className="text-center bg-gray-50">
-              <div className="text-xl font-bold text-gray-900">
+              <div className="text-xl font-semibold text-gray-900">
                 ${formatPrice(costPerServing)}
               </div>
               <div className="text-sm text-gray-600">per serving</div>
             </Card>
             <Card padding="md" className="text-center bg-gray-50">
-              <div className="text-xl font-bold text-gray-900">
+              <div className="text-xl font-semibold text-gray-900">
                 ${formatPrice(monthlyCost)}
               </div>
               <div className="text-sm text-gray-600">per month</div>
             </Card>
             <Card padding="md" className="text-center bg-gray-50">
-              <div className="text-xl font-bold text-gray-900">
+              <div className="text-xl font-semibold text-gray-900">
                 {product.servings_per_container}
               </div>
               <div className="text-sm text-gray-600">servings</div>
@@ -217,27 +237,54 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           )}
 
           {/* Serving Info */}
-          <div className="bg-orange-50 border border-orange-100 rounded-xl p-4">
-            <div className="text-sm font-medium text-orange-800">
+          <div className="rounded border border-gray-100 bg-gray-50 p-4">
+            <div className="text-sm font-medium text-gray-800">
               Recommended: {product.servings_per_day} serving
               {product.servings_per_day !== 1 ? 's' : ''} per day
             </div>
           </div>
 
+          <div className="flex flex-wrap gap-2">
+            <Badge variant={product.ucp_enabled ? 'success' : 'primary'}>
+              {product.ucp_enabled ? 'Shopify checkout' : inventoryLabel}
+            </Badge>
+            {product.subscriptions_available && <Badge variant="secondary">Subscription available</Badge>}
+            {product.quality_badges?.slice(0, 3).map((badge) => (
+              <span key={badge} className="inline-flex items-center gap-1 rounded border border-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+                <FiShield className="h-3 w-3" />
+                {badge}
+              </span>
+            ))}
+          </div>
+
           {/* Actions */}
           <Stack gap={3}>
-            <Button
-              onClick={handleAddToStack}
-              disabled={isInStack || isUpdating}
-              variant={isInStack ? 'outline' : 'primary'}
-              fullWidth
-              size="lg"
-              leftIcon={isInStack ? <FaCheck /> : <FaShoppingCart />}
-              isLoading={isUpdating}
-              className={isInStack ? 'bg-green-50 text-green-700 border-green-200' : ''}
-            >
-              {isInStack ? 'Added to My Stack' : 'Add to My Stack'}
-            </Button>
+            <a href={purchaseUrl} target="_blank" rel="noopener noreferrer">
+              <Button
+                variant="primary"
+                fullWidth
+                size="lg"
+                disabled={!canPurchase(product)}
+                rightIcon={<FaExternalLinkAlt className="w-3 h-3" />}
+              >
+                {purchaseLabel}
+              </Button>
+            </a>
+
+            {!isCatalogProduct && (
+              <Button
+                onClick={handleAddToStack}
+                disabled={isInStack || isUpdating}
+                variant={isInStack ? 'outline' : 'secondary'}
+                fullWidth
+                size="lg"
+                leftIcon={isInStack ? <FaCheck /> : <FaShoppingCart />}
+                isLoading={isUpdating}
+                className={isInStack ? 'bg-green-50 text-green-700 border-green-200' : ''}
+              >
+                {isInStack ? 'Added to My Stack' : 'Add to My Stack'}
+              </Button>
+            )}
 
             <Inline gap={3}>
               {product.product_url && (
@@ -256,7 +303,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   </Button>
                 </a>
               )}
-              {product.amazon_url && (
+              {product.amazon_url && !product.ucp_enabled && (
                 <a
                   href={product.amazon_url}
                   target="_blank"
@@ -267,7 +314,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     variant="secondary"
                     fullWidth
                     rightIcon={<FaExternalLinkAlt className="w-3 h-3" />}
-                    className="bg-amber-400 hover:bg-amber-500 text-black"
                   >
                     Buy on Amazon
                   </Button>
@@ -286,25 +332,27 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       </Grid>
 
       {/* Reviews Section */}
-      <div className="border-t border-gray-200 pt-12">
-        <ReviewList
-          productId={params.id}
-          productName={product.product_name}
-          reviews={reviews}
-          stats={stats}
-          userReview={userReview}
-          isLoading={reviewsLoading}
-          hasMore={hasMore}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          onLoadMore={loadMore}
-          onSubmitReview={submitReview}
-          onUpdateReview={updateReview}
-          onDeleteReview={deleteReview}
-          onVoteHelpful={voteHelpful}
-          isLoggedIn={!!user}
-        />
-      </div>
+      {!isCatalogProduct && (
+        <div className="border-t border-gray-200 pt-12">
+          <ReviewList
+            productId={params.id}
+            productName={product.product_name}
+            reviews={reviews}
+            stats={stats}
+            userReview={userReview}
+            isLoading={reviewsLoading}
+            hasMore={hasMore}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            onLoadMore={loadMore}
+            onSubmitReview={submitReview}
+            onUpdateReview={updateReview}
+            onDeleteReview={deleteReview}
+            onVoteHelpful={voteHelpful}
+            isLoggedIn={!!user}
+          />
+        </div>
+      )}
     </main>
   );
 }

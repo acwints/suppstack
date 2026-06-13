@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaStar } from 'react-icons/fa';
+import { FiArrowRight, FiCheckCircle } from 'react-icons/fi';
 import type { Supplement } from '@/types';
 import { Badge } from '@/components/ui';
+import { formatPrice } from '@/lib/utils';
 
 export interface SupplementCardProps {
   supplement: Supplement;
@@ -12,52 +13,69 @@ export interface SupplementCardProps {
 }
 
 export function SupplementCard({ supplement, index = 0 }: SupplementCardProps) {
+  const evidenceLabel = supplement.evidence_rating
+    ? `${supplement.evidence_rating.charAt(0).toUpperCase()}${supplement.evidence_rating.slice(1)} evidence`
+    : 'Verified category';
+
   return (
-    <Link href={`/supplement/${supplement.supplement_id}`}>
+    <Link href={`/supplement/${supplement.supplement_id}`} className="block h-full">
       <div
-        className="modern-card group animate-fade-in airbnb-hover"
+        className="group flex h-full flex-col overflow-hidden rounded-lg border border-gray-100 bg-white transition-colors duration-150 hover:border-gray-300 animate-fade-in"
         style={{ animationDelay: `${index * 0.1}s` }}
       >
-        {/* Supplement Image */}
-        <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden rounded-t-xl border-b border-gray-200">
+        <div className="relative flex h-44 items-center justify-center overflow-hidden border-b border-gray-100 bg-gray-50">
           {supplement.image_url ? (
             <Image
               src={supplement.image_url}
               alt={supplement.supplement_name}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover grayscale-[15%] transition-transform duration-300 group-hover:scale-[1.03]"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-all duration-300">
-              <span className="text-2xl font-bold text-white">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-gray-200 bg-white">
+              <span className="text-2xl font-semibold text-gray-900">
                 {supplement.supplement_name.charAt(0)}
               </span>
             </div>
           )}
-          <div className="absolute top-4 right-4">
-            <Badge variant="primary">Verified</Badge>
+          <div className="absolute left-3 top-3">
+            <Badge variant="primary">{supplement.category || 'Supplement'}</Badge>
           </div>
         </div>
 
-        <div className="card-body">
-          <h3 className="font-bold text-lg mb-3 text-gray-900 line-clamp-2 group-hover:text-orange-600 transition-colors">
+        <div className="flex flex-1 flex-col p-5">
+          <div className="mb-3 flex items-center gap-2 text-xs font-medium text-gray-500">
+            <FiCheckCircle className="h-3.5 w-3.5 text-green-600" />
+            <span>{evidenceLabel}</span>
+          </div>
+
+          <h3 className="mb-3 font-serif text-xl text-gray-900 line-clamp-2">
             {supplement.supplement_name}
           </h3>
-          <p className="text-sm text-gray-600 mb-4 line-clamp-3 leading-relaxed">
+          <p className="mb-5 text-sm leading-6 text-gray-600 line-clamp-3">
             {supplement.supplement_description}
           </p>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="w-3 h-3 text-yellow-400" />
-              ))}
-              <span className="text-xs text-gray-500 ml-1 font-medium">4.8</span>
+          <div className="mt-auto space-y-4">
+            <div className="grid grid-cols-2 gap-3 border-y border-gray-100 py-3 text-xs">
+              <div>
+                <div className="font-semibold text-gray-900">
+                  {supplement.product_count ?? 24}
+                </div>
+                <div className="text-gray-500">products</div>
+              </div>
+              <div>
+                <div className="font-semibold text-gray-900">
+                  ${formatPrice(supplement.average_price ?? 24)}
+                </div>
+                <div className="text-gray-500">avg price</div>
+              </div>
             </div>
-            <div className="text-sm font-semibold text-orange-600 flex items-center gap-1 group-hover:text-orange-700">
-              Learn more
-              <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
+
+            <div className="flex items-center justify-between text-sm font-medium text-gray-900">
+              <span>Shop products</span>
+              <FiArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-1" />
             </div>
           </div>
         </div>

@@ -16,6 +16,8 @@ export interface UseProductInStackResult {
 
 export function useProductInStack(productId: string): UseProductInStackResult {
   const { user } = useAuth();
+  const normalizedProductId = String(productId);
+  const isCatalogProduct = normalizedProductId.startsWith('catalog-');
   const [isInStack, setIsInStack] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -23,7 +25,7 @@ export function useProductInStack(productId: string): UseProductInStackResult {
 
   // Check if product is in user's stack
   const checkIfInStack = useCallback(async () => {
-    if (!user || !productId) {
+    if (!user || !normalizedProductId || isCatalogProduct) {
       setIsInStack(false);
       setIsLoading(false);
       return;
@@ -37,7 +39,7 @@ export function useProductInStack(productId: string): UseProductInStackResult {
         .from('users_products')
         .select('product_id')
         .eq('user_id', user.id)
-        .eq('product_id', productId)
+        .eq('product_id', normalizedProductId)
         .single();
 
       if (queryError && queryError.code !== 'PGRST116') {
@@ -51,7 +53,7 @@ export function useProductInStack(productId: string): UseProductInStackResult {
     } finally {
       setIsLoading(false);
     }
-  }, [user, productId]);
+  }, [user, normalizedProductId, isCatalogProduct]);
 
   useEffect(() => {
     checkIfInStack();
@@ -60,6 +62,10 @@ export function useProductInStack(productId: string): UseProductInStackResult {
   const addToStack = useCallback(async () => {
     if (!user) {
       throw new Error('Please log in to add products to your stack');
+    }
+
+    if (isCatalogProduct) {
+      throw new Error('Catalog products need to be synced before adding to your stack');
     }
 
     if (isInStack) {
@@ -74,7 +80,7 @@ export function useProductInStack(productId: string): UseProductInStackResult {
         .from('users_products')
         .insert({
           user_id: user.id,
-          product_id: productId,
+          product_id: normalizedProductId,
         });
 
       if (insertError) {
@@ -88,11 +94,15 @@ export function useProductInStack(productId: string): UseProductInStackResult {
     } finally {
       setIsUpdating(false);
     }
-  }, [user, productId, isInStack]);
+  }, [user, normalizedProductId, isInStack, isCatalogProduct]);
 
   const removeFromStack = useCallback(async () => {
     if (!user) {
       throw new Error('Please log in to manage your stack');
+    }
+
+    if (isCatalogProduct) {
+      throw new Error('Catalog products need to be synced before managing your stack');
     }
 
     if (!isInStack) {
@@ -107,7 +117,7 @@ export function useProductInStack(productId: string): UseProductInStackResult {
         .from('users_products')
         .delete()
         .eq('user_id', user.id)
-        .eq('product_id', productId);
+        .eq('product_id', normalizedProductId);
 
       if (deleteError) {
         throw deleteError;
@@ -120,7 +130,7 @@ export function useProductInStack(productId: string): UseProductInStackResult {
     } finally {
       setIsUpdating(false);
     }
-  }, [user, productId, isInStack]);
+  }, [user, normalizedProductId, isInStack, isCatalogProduct]);
 
   const toggleInStack = useCallback(async () => {
     if (isInStack) {

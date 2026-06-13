@@ -32,8 +32,8 @@ export default function Home() {
                 <span className="italic">Discovery Platform</span>
               </h1>
               <p className="text-lg lg:text-xl text-gray-600 leading-relaxed">
-                Research supplements, explore expert-curated stacks, and build your personalized
-                collection. Evidence-based insights for your wellness journey.
+                Compare supplements, shop verified products, and build repeatable stacks with
+                pricing, dosage, and merchant context in one place.
               </p>
             </div>
 
@@ -42,20 +42,18 @@ export default function Home() {
             </div>
 
             {/* Stats */}
-            <div className="flex items-center gap-12 text-center pt-4">
+            <div className="grid grid-cols-3 gap-6 text-center pt-4">
               <div>
                 <p className="text-2xl font-serif text-gray-900">{supplements.length}+</p>
                 <p className="text-sm text-gray-500">Supplements</p>
               </div>
-              <div className="w-px h-8 bg-gray-200" />
               <div>
-                <p className="text-2xl font-serif text-gray-900">500+</p>
-                <p className="text-sm text-gray-500">Stacks</p>
+                <p className="text-2xl font-serif text-gray-900">Shopify</p>
+                <p className="text-sm text-gray-500">Checkout</p>
               </div>
-              <div className="w-px h-8 bg-gray-200" />
               <div>
-                <p className="text-2xl font-serif text-gray-900">25K+</p>
-                <p className="text-sm text-gray-500">Users</p>
+                <p className="text-2xl font-serif text-gray-900">3</p>
+                <p className="text-sm text-gray-500">Price tiers</p>
               </div>
             </div>
           </Stack>

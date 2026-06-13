@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/app/supabase';
 import type { Supplement } from '@/types';
 import { SUPPLEMENT_CATEGORIES } from '@/types';
+import { mergeSupplementCatalog } from '@/lib/catalog/supplement-catalog';
 
 export interface UseSupplementsOptions {
   searchTerm?: string;
@@ -57,10 +58,11 @@ export function useSupplements({
         throw queryError;
       }
 
-      setSupplements(data || []);
+      setSupplements(mergeSupplementCatalog(data || []));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch supplements'));
       console.error('Error fetching supplements:', err);
+      setSupplements(mergeSupplementCatalog([]));
     } finally {
       setIsLoading(false);
     }
@@ -78,9 +80,15 @@ export function useSupplements({
       icon: cat.icon,
       count: cat.id === 'all'
         ? supplements.length
-        : supplements.filter(s =>
-            cat.keywords.some(k => s.supplement_name.toLowerCase().includes(k))
-          ).length,
+        : supplements.filter(s => {
+            const name = s.supplement_name.toLowerCase();
+            const category = s.category?.toLowerCase() ?? '';
+
+            return (
+              category === cat.name.toLowerCase() ||
+              cat.keywords.some(k => name.includes(k) || category.includes(k))
+            );
+          }).length,
     }));
   }, [supplements]);
 
@@ -102,16 +110,22 @@ export function useSupplements({
       const categoryDef = SUPPLEMENT_CATEGORIES.find(c => c.id === categoryId);
 
       if (categoryDef && categoryDef.keywords.length > 0) {
-        result = result.filter(s =>
-          categoryDef.keywords.some(k => s.supplement_name.toLowerCase().includes(k))
-        );
+        result = result.filter(s => {
+          const name = s.supplement_name.toLowerCase();
+          const category = s.category?.toLowerCase() ?? '';
+
+          return (
+            category === categoryDef.name.toLowerCase() ||
+            categoryDef.keywords.some(k => name.includes(k) || category.includes(k))
+          );
+        });
       }
     }
 
     // Apply sorting
     switch (sortBy) {
       case 'popular':
-        // Preserve DB insertion order as default when no popularity metrics are available
+        result = result.sort((a, b) => (b.product_count ?? 0) - (a.product_count ?? 0));
         break;
       case 'name':
       default:

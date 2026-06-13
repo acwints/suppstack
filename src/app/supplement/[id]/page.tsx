@@ -9,6 +9,10 @@ import type { Supplement, Product, ProductFilters, ProductSortBy } from '@/types
 import { Spinner, Button, EmptyState, Stack, Inline, Grid } from '@/components/ui';
 import { ProductFilterPanel } from '@/components/composite/Filter';
 import { CompareProducts } from '@/components/composite/Supplement';
+import {
+  createCatalogProductsForSupplement,
+  findCatalogSupplementById,
+} from '@/lib/catalog/supplement-catalog';
 
 export default function SupplementPage({ params }: { params: { id: string } }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,6 +28,14 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
+      const catalogSupplement = findCatalogSupplementById(supplementId);
+
+      if (catalogSupplement) {
+        setSupplement(catalogSupplement);
+        setProducts(createCatalogProductsForSupplement(catalogSupplement));
+        setIsLoading(false);
+        return;
+      }
 
       const [supplementResult, productsResult] = await Promise.all([
         supabase.from('supplements').select('*').eq('supplement_id', supplementId).single(),
@@ -43,7 +55,12 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
       if (productsResult.error) {
         console.error('Error fetching products:', productsResult.error);
       } else {
-        setProducts(productsResult.data || []);
+        const databaseProducts = productsResult.data || [];
+        if (databaseProducts.length > 0) {
+          setProducts(databaseProducts);
+        } else if (!supplementResult.error && supplementResult.data) {
+          setProducts(createCatalogProductsForSupplement(supplementResult.data));
+        }
       }
 
       setIsLoading(false);
@@ -141,10 +158,38 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
 
       {/* Header */}
       <Stack gap={2} className="mb-8">
-        <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
+        <div className="flex flex-wrap items-center gap-2">
+          {supplement.category && (
+            <span className="rounded border border-gray-200 px-2 py-1 text-xs font-medium text-gray-600">
+              {supplement.category}
+            </span>
+          )}
+          {supplement.evidence_rating && (
+            <span className="rounded border border-gray-200 px-2 py-1 text-xs font-medium text-gray-600">
+              {supplement.evidence_rating.charAt(0).toUpperCase() + supplement.evidence_rating.slice(1)} evidence
+            </span>
+          )}
+        </div>
+        <h1 className="text-4xl font-serif text-gray-900">
           {supplement.supplement_name}
         </h1>
         <p className="text-xl text-gray-600">{supplement.supplement_description}</p>
+        {(supplement.common_dosage || !!supplement.primary_goals?.length) && (
+          <div className="grid grid-cols-1 gap-3 border-y border-gray-100 py-4 text-sm md:grid-cols-2">
+            {supplement.common_dosage && (
+              <div>
+                <div className="font-semibold text-gray-900">Typical dose</div>
+                <div className="text-gray-600">{supplement.common_dosage}</div>
+              </div>
+            )}
+            {!!supplement.primary_goals?.length && (
+              <div>
+                <div className="font-semibold text-gray-900">Common goals</div>
+                <div className="text-gray-600">{supplement.primary_goals.slice(0, 3).join(', ')}</div>
+              </div>
+            )}
+          </div>
+        )}
       </Stack>
 
       {/* Products Section */}
@@ -204,7 +249,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
         )}
 
         {/* Compare Products */}
-        {products.length >= 2 && (
+        {products.length >= 2 && !products.some(product => product.data_source === 'catalog_fallback') && (
           <CompareProducts supplementId={supplementId} />
         )}
       </Stack>

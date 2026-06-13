@@ -8,6 +8,10 @@ import { Card, Button, Spinner, Badge } from '@/components/ui';
 import { cn } from '@/lib/design-system/utils';
 import { formatPrice } from '@/lib/utils';
 import type { StackSupplement, Product } from '@/types';
+import {
+  getPreferredPurchaseUrl,
+  getPurchaseLabel,
+} from '@/lib/commerce/shopify-ucp';
 
 export interface BuyStackPanelProps {
   stackId: string;
@@ -115,15 +119,14 @@ export function BuyStackPanel({
     return sum + perServing * (p.servings_per_day || 1) * 30.437;
   }, 0);
 
-  const amazonProducts = checkedProducts.filter(
-    item => item.selectedProduct?.amazon_url
+  const purchasableProducts = checkedProducts.filter(
+    item => item.selectedProduct
   );
 
-  const handleBuyAllAmazon = () => {
-    // Open each Amazon link in a new tab
-    amazonProducts.forEach(item => {
-      if (item.selectedProduct?.amazon_url) {
-        window.open(item.selectedProduct.amazon_url, '_blank', 'noopener,noreferrer');
+  const handleBuySelected = () => {
+    purchasableProducts.forEach(item => {
+      if (item.selectedProduct) {
+        window.open(getPreferredPurchaseUrl(item.selectedProduct), '_blank', 'noopener,noreferrer');
       }
     });
   };
@@ -261,15 +264,14 @@ export function BuyStackPanel({
 
           {/* Buy Actions */}
           <div className="space-y-2">
-            {amazonProducts.length > 0 && (
+            {purchasableProducts.length > 0 && (
               <Button
                 variant="primary"
                 fullWidth
-                onClick={handleBuyAllAmazon}
+                onClick={handleBuySelected}
                 leftIcon={<FiShoppingCart />}
-                className="bg-amber-500 hover:bg-amber-600 text-white"
               >
-                Buy {amazonProducts.length > 1 ? `All ${amazonProducts.length}` : ''} on Amazon
+                Buy {purchasableProducts.length > 1 ? `All ${purchasableProducts.length}` : ''} Selected
               </Button>
             )}
 
@@ -280,18 +282,18 @@ export function BuyStackPanel({
                   if (!p) return null;
                   return (
                     <div key={p.product_id} className="flex items-center gap-2">
-                      {p.amazon_url && (
+                      {(p.shopify_checkout_url || p.ucp_enabled || p.product_url || p.amazon_url) && (
                         <a
-                          href={p.amazon_url}
+                          href={getPreferredPurchaseUrl(p)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-1 flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors px-2 py-1 rounded hover:bg-gray-50"
                         >
                           <FiExternalLink size={10} />
-                          {item.supplement_name} on Amazon
+                          {item.supplement_name} · {getPurchaseLabel(p)}
                         </a>
                       )}
-                      {p.product_url && (
+                      {p.product_url && p.product_url !== getPreferredPurchaseUrl(p) && (
                         <a
                           href={p.product_url}
                           target="_blank"

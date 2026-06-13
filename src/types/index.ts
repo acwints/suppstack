@@ -15,6 +15,13 @@ export interface Supplement {
   supplement_description: string;
   image_url?: string;
   category?: string;
+  aliases?: string[];
+  evidence_rating?: 'emerging' | 'moderate' | 'strong';
+  primary_goals?: string[];
+  typical_forms?: string[];
+  common_dosage?: string;
+  product_count?: number;
+  average_price?: number;
 }
 
 export interface Product {
@@ -36,9 +43,18 @@ export interface Product {
   amazon_asin?: string;
   amazon_rating?: number;
   amazon_review_count?: number;
+  shopify_product_gid?: string;
+  shopify_variant_gid?: string;
+  shopify_store_domain?: string;
+  shopify_checkout_url?: string;
+  commerce_channel?: 'shopify' | 'amazon' | 'official' | 'marketplace';
+  ucp_enabled?: boolean;
+  inventory_status?: 'in_stock' | 'low_stock' | 'out_of_stock' | 'preorder';
+  quality_badges?: string[];
+  subscriptions_available?: boolean;
   supplement_facts?: SupplementFacts;
   last_api_sync?: string;
-  data_source?: 'manual' | 'amazon_api' | 'openfda';
+  data_source?: 'manual' | 'amazon_api' | 'openfda' | 'shopify_ucp' | 'catalog_fallback';
 }
 
 export interface SupplementFacts {
@@ -423,6 +439,9 @@ export const SUPPLEMENT_CATEGORIES: SupplementCategory[] = [
   { id: 'sleep', name: 'Sleep & Relaxation', icon: '😴', keywords: ['melatonin', 'sleep', 'magnesium glycinate', 'apigenin'] },
   { id: 'heart', name: 'Heart Health', icon: '❤️', keywords: ['coq10', 'nattokinase', 'garlic', 'red yeast', 'resveratrol'] },
   { id: 'joints', name: 'Joint & Bone', icon: '🦴', keywords: ['glucosamine', 'chondroitin', 'msm', 'hyaluronic'] },
+  { id: 'beauty', name: 'Beauty', icon: '✨', keywords: ['collagen', 'biotin', 'hyaluronic', 'keratin', 'silica'] },
+  { id: 'longevity', name: 'Longevity', icon: '⏱', keywords: ['resveratrol', 'nad', 'nmn', 'nr', 'spermidine', 'coq10', 'pqq'] },
+  { id: 'metabolic', name: 'Metabolic', icon: '🍽️', keywords: ['berberine', 'chromium', 'cinnamon', 'inositol', 'fiber', 'psyllium', 'glucomannan'] },
 ];
 
 export const USAGE_DURATION_OPTIONS = [
