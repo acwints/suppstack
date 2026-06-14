@@ -1085,6 +1085,8 @@ export function mergeSupplementCatalog(databaseSupplements: Supplement[]) {
     byName.set(supplement.supplement_name.toLowerCase(), {
       ...catalogMatch,
       ...supplement,
+      category: catalogMatch?.category ?? supplement.category,
+      image_url: catalogMatch?.image_url ?? supplement.image_url,
       aliases: supplement.aliases ?? catalogMatch?.aliases,
       evidence_rating: supplement.evidence_rating ?? catalogMatch?.evidence_rating,
       primary_goals: supplement.primary_goals ?? catalogMatch?.primary_goals,
@@ -1096,6 +1098,15 @@ export function mergeSupplementCatalog(databaseSupplements: Supplement[]) {
   });
 
   return Array.from(byName.values());
+}
+
+export function getCanonicalSupplementCategory(supplementName?: string | null) {
+  if (!supplementName) return null;
+  return (
+    supplementCatalog.find(
+      (supplement) => supplement.supplement_name.toLowerCase() === supplementName.toLowerCase()
+    )?.category ?? null
+  );
 }
 
 export function findCatalogSupplementById(id: number) {
