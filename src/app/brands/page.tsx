@@ -84,6 +84,9 @@ export default function BrandsPage() {
                       <p className="text-sm text-gray-500 mt-1">
                         {brand.productCount} products from {formatCurrency(brand.averagePrice)}
                       </p>
+                      <p className="text-xs font-medium text-orange-700 mt-2">
+                        {brand.commerceReadyCount} purchase-ready picks
+                      </p>
                     </div>
                     <FiShoppingBag className="text-gray-400 shrink-0" />
                   </div>

@@ -7,14 +7,40 @@ import {
 export interface BrandDiscoveryItem {
   brandName: string;
   productCount: number;
+  commerceReadyCount: number;
   averagePrice: number;
   categories: string[];
+  storeDomains: string[];
   heroProduct: Product;
   products: Product[];
 }
 
 interface BrandDiscoveryOptions {
   includeCatalogFallback?: boolean;
+}
+
+function isCommerceReady(product: Product) {
+  return Boolean(
+    product.shopify_variant_gid ||
+      product.shopify_checkout_url ||
+      product.ucp_enabled ||
+      product.commerce_channel === 'shopify' ||
+      product.product_url ||
+      product.amazon_url
+  );
+}
+
+function heroScore(product: Product) {
+  let score = 0;
+  if (product.inventory_status !== 'out_of_stock') score += 10;
+  if (product.shopify_variant_gid && product.shopify_store_domain) score += 8;
+  if (product.ucp_enabled || product.commerce_channel === 'shopify') score += 5;
+  if (product.subscriptions_available) score += 2;
+  return score;
+}
+
+function preferredHeroProduct(current: Product, candidate: Product) {
+  return heroScore(candidate) > heroScore(current) ? candidate : current;
 }
 
 export function buildBrandDiscovery(
@@ -37,20 +63,29 @@ export function buildBrandDiscovery(
       if (existing) {
         existing.products.push(product);
         existing.productCount += 1;
+        if (isCommerceReady(product)) {
+          existing.commerceReadyCount += 1;
+        }
         existing.averagePrice =
           existing.products.reduce((sum, item) => sum + item.product_price, 0) /
           existing.products.length;
         if (category && !existing.categories.includes(category)) {
           existing.categories.push(category);
         }
+        if (product.shopify_store_domain && !existing.storeDomains.includes(product.shopify_store_domain)) {
+          existing.storeDomains.push(product.shopify_store_domain);
+        }
+        existing.heroProduct = preferredHeroProduct(existing.heroProduct, product);
         return;
       }
 
       brandMap.set(brandName, {
         brandName,
         productCount: 1,
+        commerceReadyCount: isCommerceReady(product) ? 1 : 0,
         averagePrice: product.product_price,
         categories: category ? [category] : [],
+        storeDomains: product.shopify_store_domain ? [product.shopify_store_domain] : [],
         heroProduct: product,
         products: [product],
       });
