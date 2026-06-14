@@ -117,7 +117,7 @@ const seeds: CatalogSeed[] = [
   { name: 'Vitamin C', category: 'Vitamins', description: 'An antioxidant vitamin used for immune support, collagen formation, and helping improve non-heme iron absorption.', aliases: ['ascorbic acid'], goals: ['Immune support', 'Skin health', 'Antioxidant support'], forms: ['Capsule', 'Powder', 'Gummy'], dosage: '250-1000 mg daily', evidence: 'strong', price: 16 },
   { name: 'Vitamin B12', category: 'Vitamins', description: 'Supports red blood cell formation, methylation, and nerve function, especially for vegan, vegetarian, or older adults.', aliases: ['methylcobalamin', 'cyanocobalamin'], goals: ['Energy metabolism', 'Nerve support'], forms: ['Lozenge', 'Capsule', 'Spray'], dosage: '250-1000 mcg daily', evidence: 'strong', price: 15 },
   { name: 'B-Complex', category: 'Vitamins', description: 'Combines several B vitamins that support energy metabolism, methylation, and normal nervous system function.', goals: ['Energy metabolism', 'Stress support'], forms: ['Capsule', 'Tablet'], dosage: '1 serving daily', evidence: 'moderate', price: 22 },
-  { name: 'Folate', category: 'Vitamins', description: 'Supports methylation, DNA synthesis, and prenatal neural tube development when intake is adequate before and during pregnancy.', aliases: ['folic acid', '5-mthf'], goals: ['Prenatal support', 'Methylation'], forms: ['Capsule', 'Tablet'], dosage: '400-1000 mcg DFE daily', evidence: 'strong', price: 14 },
+  { name: 'Folate', category: 'Vitamins', description: 'Supports methylation, DNA synthesis, and prenatal neural tube development when intake is adequate before and during pregnancy.', aliases: ['folic acid', 'folate folic acid', '5-mthf'], goals: ['Prenatal support', 'Methylation'], forms: ['Capsule', 'Tablet'], dosage: '400-1000 mcg DFE daily', evidence: 'strong', price: 14 },
   { name: 'Biotin', category: 'Vitamins', description: 'A B vitamin involved in macronutrient metabolism and commonly used in hair, skin, and nail routines.', aliases: ['vitamin b7'], goals: ['Hair support', 'Nail support'], forms: ['Capsule', 'Gummy'], dosage: '30-5000 mcg daily', evidence: 'moderate', price: 13 },
   { name: 'Multivitamin', category: 'Vitamins', description: 'Broad micronutrient coverage designed to close common diet gaps across vitamins, minerals, and trace nutrients.', goals: ['Daily essentials', 'Nutrient gaps'], forms: ['Tablet', 'Capsule', 'Powder'], dosage: '1 serving daily', evidence: 'moderate', price: 28 },
   { name: 'Magnesium Glycinate', category: 'Minerals', description: 'A gentle magnesium form often chosen for sleep, relaxation, muscle function, and nervous system support.', aliases: ['magnesium', 'magnesium bisglycinate'], goals: ['Sleep support', 'Relaxation', 'Muscle function'], forms: ['Capsule', 'Powder'], dosage: '100-400 mg elemental magnesium daily', evidence: 'strong', price: 25 },
@@ -142,18 +142,18 @@ const seeds: CatalogSeed[] = [
   { name: 'Pre-Workout', category: 'Performance', description: 'Training-session formulas built around energy, pump, focus, and high-output gym performance.', aliases: ['pre workout', 'pump', 'stimulant pre-workout'], goals: ['Energy', 'Pump', 'Training performance'], forms: ['Powder', 'Stick Pack'], dosage: '1 serving 20-30 minutes before training', evidence: 'moderate', price: 44 },
   { name: 'Beta-Alanine', category: 'Performance', description: 'Supports muscle carnosine levels and may improve repeated high-intensity exercise capacity.', goals: ['Endurance', 'High-intensity training'], forms: ['Powder', 'Capsule'], dosage: '3.2-6.4 g daily split doses', evidence: 'strong', price: 22 },
   { name: 'Citrulline Malate', category: 'Performance', description: 'Nitric-oxide-supporting amino acid used for pumps, blood flow, and exercise performance.', aliases: ['l-citrulline'], goals: ['Blood flow', 'Training performance'], forms: ['Powder', 'Capsule'], dosage: '6-8 g before training', evidence: 'moderate', price: 25 },
-  { name: 'BCAAs', category: 'Performance', description: 'Branched-chain amino acids used around training, though most useful when total protein is low.', aliases: ['leucine', 'isoleucine', 'valine'], goals: ['Training support'], forms: ['Powder', 'Capsule'], dosage: '5-10 g around training', evidence: 'moderate', price: 28 },
+  { name: 'BCAAs', category: 'Performance', description: 'Branched-chain amino acids used around training, though most useful when total protein is low.', aliases: ['bcaa', 'branched chain amino acids', 'leucine', 'isoleucine', 'valine'], goals: ['Training support'], forms: ['Powder', 'Capsule'], dosage: '5-10 g around training', evidence: 'moderate', price: 28 },
   { name: 'EAAs', category: 'Performance', description: 'Essential amino acids for supporting muscle protein synthesis when complete protein intake is limited.', aliases: ['essential amino acids'], goals: ['Muscle protein synthesis'], forms: ['Powder'], dosage: '8-15 g around training', evidence: 'moderate', price: 34 },
-  { name: 'Beetroot', category: 'Performance', description: 'Dietary nitrate source that can support nitric oxide production and endurance performance.', aliases: ['beet root', 'nitrates'], goals: ['Endurance', 'Blood flow'], forms: ['Powder', 'Capsule', 'Shot'], dosage: '400-800 mg nitrate equivalent pre-workout', evidence: 'strong', price: 29 },
+  { name: 'Beetroot', category: 'Performance', description: 'Dietary nitrate source that can support nitric oxide production and endurance performance.', aliases: ['beet root', 'beetroot powder', 'nitrates'], goals: ['Endurance', 'Blood flow'], forms: ['Powder', 'Capsule', 'Shot'], dosage: '400-800 mg nitrate equivalent pre-workout', evidence: 'strong', price: 29 },
   { name: 'Ashwagandha', category: 'Herbs & Adaptogens', description: 'Adaptogenic root used for perceived stress, sleep quality, and resilience routines.', aliases: ['withania somnifera', 'ksm-66', 'sensoril'], goals: ['Stress support', 'Sleep quality'], forms: ['Capsule', 'Powder'], dosage: '300-600 mg extract daily', evidence: 'moderate', price: 23 },
   { name: 'Rhodiola Rosea', category: 'Herbs & Adaptogens', description: 'Adaptogenic herb used for fatigue resistance, stress tolerance, and mental performance support.', aliases: ['rhodiola'], goals: ['Fatigue support', 'Focus'], forms: ['Capsule'], dosage: '200-400 mg extract daily', evidence: 'moderate', price: 24 },
-  { name: 'Panax Ginseng', category: 'Herbs & Adaptogens', description: 'Traditional adaptogen used for energy, mental performance, and vitality.', aliases: ['ginseng'], goals: ['Energy', 'Focus'], forms: ['Capsule', 'Tea'], dosage: '200-400 mg extract daily', evidence: 'moderate', price: 27 },
+  { name: 'Panax Ginseng', category: 'Herbs & Adaptogens', description: 'Traditional adaptogen used for energy, mental performance, and vitality.', aliases: ['ginseng', 'panax'], goals: ['Energy', 'Focus'], forms: ['Capsule', 'Tea'], dosage: '200-400 mg extract daily', evidence: 'moderate', price: 27 },
   { name: 'Maca Root', category: 'Herbs & Adaptogens', description: 'Peruvian root powder used for energy, mood, libido, and hormonal wellness routines.', aliases: ['maca'], goals: ['Energy', 'Libido support'], forms: ['Powder', 'Capsule'], dosage: '1.5-3 g daily', evidence: 'emerging', price: 21 },
   { name: 'Turmeric Curcumin', category: 'Herbs & Adaptogens', description: 'Curcuminoid extract used for inflammatory balance, joint comfort, and antioxidant support.', aliases: ['curcumin'], goals: ['Joint comfort', 'Inflammatory balance'], forms: ['Capsule', 'Powder'], dosage: '500-1000 mg extract daily', evidence: 'moderate', price: 26 },
   { name: 'Ginger', category: 'Herbs & Adaptogens', description: 'Root extract used for digestive comfort, nausea support, and inflammatory balance.', goals: ['Digestive comfort', 'Nausea support'], forms: ['Capsule', 'Tea', 'Chew'], dosage: '500-1500 mg daily', evidence: 'strong', price: 14 },
   { name: 'Garlic Extract', category: 'Herbs & Adaptogens', description: 'Aged or standardized garlic extract used in heart health and immune support routines.', aliases: ['aged garlic'], goals: ['Heart health', 'Immune support'], forms: ['Capsule'], dosage: '600-1200 mg daily', evidence: 'moderate', price: 20 },
   { name: 'Milk Thistle', category: 'Herbs & Adaptogens', description: 'Silymarin-rich herb commonly used for liver support and antioxidant defense.', aliases: ['silymarin'], goals: ['Liver support', 'Antioxidant support'], forms: ['Capsule', 'Liquid'], dosage: '150-300 mg silymarin daily', evidence: 'moderate', price: 18 },
-  { name: 'Holy Basil', category: 'Herbs & Adaptogens', description: 'Adaptogenic herb used for calm, stress resilience, and metabolic wellness routines.', aliases: ['tulsi'], goals: ['Stress support', 'Calm'], forms: ['Capsule', 'Tea'], dosage: '300-600 mg extract daily', evidence: 'emerging', price: 19 },
+  { name: 'Holy Basil', category: 'Herbs & Adaptogens', description: 'Adaptogenic herb used for calm, stress resilience, and metabolic wellness routines.', aliases: ['holy basil tulsi', 'tulsi'], goals: ['Stress support', 'Calm'], forms: ['Capsule', 'Tea'], dosage: '300-600 mg extract daily', evidence: 'emerging', price: 19 },
   { name: 'Bacopa Monnieri', category: 'Brain & Focus', description: 'Herbal nootropic used for memory, learning, and cognitive performance over sustained use.', aliases: ['bacopa'], goals: ['Memory', 'Learning'], forms: ['Capsule'], dosage: '300 mg standardized extract daily', evidence: 'moderate', price: 25 },
   { name: 'Ginkgo Biloba', category: 'Brain & Focus', description: 'Botanical extract used for cognitive function and circulation support.', aliases: ['ginkgo'], goals: ['Cognitive support', 'Circulation'], forms: ['Capsule'], dosage: '120-240 mg extract daily', evidence: 'moderate', price: 18 },
   { name: "Lion's Mane Mushroom", category: 'Brain & Focus', description: 'Functional mushroom used for cognitive wellness, focus, and nerve growth factor support research interest.', aliases: ['hericium erinaceus'], goals: ['Focus', 'Brain health'], forms: ['Capsule', 'Powder'], dosage: '500-3000 mg daily', evidence: 'emerging', price: 30 },
@@ -163,7 +163,7 @@ const seeds: CatalogSeed[] = [
   { name: 'L-Theanine', category: 'Amino Acids', description: 'Tea-derived amino acid used for calm focus and smoothing stimulant effects.', aliases: ['theanine'], goals: ['Calm focus', 'Relaxation'], forms: ['Capsule', 'Chewable'], dosage: '100-200 mg as needed', evidence: 'strong', price: 16 },
   { name: 'Glycine', category: 'Amino Acids', description: 'Amino acid used for sleep quality, collagen synthesis support, and calming routines.', goals: ['Sleep quality', 'Relaxation'], forms: ['Powder', 'Capsule'], dosage: '3 g before bed', evidence: 'moderate', price: 15 },
   { name: 'L-Tyrosine', category: 'Amino Acids', description: 'Amino acid precursor for catecholamines, often used during acute stress or demanding cognitive tasks.', aliases: ['tyrosine'], goals: ['Focus under stress'], forms: ['Capsule', 'Powder'], dosage: '500-2000 mg as needed', evidence: 'moderate', price: 17 },
-  { name: 'NAC', category: 'Amino Acids', description: 'N-acetyl cysteine supports glutathione production and respiratory antioxidant defense.', aliases: ['n-acetyl cysteine'], goals: ['Antioxidant support', 'Respiratory support'], forms: ['Capsule'], dosage: '600-1200 mg daily', evidence: 'strong', price: 20 },
+  { name: 'NAC', category: 'Amino Acids', description: 'N-acetyl cysteine supports glutathione production and respiratory antioxidant defense.', aliases: ['n-acetyl cysteine', 'n acetyl cysteine', 'nac n acetyl cysteine'], goals: ['Antioxidant support', 'Respiratory support'], forms: ['Capsule'], dosage: '600-1200 mg daily', evidence: 'strong', price: 20 },
   { name: 'L-Carnitine', category: 'Amino Acids', description: 'Compound involved in fatty acid transport and studied for exercise, cognition, and metabolic support.', aliases: ['acetyl-l-carnitine', 'alcar'], goals: ['Energy metabolism', 'Brain support'], forms: ['Capsule', 'Liquid'], dosage: '500-2000 mg daily', evidence: 'moderate', price: 24 },
   { name: 'L-Glutamine', category: 'Amino Acids', description: 'Amino acid used for gut barrier, recovery, and high-training-load nutrition support.', aliases: ['glutamine'], goals: ['Gut support', 'Recovery'], forms: ['Powder'], dosage: '5 g daily', evidence: 'moderate', price: 23 },
   { name: 'GABA', category: 'Sleep & Relaxation', description: 'Inhibitory neurotransmitter supplement used for relaxation and sleep routines.', goals: ['Relaxation', 'Sleep support'], forms: ['Capsule', 'Lozenge'], dosage: '100-300 mg as needed', evidence: 'emerging', price: 16 },
@@ -207,6 +207,16 @@ const seeds: CatalogSeed[] = [
 
 function slugify(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+function normalizeSupplementLookupTerm(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/\((.*?)\)/g, ' $1 ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function shopifyGid(type: 'Product' | 'ProductVariant', id: string) {
@@ -1769,15 +1779,52 @@ export function findCatalogSupplementById(id: number) {
 
 export function findCatalogSupplementByName(name?: string | null) {
   if (!name) return null;
-  const normalizedName = name.toLowerCase();
+  const normalizedName = normalizeSupplementLookupTerm(name);
 
   return (
-    supplementCatalog.find(
-      (supplement) =>
-        supplement.supplement_name.toLowerCase() === normalizedName ||
-        supplement.aliases?.some((alias) => alias.toLowerCase() === normalizedName)
-    ) ?? null
+    supplementCatalog.find((supplement) => {
+      const names = [supplement.supplement_name, ...(supplement.aliases ?? [])].map(
+        normalizeSupplementLookupTerm
+      );
+
+      return names.some(
+        (candidate) =>
+          candidate === normalizedName ||
+          candidate.endsWith(` ${normalizedName}`) ||
+          normalizedName.endsWith(` ${candidate}`) ||
+          normalizedName.includes(` ${candidate} `)
+      );
+    }) ?? null
   );
+}
+
+export function findCatalogSupplementForSupplement(supplement?: Supplement | null) {
+  if (!supplement) return null;
+  return findCatalogSupplementById(supplement.supplement_id) ?? findCatalogSupplementByName(supplement.supplement_name);
+}
+
+export function createCanonicalCatalogProductsForSupplement(supplement: Supplement) {
+  const catalogSupplement = findCatalogSupplementForSupplement(supplement);
+  if (!catalogSupplement) return createCatalogProductsForSupplement(supplement);
+
+  return createCatalogProductsForSupplement({
+    ...catalogSupplement,
+    supplement_id: supplement.supplement_id,
+  });
+}
+
+export function resolveProductsForSupplement(
+  supplement: Supplement,
+  databaseProducts: Product[] = []
+) {
+  const catalogProducts = createCanonicalCatalogProductsForSupplement(supplement);
+  const hasCuratedCatalogProducts = catalogProducts.some(
+    (product) => product.data_source !== 'catalog_fallback'
+  );
+
+  if (hasCuratedCatalogProducts) return catalogProducts;
+  if (databaseProducts.length > 0) return databaseProducts;
+  return catalogProducts;
 }
 
 export function findCatalogSupplementByProductId(productId: string) {

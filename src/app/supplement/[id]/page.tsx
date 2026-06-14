@@ -10,8 +10,10 @@ import { Spinner, Button, EmptyState, Stack, Inline, Grid } from '@/components/u
 import { ProductFilterPanel } from '@/components/composite/Filter';
 import { CompareProducts } from '@/components/composite/Supplement';
 import {
-  createCatalogProductsForSupplement,
+  createCanonicalCatalogProductsForSupplement,
   findCatalogSupplementById,
+  findCatalogSupplementForSupplement,
+  resolveProductsForSupplement,
 } from '@/lib/catalog/supplement-catalog';
 
 export default function SupplementPage({ params }: { params: { id: string } }) {
@@ -32,7 +34,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
 
       if (catalogSupplement) {
         setSupplement(catalogSupplement);
-        setProducts(createCatalogProductsForSupplement(catalogSupplement));
+        setProducts(createCanonicalCatalogProductsForSupplement(catalogSupplement));
         setIsLoading(false);
         return;
       }
@@ -46,20 +48,39 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
           .order('product_name', { ascending: true }),
       ]);
 
+      const databaseSupplement = supplementResult.data as Supplement | null;
+      const catalogMatch = findCatalogSupplementForSupplement(databaseSupplement);
+
       if (supplementResult.error) {
         console.error('Error fetching supplement:', supplementResult.error);
+      } else if (!databaseSupplement) {
+        setSupplement(null);
       } else {
-        setSupplement(supplementResult.data);
+        setSupplement({
+          ...catalogMatch,
+          ...databaseSupplement,
+          supplement_description:
+            catalogMatch?.supplement_description ??
+            databaseSupplement?.supplement_description ??
+            '',
+          category: catalogMatch?.category ?? databaseSupplement?.category,
+          image_url: catalogMatch?.image_url ?? databaseSupplement?.image_url,
+          aliases: databaseSupplement?.aliases ?? catalogMatch?.aliases,
+          evidence_rating: databaseSupplement?.evidence_rating ?? catalogMatch?.evidence_rating,
+          primary_goals: databaseSupplement?.primary_goals ?? catalogMatch?.primary_goals,
+          typical_forms: databaseSupplement?.typical_forms ?? catalogMatch?.typical_forms,
+          common_dosage: databaseSupplement?.common_dosage ?? catalogMatch?.common_dosage,
+          product_count: catalogMatch?.product_count ?? databaseSupplement?.product_count,
+          average_price: catalogMatch?.average_price ?? databaseSupplement?.average_price,
+        } as Supplement);
       }
 
       if (productsResult.error) {
         console.error('Error fetching products:', productsResult.error);
       } else {
         const databaseProducts = productsResult.data || [];
-        if (databaseProducts.length > 0) {
-          setProducts(databaseProducts);
-        } else if (!supplementResult.error && supplementResult.data) {
-          setProducts(createCatalogProductsForSupplement(supplementResult.data));
+        if (!supplementResult.error && databaseSupplement) {
+          setProducts(resolveProductsForSupplement(databaseSupplement, databaseProducts));
         }
       }
 

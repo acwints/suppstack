@@ -13,9 +13,9 @@ import {
   getPurchaseLabel,
 } from '@/lib/commerce/shopify-ucp';
 import {
-  createCatalogProductsForSupplement,
   findCatalogSupplementById,
   findCatalogSupplementByName,
+  resolveProductsForSupplement,
 } from '@/lib/catalog/supplement-catalog';
 
 export interface BuyStackPanelProps {
@@ -85,16 +85,17 @@ export function BuyStackPanel({
         const databaseForSupplement = productsBySupp.get(s.supplement_id) || [];
         const catalogSupplement =
           findCatalogSupplementById(s.supplement_id) ?? findCatalogSupplementByName(s.supplement_name);
-        const catalogProducts = catalogSupplement ? createCatalogProductsForSupplement(catalogSupplement) : [];
-        const hasCuratedCatalogProducts = catalogProducts.some(
-          (product) => product.data_source !== 'catalog_fallback'
-        );
         const prods = sortStackProducts(
-          hasCuratedCatalogProducts
-            ? catalogProducts
-            : databaseForSupplement.length > 0
-            ? databaseForSupplement
-            : catalogProducts
+          resolveProductsForSupplement(
+            {
+              supplement_id: s.supplement_id,
+              supplement_name: catalogSupplement?.supplement_name ?? s.supplement_name,
+              supplement_description: catalogSupplement?.supplement_description ?? '',
+              category: catalogSupplement?.category,
+              aliases: catalogSupplement?.aliases,
+            },
+            databaseForSupplement
+          )
         );
 
         return {
