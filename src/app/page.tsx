@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { FiArrowRight, FiBarChart2, FiLayers, FiShoppingBag } from 'react-icons/fi';
 import { useSupplements } from '@/hooks';
-import { buildBrandDiscovery } from '@/lib/catalog/brand-discovery';
+import { brandSlug, buildBrandDiscovery } from '@/lib/catalog/brand-discovery';
 import { formatCurrency } from '@/lib/utils';
 import { SkeletonGrid, SkeletonCard, Stack, Inline } from '@/components/ui';
 import { EnhancedSearchBar } from '@/components/composite/Search';
@@ -161,7 +161,7 @@ export default function Home() {
                 {brandHighlights.map((brand) => (
                   <Link
                     key={brand.brandName}
-                    href={`/product/${brand.heroProduct.product_id}`}
+                    href={`/brands/${brandSlug(brand.brandName)}`}
                     className="border border-gray-200 rounded p-4 hover:border-gray-300 transition-colors"
                   >
                     <p className="font-medium text-gray-900">{brand.brandName}</p>

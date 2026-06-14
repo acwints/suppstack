@@ -5,7 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FiArrowUpRight, FiSearch, FiShoppingBag } from 'react-icons/fi';
 import { useSupplements } from '@/hooks';
-import { buildBrandDiscovery } from '@/lib/catalog/brand-discovery';
+import { brandSlug, buildBrandDiscovery } from '@/lib/catalog/brand-discovery';
+import { getPreferredPurchaseUrl } from '@/lib/commerce/shopify-ucp';
 import { formatCurrency } from '@/lib/utils';
 import { Spinner } from '@/components/ui';
 
@@ -104,13 +105,13 @@ export default function BrandsPage() {
 
                   <div className="mt-5 flex gap-3">
                     <Link
-                      href={`/product/${brand.heroProduct.product_id}`}
+                      href={`/brands/${brandSlug(brand.brandName)}`}
                       className="inline-flex h-10 flex-1 items-center justify-center rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
                     >
-                      View Stack Picks
+                      View Brand Shelf
                     </Link>
                     <a
-                      href={brand.heroProduct.shopify_checkout_url || brand.heroProduct.product_url}
+                      href={getPreferredPurchaseUrl(brand.heroProduct)}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex h-10 w-10 items-center justify-center border border-gray-200 rounded hover:bg-gray-50"

@@ -2,6 +2,7 @@ import type { Product, Supplement } from '@/types';
 import {
   createCatalogProductsForSupplement,
   getCanonicalSupplementCategory,
+  supplementCatalog,
 } from './supplement-catalog';
 
 export interface BrandDiscoveryItem {
@@ -15,8 +16,20 @@ export interface BrandDiscoveryItem {
   products: Product[];
 }
 
-interface BrandDiscoveryOptions {
+export interface BrandDiscoveryOptions {
   includeCatalogFallback?: boolean;
+}
+
+const BRAND_SLUG_ALIASES: Record<string, string> = {
+  omni: 'brainmd',
+};
+
+export function brandSlug(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 }
 
 function isCommerceReady(product: Product) {
@@ -99,4 +112,17 @@ export function buildBrandDiscovery(
     if (b.productCount !== a.productCount) return b.productCount - a.productCount;
     return a.brandName.localeCompare(b.brandName);
   });
+}
+
+export function buildCatalogBrandDiscovery(options?: BrandDiscoveryOptions) {
+  return buildBrandDiscovery(supplementCatalog, options);
+}
+
+export function findCatalogBrandBySlug(slug: string) {
+  const resolvedSlug = BRAND_SLUG_ALIASES[slug] ?? slug;
+
+  return (
+    buildCatalogBrandDiscovery().find((brand) => brandSlug(brand.brandName) === resolvedSlug) ??
+    null
+  );
 }
