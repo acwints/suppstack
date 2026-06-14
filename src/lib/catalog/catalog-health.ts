@@ -4,6 +4,7 @@ import {
   hasShopifyVariant,
   isCatalogFallbackProduct,
 } from '@/lib/commerce/product-source';
+import { getShopifyCartPermalink } from '@/lib/commerce/shopify-ucp';
 import { buildCatalogBrandDiscovery } from '@/lib/catalog/brand-discovery';
 import { getCuratedCatalogProducts, supplementCatalog } from '@/lib/catalog/supplement-catalog';
 
@@ -15,6 +16,7 @@ export function getCatalogHealthReport() {
   );
 
   const shopifyVariantProducts = products.filter(hasShopifyVariant);
+  const shopifyCartPermalinkProducts = products.filter((product) => Boolean(getShopifyCartPermalink(product)));
   const directCheckoutProducts = products.filter(hasDirectShopifyCheckout);
   const officialUrlProducts = products.filter(hasOfficialProductUrl);
   const fallbackProducts = products.filter(isCatalogFallbackProduct);
@@ -31,6 +33,7 @@ export function getCatalogHealthReport() {
       curatedProducts: products.length,
       verifiedBrands: brands.length,
       shopifyVariantProducts: shopifyVariantProducts.length,
+      shopifyCartPermalinkProducts: shopifyCartPermalinkProducts.length,
       directCheckoutProducts: directCheckoutProducts.length,
       officialUrlProducts: officialUrlProducts.length,
       fallbackProducts: fallbackProducts.length,
@@ -39,6 +42,7 @@ export function getCatalogHealthReport() {
     coverage: {
       curatedProductRate: products.length / supplementCatalog.length,
       shopifyVariantRate: products.length ? shopifyVariantProducts.length / products.length : 0,
+      shopifyCartPermalinkRate: products.length ? shopifyCartPermalinkProducts.length / products.length : 0,
       officialUrlRate: products.length ? officialUrlProducts.length / products.length : 0,
       fallbackSupplementRate: fallbackSupplements.length / supplementCatalog.length,
     },

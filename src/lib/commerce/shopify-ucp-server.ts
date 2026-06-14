@@ -145,6 +145,20 @@ export async function resolveShopifyPurchaseSession(
     return fallback;
   }
 
+  if (fallback.mode === 'shopify_cart_permalink') {
+    return {
+      ...fallback,
+      provider: 'shopify',
+      status: 'ready',
+      capabilityStatus: {
+        discovery: 'not_required',
+        cart: 'supported',
+        checkout: 'supported',
+      },
+      messages: ['Using verified Shopify variant cart permalink.'],
+    };
+  }
+
   try {
     const discovery = await discoverShopifyUcp(product.shopify_store_domain);
     if (!discovery || !toolSupported(discovery, 'create_cart')) {
