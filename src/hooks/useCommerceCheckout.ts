@@ -38,7 +38,7 @@ export function useCommerceCheckout() {
 
       return session;
     } catch (error) {
-      const fallback = createFallbackPurchaseSession(product);
+      const fallback = createFallbackPurchaseSession(product, quantity);
       window.open(fallback.purchaseUrl, '_blank', 'noopener,noreferrer');
       return fallback;
     } finally {

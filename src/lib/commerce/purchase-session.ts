@@ -4,6 +4,7 @@ import { canPurchase, getPurchaseDestination } from './shopify-ucp';
 export type PurchaseSessionMode =
   | 'shopify_checkout'
   | 'shopify_ucp_candidate'
+  | 'shopify_cart_permalink'
   | 'shopify_discovery'
   | 'amazon'
   | 'official'
@@ -28,8 +29,8 @@ export interface PurchaseSession {
   messages?: string[];
 }
 
-export function createFallbackPurchaseSession(product: Product): PurchaseSession {
-  const destination = getPurchaseDestination(product);
+export function createFallbackPurchaseSession(product: Product, quantity = 1): PurchaseSession {
+  const destination = getPurchaseDestination(product, quantity);
 
   if (!canPurchase(product)) {
     return {

@@ -138,7 +138,7 @@ export async function resolveShopifyPurchaseSession(
   product: Product,
   quantity = 1
 ): Promise<PurchaseSession> {
-  const fallback = createFallbackPurchaseSession(product);
+  const fallback = createFallbackPurchaseSession(product, quantity);
   const variantId = toProductVariantGid(product.shopify_variant_gid);
 
   if (!variantId || !product.shopify_store_domain) {

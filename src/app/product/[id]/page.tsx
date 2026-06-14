@@ -266,6 +266,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             <Badge variant={purchaseDestination.channel === 'shopify' || purchaseDestination.channel === 'shopify_ucp' ? 'success' : 'primary'}>
               {purchaseDestination.mode === 'shopify_checkout'
                 ? 'Shopify checkout'
+                : purchaseDestination.mode === 'shopify_cart_permalink'
+                ? 'Shopify cart'
                 : purchaseDestination.mode === 'shopify_ucp_candidate'
                 ? 'Shopify UCP ready'
                 : purchaseDestination.mode === 'shopify_discovery'
