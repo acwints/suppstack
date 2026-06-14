@@ -14,7 +14,10 @@ export default function BrandsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const { supplements, isLoading } = useSupplements({ sortBy: 'popular' });
 
-  const brands = useMemo(() => buildBrandDiscovery(supplements), [supplements]);
+  const brands = useMemo(
+    () => buildBrandDiscovery(supplements, { includeCatalogFallback: true }),
+    [supplements]
+  );
   const filteredBrands = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return brands;
@@ -48,7 +51,7 @@ export default function BrandsPage() {
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search whey, creatine, pre-workout, brands"
+              placeholder="Search whey, creatine, pre-workout, brands..."
               className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
             />
           </div>
