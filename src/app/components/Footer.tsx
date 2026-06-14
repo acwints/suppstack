@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="text-center md:text-left">
             <p className="text-sm">
-              &copy; {new Date().getFullYear()} <span className="text-gradient font-semibold">SuppStack</span>. 
+              &copy; {new Date().getFullYear()} <span className="font-semibold text-gray-900">SuppStack</span>. 
               Gym stacks, refill math, and sports nutrition discovery.
             </p>
           </div>

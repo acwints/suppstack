@@ -3,6 +3,7 @@
 import { FaFilter } from 'react-icons/fa';
 import { Select } from '@/components/ui';
 import type { Supplement } from '@/types';
+import { SUPPLEMENT_CATEGORIES } from '@/types';
 
 export interface CategoryFilterProps {
   supplements: Supplement[];
@@ -11,50 +12,49 @@ export interface CategoryFilterProps {
 }
 
 export function CategoryFilter({ supplements, value, onChange }: CategoryFilterProps) {
-  const categories = [
-    {
-      id: 'all',
-      name: 'All Supplements',
-      count: supplements.length,
-      icon: '🌟'
-    },
-    {
-      id: 'vitamins',
-      name: 'Vitamins',
-      count: supplements.filter(s => s.supplement_name.toLowerCase().includes('vitamin')).length,
-      icon: '💊'
-    },
-    {
-      id: 'minerals',
-      name: 'Minerals',
-      count: supplements.filter(s =>
-        ['magnesium', 'zinc', 'calcium', 'iron'].some(m =>
-          s.supplement_name.toLowerCase().includes(m)
-        )
-      ).length,
-      icon: '⚡'
-    },
-    {
-      id: 'protein',
-      name: 'Protein',
-      count: supplements.filter(s => s.supplement_name.toLowerCase().includes('protein')).length,
-      icon: '💪'
-    },
-    {
-      id: 'herbs',
-      name: 'Herbs',
-      count: supplements.filter(s =>
-        ['ashwagandha', 'turmeric'].some(h =>
-          s.supplement_name.toLowerCase().includes(h)
-        )
-      ).length,
-      icon: '🌿'
-    },
+  const preferredCategoryIds = [
+    'all',
+    'protein',
+    'performance',
+    'recovery',
+    'amino',
+    'vitamins',
+    'minerals',
   ];
+
+  const countForCategory = (categoryId: string) => {
+    if (categoryId === 'all') return supplements.length;
+
+    const category = SUPPLEMENT_CATEGORIES.find((item) => item.id === categoryId);
+    if (!category) return 0;
+
+    return supplements.filter((supplement) => {
+      const name = supplement.supplement_name.toLowerCase();
+      const categoryName = supplement.category?.toLowerCase() ?? '';
+
+      return (
+        categoryName === category.name.toLowerCase() ||
+        category.keywords.some((keyword) => name.includes(keyword) || categoryName.includes(keyword))
+      );
+    }).length;
+  };
+
+  const categories = preferredCategoryIds
+    .map((categoryId) => {
+      const category = SUPPLEMENT_CATEGORIES.find((item) => item.id === categoryId);
+      if (!category) return null;
+
+      return {
+        id: category.id,
+        name: category.name,
+        count: countForCategory(category.id),
+      };
+    })
+    .filter((category): category is { id: string; name: string; count: number } => Boolean(category));
 
   const options = categories.map(cat => ({
     value: cat.id,
-    label: `${cat.icon} ${cat.name} (${cat.count})`,
+    label: `${cat.name} (${cat.count})`,
   }));
 
   return (

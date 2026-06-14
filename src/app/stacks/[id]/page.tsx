@@ -440,13 +440,13 @@ export default function StackDetailPage() {
 
           {/* CTA for non-logged in users */}
           {!user && (
-            <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-2xl p-6 text-white">
-              <h3 className="font-bold mb-2">Want to save this stack?</h3>
-              <p className="text-sm text-orange-100 mb-4">
+            <div className="rounded border border-orange-200 bg-orange-50 p-6">
+              <h3 className="font-bold mb-2 text-gray-900">Want to save this stack?</h3>
+              <p className="text-sm text-gray-700 mb-4">
                 Sign in to copy this stack, track refill cost, and keep your gym products organized.
               </p>
               <Link href="/login">
-                <Button variant="secondary" fullWidth className="bg-white text-orange-600 hover:bg-orange-50">
+                <Button variant="primary" fullWidth>
                   Sign In
                 </Button>
               </Link>

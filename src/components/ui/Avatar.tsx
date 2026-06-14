@@ -74,7 +74,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
               config.container,
               square ? 'rounded-lg' : 'rounded-full',
               'flex items-center justify-center',
-              'bg-gradient-to-br from-orange-400 to-pink-500',
+              'bg-gray-900',
               'text-white font-semibold',
               'border-2 border-gray-200',
               fontSizeMap[size]

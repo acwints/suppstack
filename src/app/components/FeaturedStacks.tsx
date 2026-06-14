@@ -101,7 +101,7 @@ function SectionHeader() {
   return (
     <div className="text-center mb-12">
       <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-        Featured <span className="text-gradient">Stacks</span>
+        Featured <span className="text-orange-600">Stacks</span>
       </h2>
       <p className="text-lg text-gray-600 max-w-2xl mx-auto">
         See training stacks from creators, athletes, and gym-heavy routines.

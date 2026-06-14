@@ -281,7 +281,7 @@ export default function UserProfilePage() {
                     href={`https://instagram.com/${profile.instagram_handle}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-sm text-gray-600 hover:text-pink-600 transition-colors"
+                    className="flex items-center gap-1 text-sm text-gray-600 hover:text-orange-600 transition-colors"
                   >
                     <FiInstagram size={14} />
                     <span>@{profile.instagram_handle}</span>

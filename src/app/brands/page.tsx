@@ -31,14 +31,14 @@ export default function BrandsPage() {
         <div className="container-custom py-12 lg:py-16">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-3">
-              Gym Brand Discovery
+              Performance Brand Shop
             </p>
             <h1 className="text-4xl lg:text-5xl font-serif text-gray-900">
               Compare gym supplement brands by stack fit, price, and refill path.
             </h1>
             <p className="text-lg text-gray-600 mt-5">
-              Browse protein, creatine, pre-workout, recovery, and hydration product families,
-              then jump into Shopify purchase paths without losing your stack context.
+              Compare protein, creatine, pre-workout, recovery, and hydration brands by category,
+              price, refill fit, and Shopify purchase path.
             </p>
           </div>
 

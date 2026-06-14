@@ -45,10 +45,10 @@ export default function StacksPage() {
       <Inline justify="between" align="start" className="mb-8" wrap>
         <div>
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">
-            Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">Stacks</span>
+            Gym <span className="text-orange-600">Stacks</span>
           </h1>
           <p className="text-gray-600 mt-2">
-            Explore gym stacks for protein, strength, pump, recovery, and repeatable restocks
+            Explore repeatable training stacks for protein, strength, pump, recovery, and restocks.
           </p>
         </div>
         {user && (
@@ -175,13 +175,13 @@ export default function StacksPage() {
 
       {/* CTA for non-logged in users */}
       {!user && stacks.length > 0 && (
-        <div className="mt-16 bg-gradient-to-r from-orange-500 to-pink-500 rounded-2xl p-8 text-center text-white">
-          <h3 className="text-2xl font-bold mb-3">Build Your Gym Stack</h3>
-          <p className="text-orange-100 mb-6 max-w-xl mx-auto">
+        <div className="mt-16 rounded border border-orange-200 bg-orange-50 p-8 text-center">
+          <h3 className="text-2xl font-bold mb-3 text-gray-900">Build Your Gym Stack</h3>
+          <p className="mb-6 max-w-xl mx-auto text-gray-700">
             Sign in to save your training products, compare refill cost, and share your stack.
           </p>
           <Link href="/login">
-            <Button variant="secondary" className="bg-white text-orange-600 hover:bg-orange-50">
+            <Button variant="primary">
               Get Started
             </Button>
           </Link>
