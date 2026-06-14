@@ -1852,6 +1852,54 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     data_source: 'manual',
   },
   {
+    product_id: 'real-muscletech-nitro-tech',
+    product_name: 'Nitro-Tech',
+    product_description:
+      'MuscleTech Nitro-Tech whey protein for shoppers comparing mainstream performance protein, flavor options, and direct brand-cart purchasing.',
+    product_price: 44.99,
+    product_url: 'https://www.muscletech.com/products/nitro-tech',
+    amazon_url: '',
+    product_image: shopifyImage('//cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-milk-chocolate-1lb.png?v=1764974667'),
+    servings_per_container: 22,
+    servings_per_day: 1,
+    brand_id: 'muscletech',
+    brands: { brand_name: 'MuscleTech' },
+    supplement_name: 'Whey Protein',
+    shopify_product_gid: shopifyGid('Product', '6617882165344'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '41079718150240'),
+    shopify_store_domain: 'www.muscletech.com',
+    commerce_channel: 'shopify',
+    ucp_enabled: true,
+    inventory_status: 'in_stock',
+    quality_badges: ['Performance protein', 'Shopify UCP', 'Brand store'],
+    subscriptions_available: true,
+    data_source: 'manual',
+  },
+  {
+    product_id: 'real-muscletech-platinum-creatine',
+    product_name: 'Platinum 100% Creatine',
+    product_description:
+      'MuscleTech Platinum creatine for strength stacks that need a familiar sports-nutrition brand and simple daily creatine restocks.',
+    product_price: 22.99,
+    product_url: 'https://www.muscletech.com/products/platinum-100-creatine',
+    amazon_url: '',
+    product_image: shopifyImage('//cdn.shopify.com/s/files/1/1214/7132/files/platinum-creatine-grape-freeze.jpg?v=1766074513'),
+    servings_per_container: 80,
+    servings_per_day: 1,
+    brand_id: 'muscletech',
+    brands: { brand_name: 'MuscleTech' },
+    supplement_name: 'Creatine Monohydrate',
+    shopify_product_gid: shopifyGid('Product', '6621886775392'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '42375235043424'),
+    shopify_store_domain: 'www.muscletech.com',
+    commerce_channel: 'shopify',
+    ucp_enabled: true,
+    inventory_status: 'in_stock',
+    quality_badges: ['Creatine mono', 'Shopify UCP', '80 servings'],
+    subscriptions_available: true,
+    data_source: 'manual',
+  },
+  {
     product_id: 'real-gruns-superfood-gummies',
     product_name: 'Gruns Superfood Gummies',
     product_description:
@@ -1955,6 +2003,16 @@ export const supplementCatalog: Supplement[] = seeds.map((seed, index) => {
     average_price: curatedStats?.averagePrice ?? seed.price,
   };
 });
+
+export function getCuratedCatalogProducts() {
+  return curatedProductSeeds.flatMap((seed) => {
+    const supplement = supplementCatalog.find(
+      (item) => item.supplement_name.toLowerCase() === seed.supplement_name.toLowerCase()
+    );
+
+    return supplement ? [createCuratedProduct(seed, supplement)] : [];
+  });
+}
 
 export function mergeSupplementCatalog(databaseSupplements: Supplement[]) {
   const byName = new Map<string, Supplement>();

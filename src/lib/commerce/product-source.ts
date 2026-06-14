@@ -11,11 +11,11 @@ function isShopifySearchUrl(value?: string | null) {
   }
 }
 
-function hasShopifyVariant(product: Product) {
+export function hasShopifyVariant(product: Product) {
   return Boolean(product.shopify_store_domain && product.shopify_variant_gid);
 }
 
-function hasDirectShopifyCheckout(product: Product) {
+export function hasDirectShopifyCheckout(product: Product) {
   return Boolean(product.shopify_checkout_url && !isShopifySearchUrl(product.shopify_checkout_url));
 }
 

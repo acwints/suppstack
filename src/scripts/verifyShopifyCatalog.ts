@@ -5,7 +5,6 @@ interface CatalogShopifyEntry {
   productId: string;
   productName: string;
   productUrl: string;
-  storeDomain: string;
   shopifyProductId: string;
   shopifyVariantId: string;
 }
@@ -39,22 +38,12 @@ function catalogEntriesFromSource(source: string): CatalogShopifyEntry[] {
     const productId = extractString(block, 'product_id');
     const productName = extractString(block, 'product_name');
     const productUrl = extractString(block, 'product_url');
-    const storeDomain = extractString(block, 'shopify_store_domain');
     const shopifyProductId = extractShopifyGid(block, 'shopify_product_gid');
     const shopifyVariantId = extractShopifyGid(block, 'shopify_variant_gid');
 
-    if (!productId || !productName || !productUrl || !storeDomain || !shopifyProductId || !shopifyVariantId) {
-      return;
-    }
+    if (!productId || !productName || !productUrl || !shopifyProductId || !shopifyVariantId) return;
 
-    entries.push({
-      productId,
-      productName,
-      productUrl,
-      storeDomain,
-      shopifyProductId,
-      shopifyVariantId,
-    });
+    entries.push({ productId, productName, productUrl, shopifyProductId, shopifyVariantId });
   });
 
   return entries;
@@ -65,9 +54,7 @@ function productJsonUrl(productUrl: string) {
   url.search = '';
   url.hash = '';
   url.pathname = url.pathname.replace(/\/$/, '');
-  if (!url.pathname.endsWith('.js')) {
-    url.pathname = `${url.pathname}.js`;
-  }
+  if (!url.pathname.endsWith('.js')) url.pathname = `${url.pathname}.js`;
   return url.toString();
 }
 
@@ -95,10 +82,7 @@ async function verifyEntry(entry: CatalogShopifyEntry) {
   const body = await response.text();
 
   if (!response.ok || body.trim().startsWith('<')) {
-    return {
-      ok: false,
-      message: `${entry.productId}: ${response.status} from ${url}`,
-    };
+    return { ok: false, message: `${entry.productId}: ${response.status} from ${url}` };
   }
 
   const product = JSON.parse(body) as ShopifyProductJson;
@@ -111,30 +95,17 @@ async function verifyEntry(entry: CatalogShopifyEntry) {
     };
   }
 
-  if (!variant) {
-    return {
-      ok: false,
-      message: `${entry.productId}: variant ${entry.shopifyVariantId} not found`,
-    };
-  }
-
+  if (!variant) return { ok: false, message: `${entry.productId}: variant ${entry.shopifyVariantId} not found` };
   if (product.available === false || variant.available === false) {
-    return {
-      ok: false,
-      message: `${entry.productId}: live product or variant is unavailable`,
-    };
+    return { ok: false, message: `${entry.productId}: live product or variant is unavailable` };
   }
 
-  return {
-    ok: true,
-    message: `${entry.productId}: ${entry.productName}`,
-  };
+  return { ok: true, message: `${entry.productId}: ${entry.productName}` };
 }
 
 async function main() {
   const sourcePath = resolve(process.cwd(), 'src/lib/catalog/supplement-catalog.ts');
-  const source = readFileSync(sourcePath, 'utf8');
-  const entries = catalogEntriesFromSource(source);
+  const entries = catalogEntriesFromSource(readFileSync(sourcePath, 'utf8'));
 
   console.log(`Verifying ${entries.length} Shopify-backed catalog products...`);
 
@@ -143,12 +114,8 @@ async function main() {
   for (const entry of entries) {
     try {
       const result = await verifyEntry(entry);
-      if (result.ok) {
-        console.log(`OK ${result.message}`);
-      } else {
-        console.log(`FAIL ${result.message}`);
-        failures.push(result.message);
-      }
+      console.log(`${result.ok ? 'OK' : 'FAIL'} ${result.message}`);
+      if (!result.ok) failures.push(result.message);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.log(`FAIL ${entry.productId}: ${message}`);
