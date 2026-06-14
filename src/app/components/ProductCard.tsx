@@ -9,6 +9,7 @@ import { FiExternalLink, FiShield } from 'react-icons/fi';
 import type { Product, ProductRatingStats } from '@/types';
 import { useAuth } from '../context/AuthContext';
 import { useProductInStack, usePriceCalculations } from '@/hooks';
+import { useCommerceCheckout } from '@/hooks';
 import { formatPrice } from '@/lib/utils';
 import { Button, Badge, useToast } from '@/components/ui';
 import { Rating } from '@/components/composite/Rating';
@@ -16,7 +17,7 @@ import { supabase } from '../supabase';
 import {
   canPurchase,
   getInventoryLabel,
-  getPreferredPurchaseUrl,
+  getPurchaseDestination,
   getPurchaseLabel,
 } from '@/lib/commerce/shopify-ucp';
 
@@ -35,6 +36,7 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
 
   // Use custom hook for stack management
   const { isInStack, isUpdating, addToStack } = useProductInStack(productId);
+  const { isStartingCheckout, startCheckout } = useCommerceCheckout();
 
   // Use custom hook for price calculations
   const { costPerServing, monthlyCost } = usePriceCalculations(
@@ -45,7 +47,7 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
 
   // Fetch real ratings from database if not provided
   useEffect(() => {
-    if (initialStats !== undefined || productId.startsWith('catalog-')) return;
+    if (initialStats !== undefined || productId.startsWith('catalog-') || productId.startsWith('real-')) return;
 
     async function fetchRatings() {
       const { data } = await supabase
@@ -61,9 +63,12 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
 
   const rating = ratingStats?.average_rating || 0;
   const reviewCount = ratingStats?.total_reviews || 0;
-  const isCatalogProduct = product.data_source === 'catalog_fallback' || productId.startsWith('catalog-');
-  const purchaseUrl = getPreferredPurchaseUrl(product);
+  const isCatalogProduct =
+    product.data_source === 'catalog_fallback' ||
+    productId.startsWith('catalog-') ||
+    productId.startsWith('real-');
   const purchaseLabel = getPurchaseLabel(product);
+  const purchaseDestination = getPurchaseDestination(product);
   const inventoryLabel = getInventoryLabel(product);
 
   const handleAddToStack = async () => {
@@ -78,6 +83,14 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
       toast.success('Added to stack!');
     } catch (error) {
       toast.error('Failed to add product to stack. Please try again.');
+    }
+  };
+
+  const handleStartCheckout = async () => {
+    try {
+      await startCheckout(product);
+    } catch (error) {
+      toast.error('Unable to open purchase link. Please try again.');
     }
   };
 
@@ -109,8 +122,14 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
           )}
 
           <div className="absolute left-3 top-3">
-            <Badge variant={product.ucp_enabled ? 'success' : 'primary'}>
-              {product.ucp_enabled ? 'Shopify' : inventoryLabel}
+            <Badge variant={purchaseDestination.channel === 'shopify' || purchaseDestination.channel === 'shopify_ucp' ? 'success' : 'primary'}>
+              {purchaseDestination.mode === 'shopify_checkout'
+                ? 'Shopify checkout'
+                : purchaseDestination.mode === 'shopify_ucp_candidate'
+                ? 'Shopify UCP'
+                : purchaseDestination.mode === 'shopify_discovery'
+                ? 'Shopify'
+                : inventoryLabel}
             </Badge>
           </div>
 
@@ -167,16 +186,16 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
         )}
 
         <div className="mt-auto space-y-3">
-          <a href={purchaseUrl} target="_blank" rel="noopener noreferrer">
-            <Button
-              variant="primary"
-              fullWidth
-              disabled={!canPurchase(product)}
-              rightIcon={<FiExternalLink />}
-            >
-              {purchaseLabel}
-            </Button>
-          </a>
+          <Button
+            variant="primary"
+            fullWidth
+            onClick={handleStartCheckout}
+            disabled={!canPurchase(product)}
+            isLoading={isStartingCheckout}
+            rightIcon={<FiExternalLink />}
+          >
+            {purchaseLabel}
+          </Button>
 
           {!isCatalogProduct && (
             <Button

@@ -34,6 +34,18 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn.shopify.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'main.thgimages.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   webpack: (config, { dev }) => {

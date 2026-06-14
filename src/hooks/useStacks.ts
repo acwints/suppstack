@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
 import type { Stack, StackInput, StackSupplementInput } from '@/types';
+import { getOrCreateUserProfile } from '@/lib/account/profile';
 
 export type StackSortBy = 'newest' | 'popular' | 'most_liked' | 'most_copied';
 export type StackFilter = 'all' | 'featured' | 'verified' | 'my_stacks';
@@ -60,6 +61,13 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
     setError(null);
 
     try {
+      if (filter === 'my_stacks' && !user) {
+        setStacks([]);
+        setTotalCount(0);
+        setIsLoading(false);
+        return;
+      }
+
       let query = supabase
         .from('stacks')
         .select(`
@@ -91,16 +99,8 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
       } else if (filter === 'verified') {
         query = query.eq('is_verified', true);
       } else if (filter === 'my_stacks' && user) {
-        // Get user's profile_id first, then filter
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('profile_id')
-          .eq('user_id', user.id)
-          .single();
-
-        if (profile) {
-          query = query.eq('profile_id', profile.profile_id);
-        }
+        const profile = await getOrCreateUserProfile(user);
+        query = query.eq('profile_id', profile.profile_id);
       }
 
       // Only show public stacks unless viewing own
@@ -173,7 +173,7 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
   useEffect(() => {
     setPage(0);
     fetchStacks(0, false);
-  }, [filter, sortBy, userId]);
+  }, [fetchStacks, filter, sortBy, userId]);
 
   // Load more
   const loadMore = useCallback(async () => {
@@ -186,16 +186,7 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
   const createStack = useCallback(async (input: StackInput): Promise<Stack> => {
     if (!user) throw new Error('Must be logged in to create a stack');
 
-    // Get user's profile
-    const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('profile_id')
-      .eq('user_id', user.id)
-      .single();
-
-    if (profileError || !profile) {
-      throw new Error('User profile not found');
-    }
+    const profile = await getOrCreateUserProfile(user);
 
     // Create the stack
     const { data: stack, error: stackError } = await supabase
@@ -328,14 +319,7 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
 
     if (fetchError || !original) throw new Error('Stack not found');
 
-    // Get user's profile
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('profile_id')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!profile) throw new Error('User profile not found');
+    const profile = await getOrCreateUserProfile(user);
 
     // Create a copy
     const { data: newStack, error: createError } = await supabase

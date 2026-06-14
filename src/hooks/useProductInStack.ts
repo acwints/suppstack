@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
+import { getOrCreateUserProfile } from '@/lib/account/profile';
 
 export interface UseProductInStackResult {
   isInStack: boolean;
@@ -17,7 +18,7 @@ export interface UseProductInStackResult {
 export function useProductInStack(productId: string): UseProductInStackResult {
   const { user } = useAuth();
   const normalizedProductId = String(productId);
-  const isCatalogProduct = normalizedProductId.startsWith('catalog-');
+  const isCatalogProduct = normalizedProductId.startsWith('catalog-') || normalizedProductId.startsWith('real-');
   const [isInStack, setIsInStack] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -35,10 +36,11 @@ export function useProductInStack(productId: string): UseProductInStackResult {
     setError(null);
 
     try {
+      const profile = await getOrCreateUserProfile(user);
       const { data, error: queryError } = await supabase
         .from('users_products')
         .select('product_id')
-        .eq('user_id', user.id)
+        .eq('profile_id', profile.profile_id)
         .eq('product_id', normalizedProductId)
         .single();
 
@@ -76,10 +78,11 @@ export function useProductInStack(productId: string): UseProductInStackResult {
     setError(null);
 
     try {
+      const profile = await getOrCreateUserProfile(user);
       const { error: insertError } = await supabase
         .from('users_products')
         .insert({
-          user_id: user.id,
+          profile_id: profile.profile_id,
           product_id: normalizedProductId,
         });
 
@@ -113,10 +116,11 @@ export function useProductInStack(productId: string): UseProductInStackResult {
     setError(null);
 
     try {
+      const profile = await getOrCreateUserProfile(user);
       const { error: deleteError } = await supabase
         .from('users_products')
         .delete()
-        .eq('user_id', user.id)
+        .eq('profile_id', profile.profile_id)
         .eq('product_id', normalizedProductId);
 
       if (deleteError) {

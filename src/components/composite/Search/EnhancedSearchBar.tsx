@@ -62,7 +62,7 @@ function clearRecentSearches(): void {
 export function EnhancedSearchBar({
   value,
   onChange,
-  placeholder = 'Search supplements, products, brands...',
+  placeholder = 'Search whey, creatine, pre-workout, brands...',
   className,
 }: EnhancedSearchBarProps) {
   const [isOpen, setIsOpen] = useState(false);

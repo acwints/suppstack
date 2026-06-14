@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
+import { getOrCreateUserProfile } from '@/lib/account/profile';
 
 interface AuthContextType {
   user: User | null;
@@ -34,6 +35,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user ?? null);
+      if (session?.user) {
+        getOrCreateUserProfile(session.user).catch((error) => {
+          console.error('Failed to prepare user profile:', error);
+        });
+      }
       setLoading(false);
     }
     getInitialSession();
@@ -44,6 +50,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
       // Only redirect on actual sign-in, not token refresh or session restore
       if (event === 'SIGNED_IN' && session?.user) {
+        getOrCreateUserProfile(session.user).catch((error) => {
+          console.error('Failed to prepare user profile:', error);
+        });
         router.push('/profile');
       }
     });
@@ -52,9 +61,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [router]);
 
   const loginWithGoogle = async () => {
-    const redirectUrl = process.env.NODE_ENV === 'production'
-      ? 'https://suppstack.app/profile'
-      : `${window.location.origin}/profile`;
+    const redirectUrl =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}/profile`
+        : 'https://www.suppstack.app/profile';
 
     await supabase.auth.signInWithOAuth({
       provider: 'google',

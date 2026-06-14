@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { FiTrendingUp, FiTrendingDown, FiMinus, FiInfo } from 'react-icons/fi';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
+import { getOrCreateUserProfile } from '@/lib/account/profile';
 import { Card, Spinner, Badge } from '@/components/ui';
 import { cn } from '@/lib/design-system/utils';
 
@@ -47,6 +48,7 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
 
     setIsLoading(true);
     try {
+      const profile = await getOrCreateUserProfile(user);
       // Get last 30 days of logs and wellness data
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -66,7 +68,7 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
         supabase
           .from('users_products')
           .select('product_id, products(product_name, supplements(supplement_name))')
-          .eq('user_id', user.id),
+          .eq('profile_id', profile.profile_id),
       ]);
 
       const logs = logsResult.data || [];

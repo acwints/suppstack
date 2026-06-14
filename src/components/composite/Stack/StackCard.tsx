@@ -127,10 +127,10 @@ export function StackCard({
               <p className="text-sm text-gray-600 line-clamp-2">{stack.stack_description}</p>
             </div>
 
-            {/* Core Supplements */}
+            {/* Core Stack Picks */}
             {stack.supplements && stack.supplements.length > 0 && (
               <div>
-                <h5 className="text-sm font-semibold text-gray-700 mb-2">Core Supplements:</h5>
+                <h5 className="text-sm font-semibold text-gray-700 mb-2">Core Stack Picks:</h5>
                 <StackLayout gap={1}>
                   {stack.supplements
                     .filter((s) => s.is_core)

@@ -12,7 +12,7 @@ export interface SearchBarProps {
 export function SearchBar({
   value,
   onChange,
-  placeholder = 'Search supplements, vitamins, minerals...',
+  placeholder = 'Search whey, creatine, pre-workout...',
 }: SearchBarProps) {
   return (
     <Input

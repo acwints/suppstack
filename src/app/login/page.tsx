@@ -35,15 +35,17 @@ export default function Login() {
   if (user) return null;
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-orange-50 to-pink-50">
-      <Card padding="lg" className="w-full max-w-md mx-4">
+    <div className="flex justify-center items-center min-h-screen bg-gray-50 px-4">
+      <Card padding="lg" className="w-full max-w-md border-gray-200">
         <Stack gap={6} align="center">
           {/* Logo/Brand */}
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
+            <h1 className="text-3xl font-serif text-gray-900">
               SuppStack
             </h1>
-            <p className="text-gray-600 mt-2">Track your supplements, share your stacks</p>
+            <p className="text-gray-600 mt-2">
+              Build gym stacks, compare restock cost, and save protein, creatine, and recovery picks.
+            </p>
           </div>
 
           {/* Login Section */}
@@ -64,11 +66,11 @@ export default function Login() {
           {/* Terms */}
           <p className="text-xs text-gray-500 text-center">
             By continuing, you agree to our{' '}
-            <a href="/terms" className="text-orange-600 hover:underline">
+            <a href="/terms" className="text-gray-900 underline underline-offset-4">
               Terms of Service
             </a>{' '}
             and{' '}
-            <a href="/privacy" className="text-orange-600 hover:underline">
+            <a href="/privacy" className="text-gray-900 underline underline-offset-4">
               Privacy Policy
             </a>
           </p>

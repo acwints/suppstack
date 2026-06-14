@@ -23,6 +23,7 @@ import { supabase } from '../supabase';
 import type { RegimenItem, UserSupplementSettingsInput } from '@/types';
 import { formatCurrency, feetInchesToCm, cmToFeetInches, lbsToKg, kgToLbs } from '@/lib/utils';
 import { useRegimenCost, useSupplementLogs, useSupplementSettings, useStacks } from '@/hooks';
+import { getOrCreateUserProfile, type AccountProfile } from '@/lib/account/profile';
 import Link from 'next/link';
 import {
   Button,
@@ -78,6 +79,7 @@ export default function Profile() {
   const [instagramHandle, setInstagramHandle] = useState('');
   const [youtubeChannel, setYoutubeChannel] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [profile, setProfile] = useState<AccountProfile | null>(null);
 
   // Collection state
   const [regimen, setRegimen] = useState<RegimenItem[]>([]);
@@ -112,12 +114,15 @@ export default function Profile() {
     servings_per_container: item.products.servings_per_container,
     servings_per_day: item.products.servings_per_day,
   }));
-  const { totalMonthlyCost, itemCount } = useRegimenCost(regimenItems);
+  const { totalDailyCost, totalMonthlyCost, totalAnnualCost, itemCount } = useRegimenCost(regimenItems);
 
   const fetchRegimen = useCallback(async () => {
     if (!user) return;
 
     try {
+      const currentProfile = await getOrCreateUserProfile(user);
+      setProfile(currentProfile);
+
       const { data, error } = await supabase
         .from('users_products')
         .select(
@@ -131,7 +136,7 @@ export default function Profile() {
           )
         `
         )
-        .eq('user_id', user.id);
+        .eq('profile_id', currentProfile.profile_id);
 
       if (error) throw error;
 
@@ -158,13 +163,8 @@ export default function Profile() {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
+      const data = await getOrCreateUserProfile(user);
+      setProfile(data);
 
       if (data) {
         setDateOfBirth(data.date_of_birth || '');
@@ -211,8 +211,11 @@ export default function Profile() {
     const weightKg = weight ? lbsToKg(Number(weight)) : null;
 
     try {
+      const currentProfile = profile || await getOrCreateUserProfile(user);
       const { error } = await supabase.from('user_profiles').upsert({
-        id: user.id,
+        profile_id: currentProfile.profile_id,
+        user_id: user.id,
+        username: currentProfile.username,
         date_of_birth: dateOfBirth || null,
         gender: gender || null,
         height: heightCm,
@@ -223,7 +226,7 @@ export default function Profile() {
         twitter_handle: twitterHandle || null,
         instagram_handle: instagramHandle || null,
         youtube_channel: youtubeChannel || null,
-      });
+      }, { onConflict: 'profile_id' });
 
       if (error) throw error;
       toast.success('Profile updated');
@@ -318,18 +321,22 @@ export default function Profile() {
         </header>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-8 mb-12 pb-8 border-b border-gray-100">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12 pb-8 border-b border-gray-100">
           <div>
             <p className="text-3xl font-serif text-gray-900">{itemCount}</p>
             <p className="text-sm text-gray-500 mt-1">Supplements</p>
+          </div>
+          <div>
+            <p className="text-3xl font-serif text-gray-900">{formatCurrency(totalDailyCost)}</p>
+            <p className="text-sm text-gray-500 mt-1">Daily Cost</p>
           </div>
           <div>
             <p className="text-3xl font-serif text-gray-900">{formatCurrency(totalMonthlyCost)}</p>
             <p className="text-sm text-gray-500 mt-1">Monthly Cost</p>
           </div>
           <div>
-            <p className="text-3xl font-serif text-gray-900">{myStacks.length}</p>
-            <p className="text-sm text-gray-500 mt-1">Stacks Created</p>
+            <p className="text-3xl font-serif text-gray-900">{formatCurrency(totalAnnualCost)}</p>
+            <p className="text-sm text-gray-500 mt-1">Annual Cost</p>
           </div>
         </div>
 

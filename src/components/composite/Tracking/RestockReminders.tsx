@@ -5,6 +5,7 @@ import { FiAlertCircle, FiShoppingCart, FiExternalLink, FiClock } from 'react-ic
 import Link from 'next/link';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
+import { getOrCreateUserProfile } from '@/lib/account/profile';
 import { Card, Button, Spinner, Badge } from '@/components/ui';
 import { cn } from '@/lib/design-system/utils';
 import { formatPrice } from '@/lib/utils';
@@ -56,6 +57,7 @@ export function RestockReminders({ className }: RestockRemindersProps) {
 
     setIsLoading(true);
     try {
+      const profile = await getOrCreateUserProfile(user);
       // Fetch user's products with settings
       const [productsResult, logsResult, settingsResult] = await Promise.all([
         supabase
@@ -69,7 +71,7 @@ export function RestockReminders({ className }: RestockRemindersProps) {
               brands (brand_name)
             )
           `)
-          .eq('user_id', user.id),
+          .eq('profile_id', profile.profile_id),
         // Get last 30 days of logs to compute average daily usage
         supabase
           .from('supplement_logs')

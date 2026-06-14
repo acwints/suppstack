@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FiActivity, FiMoon, FiZap } from 'react-icons/fi';
+import { FiActivity, FiRefreshCw, FiZap } from 'react-icons/fi';
 import type { Supplement } from '@/types';
 
 export interface FeaturedCategoriesProps {
@@ -11,28 +11,28 @@ export interface FeaturedCategoriesProps {
 export function FeaturedCategories({ supplements }: FeaturedCategoriesProps) {
   const featuredCategories = [
     {
-      name: 'Daily Essentials',
-      description: 'Core micronutrients with clear use cases',
+      name: 'Protein & Mass',
+      description: 'Whey, casein, plant protein, and muscle-building staples',
       supplements: supplements
-        .filter(s => ['Vitamins', 'Minerals'].includes(s.category || ''))
+        .filter(s => ['Protein'].includes(s.category || ''))
         .slice(0, 4),
       icon: <FiActivity className="h-5 w-5" />
     },
     {
-      name: 'Performance',
-      description: 'Training, recovery, and hydration support',
+      name: 'Strength & Performance',
+      description: 'Creatine, pump, power, and pre-workout stack builders',
       supplements: supplements
-        .filter(s => ['Performance', 'Protein', 'Omega & Fish Oil'].includes(s.category || ''))
+        .filter(s => ['Performance', 'Amino Acids'].includes(s.category || ''))
         .slice(0, 4),
       icon: <FiZap className="h-5 w-5" />
     },
     {
-      name: 'Sleep & Calm',
-      description: 'Evening routines and stress support',
+      name: 'Recovery & Hydration',
+      description: 'Electrolytes, omega-3s, magnesium, and post-training support',
       supplements: supplements
-        .filter(s => ['Sleep & Relaxation', 'Herbs & Adaptogens', 'Amino Acids'].includes(s.category || ''))
+        .filter(s => ['Minerals', 'Omega & Fish Oil', 'Sleep & Relaxation'].includes(s.category || ''))
         .slice(0, 4),
-      icon: <FiMoon className="h-5 w-5" />
+      icon: <FiRefreshCw className="h-5 w-5" />
     }
   ];
 

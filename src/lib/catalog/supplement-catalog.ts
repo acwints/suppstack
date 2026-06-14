@@ -111,9 +111,259 @@ function slugify(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
+function shopifyGid(type: 'Product' | 'ProductVariant', id: string) {
+  return `gid://shopify/${type}/${id}`;
+}
+
+function shopifyImage(path: string) {
+  return path.startsWith('//') ? `https:${path}` : path;
+}
+
+type CuratedProductSeed = Omit<Product, 'supplement_id' | 'supplements'> & {
+  supplement_name: string;
+};
+
+const curatedProductSeeds: CuratedProductSeed[] = [
+  {
+    product_id: 'real-on-gold-standard-100-whey',
+    product_name: 'Gold Standard 100% Whey',
+    product_description:
+      'Optimum Nutrition whey protein powder for gym stacks built around daily protein targets, post-training shakes, and refill-ready pantry staples.',
+    product_price: 54.99,
+    product_url: 'https://www.optimumnutrition.com/en-us/products/gold-standard-100-whey-protein-powder',
+    amazon_url: '',
+    product_image: shopifyImage('//cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1111968_Image_01.png?v=1756452646'),
+    servings_per_container: 29,
+    servings_per_day: 1,
+    brand_id: 'optimum-nutrition',
+    brands: { brand_name: 'Optimum Nutrition' },
+    supplement_name: 'Whey Protein',
+    shopify_product_gid: shopifyGid('Product', '10686370677003'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '52138905501963'),
+    shopify_store_domain: 'www.optimumnutrition.com',
+    commerce_channel: 'shopify',
+    ucp_enabled: true,
+    inventory_status: 'in_stock',
+    quality_badges: ['24g protein', 'Shopify UCP', 'Gym staple'],
+    subscriptions_available: true,
+    data_source: 'manual',
+  },
+  {
+    product_id: 'real-transparent-labs-whey-isolate',
+    product_name: 'Grass-Fed Whey Protein Isolate',
+    product_description:
+      'A whey isolate pick for protein-forward stacks where shoppers want a lean formula, clear flavor choice, and direct brand checkout path.',
+    product_price: 59.99,
+    product_url: 'https://www.transparentlabs.com/products/whey-protein-isolate',
+    amazon_url: '',
+    product_image: shopifyImage('//cdn.shopify.com/s/files/1/0866/7664/files/01_chocolate.png?v=1778514112'),
+    servings_per_container: 30,
+    servings_per_day: 1,
+    brand_id: 'transparent-labs',
+    brands: { brand_name: 'Transparent Labs' },
+    supplement_name: 'Whey Protein',
+    shopify_product_gid: shopifyGid('Product', '1994224707'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '39366090752093'),
+    shopify_store_domain: 'www.transparentlabs.com',
+    commerce_channel: 'shopify',
+    ucp_enabled: true,
+    inventory_status: 'in_stock',
+    quality_badges: ['Whey isolate', 'Shopify UCP', 'No artificial sweeteners'],
+    subscriptions_available: true,
+    data_source: 'manual',
+  },
+  {
+    product_id: 'real-myprotein-impact-whey',
+    product_name: 'Impact Whey Protein',
+    product_description:
+      'A value-oriented whey protein option for shoppers comparing flavors, price per serving, and high-frequency shake refills.',
+    product_price: 14.99,
+    product_url: 'https://us.myprotein.com/p/sports-nutrition/impact-whey-protein/10852500/',
+    amazon_url: '',
+    product_image:
+      'https://main.thgimages.com?url=https://static.thcdn.com/productimg/original/10852500-1615304620165133.jpg&format=webp&width=1500&height=1500&fit=cover',
+    servings_per_container: 20,
+    servings_per_day: 1,
+    brand_id: 'myprotein',
+    brands: { brand_name: 'Myprotein' },
+    supplement_name: 'Whey Protein',
+    commerce_channel: 'official',
+    ucp_enabled: false,
+    inventory_status: 'in_stock',
+    quality_badges: ['22g protein', 'Flavor range', 'Value pick'],
+    subscriptions_available: true,
+    data_source: 'manual',
+  },
+  {
+    product_id: 'real-brainmd-omni-protein',
+    product_name: 'OMNI Protein',
+    product_description:
+      'Plant protein powder for recovery stacks that need a non-dairy protein base with fiber and digestive enzyme support.',
+    product_price: 59.95,
+    product_url: 'https://brainmd.com/products/omni-protein-powder',
+    amazon_url: '',
+    product_image: shopifyImage('//cdn.shopify.com/s/files/1/0696/2656/0681/files/OMNIProtein_PDPImage1.png?v=1766438435'),
+    servings_per_container: 20,
+    servings_per_day: 1,
+    brand_id: 'brainmd',
+    brands: { brand_name: 'BrainMD' },
+    supplement_name: 'Plant Protein',
+    shopify_product_gid: shopifyGid('Product', '8758710763689'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '46503066501289'),
+    shopify_store_domain: 'brainmd.com',
+    commerce_channel: 'shopify',
+    ucp_enabled: true,
+    inventory_status: 'in_stock',
+    quality_badges: ['Plant protein', 'Shopify UCP', 'Recovery stack'],
+    subscriptions_available: true,
+    data_source: 'manual',
+  },
+  {
+    product_id: 'real-on-micronized-creatine',
+    product_name: 'Micronized Creatine Powder',
+    product_description:
+      'Creatine monohydrate powder for strength, power, and repeatable daily performance stacks.',
+    product_price: 19.99,
+    product_url: 'https://www.optimumnutrition.com/en-us/products/creatine-monohydrate-micronized-powder',
+    amazon_url: '',
+    product_image: shopifyImage('//cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1153060_Image_01.png?v=1769135392'),
+    servings_per_container: 60,
+    servings_per_day: 1,
+    brand_id: 'optimum-nutrition',
+    brands: { brand_name: 'Optimum Nutrition' },
+    supplement_name: 'Creatine Monohydrate',
+    shopify_product_gid: shopifyGid('Product', '10677190787339'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '52106231283979'),
+    shopify_store_domain: 'www.optimumnutrition.com',
+    commerce_channel: 'shopify',
+    ucp_enabled: true,
+    inventory_status: 'in_stock',
+    quality_badges: ['5g creatine', 'Shopify UCP', 'Strength stack'],
+    subscriptions_available: true,
+    data_source: 'manual',
+  },
+  {
+    product_id: 'real-create-creatine-gummies',
+    product_name: 'Core Creatine Monohydrate Gummies',
+    product_description:
+      'Creatine gummies for shoppers who want a portable, no-scoop creatine habit inside a strength or gym-bag stack.',
+    product_price: 159,
+    product_url: 'https://trycreate.co/products/core-latest-product',
+    amazon_url: '',
+    product_image: shopifyImage('//cdn.shopify.com/s/files/1/0611/9204/4732/files/Core_HighFive_450Ct_Main.jpg?v=1757512554'),
+    servings_per_container: 90,
+    servings_per_day: 1,
+    brand_id: 'create-wellness',
+    brands: { brand_name: 'Create' },
+    supplement_name: 'Creatine Monohydrate',
+    shopify_product_gid: shopifyGid('Product', '14612124762484'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '51620901060980'),
+    shopify_store_domain: 'trycreate.co',
+    commerce_channel: 'shopify',
+    ucp_enabled: true,
+    inventory_status: 'in_stock',
+    quality_badges: ['Creatine gummies', 'Shopify UCP', 'Portable'],
+    subscriptions_available: true,
+    data_source: 'manual',
+  },
+  {
+    product_id: 'real-create-creatine-electrolytes',
+    product_name: 'Creatine + Electrolytes Mix',
+    product_description:
+      'Training hydration mix that pairs creatine with electrolytes for sweaty sessions, travel lifts, and repeatable refill routines.',
+    product_price: 60,
+    product_url: 'https://trycreate.co/products/creatine-electrolytes-mix',
+    amazon_url: '',
+    product_image: shopifyImage('//cdn.shopify.com/s/files/1/0611/9204/4732/files/Creatine-Single-Serve-Watermnelon-TP.png?v=1774651125'),
+    servings_per_container: 30,
+    servings_per_day: 1,
+    brand_id: 'create-wellness',
+    brands: { brand_name: 'Create' },
+    supplement_name: 'Electrolytes',
+    shopify_product_gid: shopifyGid('Product', '14971655291252'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '54065511104884'),
+    shopify_store_domain: 'trycreate.co',
+    commerce_channel: 'shopify',
+    ucp_enabled: true,
+    inventory_status: 'in_stock',
+    quality_badges: ['Hydration', 'Shopify UCP', 'Training mix'],
+    subscriptions_available: true,
+    data_source: 'manual',
+  },
+  {
+    product_id: 'real-on-gold-standard-pre-workout',
+    product_name: 'Gold Standard Pre-Workout',
+    product_description:
+      'Pre-workout powder for energy, focus, and high-intensity training stacks with a direct Shopify discovery path.',
+    product_price: 26.99,
+    product_url: 'https://www.optimumnutrition.com/en-us/products/gold-standard-pre-workout-powder',
+    amazon_url: '',
+    product_image: shopifyImage('//cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1146471_Image_01.png?v=1755790955'),
+    servings_per_container: 30,
+    servings_per_day: 1,
+    brand_id: 'optimum-nutrition',
+    brands: { brand_name: 'Optimum Nutrition' },
+    supplement_name: 'Beta-Alanine',
+    shopify_product_gid: shopifyGid('Product', '10677190131979'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '52106232103179'),
+    shopify_store_domain: 'www.optimumnutrition.com',
+    commerce_channel: 'shopify',
+    ucp_enabled: true,
+    inventory_status: 'in_stock',
+    quality_badges: ['Pre-workout', 'Shopify UCP', 'Training energy'],
+    subscriptions_available: true,
+    data_source: 'manual',
+  },
+  {
+    product_id: 'real-gruns-superfood-gummies',
+    product_name: 'Gruns Superfood Gummies',
+    product_description:
+      'A gummy micronutrient pack for shoppers who still want a broad daily slot alongside protein, creatine, and training-day products.',
+    product_price: 79.99,
+    product_url: 'https://gruns.co/products/gruns',
+    amazon_url: '',
+    product_image: shopifyImage('//cdn.shopify.com/s/files/1/0550/9614/8034/files/1_Adult_LowSugar.webp?v=1768423690'),
+    servings_per_container: 28,
+    servings_per_day: 1,
+    brand_id: 'gruns',
+    brands: { brand_name: 'Gruns' },
+    supplement_name: 'Multivitamin',
+    shopify_product_gid: shopifyGid('Product', '7362502557762'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '41720671830082'),
+    shopify_store_domain: 'gruns.co',
+    commerce_channel: 'shopify',
+    ucp_enabled: true,
+    inventory_status: 'in_stock',
+    quality_badges: ['Daily pack', 'Shopify UCP', 'Refill-ready'],
+    subscriptions_available: true,
+    data_source: 'manual',
+  },
+];
+
+function findCuratedSeedByProductId(productId: string) {
+  return curatedProductSeeds.find((product) => product.product_id === productId) ?? null;
+}
+
+function createCuratedProduct(seed: CuratedProductSeed, supplement: Supplement): Product {
+  return {
+    ...seed,
+    supplement_id: supplement.supplement_id,
+    supplements: {
+      supplement_id: supplement.supplement_id,
+      supplement_name: supplement.supplement_name,
+    },
+  };
+}
+
+function createCuratedProductsForSupplement(supplement: Supplement): Product[] {
+  return curatedProductSeeds
+    .filter((product) => product.supplement_name.toLowerCase() === supplement.supplement_name.toLowerCase())
+    .map((product) => createCuratedProduct(product, supplement));
+}
+
 function categoryImage(category: string) {
   const imageByCategory: Record<string, string> = {
-    Vitamins: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=640&h=480&fit=crop',
+    Vitamins: 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=640&h=480&fit=crop',
     Minerals: 'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=640&h=480&fit=crop',
     'Omega & Fish Oil': 'https://images.unsplash.com/photo-1535185384036-28bbc8035f28?w=640&h=480&fit=crop',
     Protein: 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=640&h=480&fit=crop',
@@ -179,6 +429,11 @@ export function findCatalogSupplementById(id: number) {
 }
 
 export function findCatalogSupplementByProductId(productId: string) {
+  const curatedSeed = findCuratedSeedByProductId(productId);
+  if (curatedSeed) {
+    return supplementCatalog.find((supplement) => supplement.supplement_name === curatedSeed.supplement_name) ?? null;
+  }
+
   const [, supplementSlug] = productId.match(/^catalog-(.+)-(essential|premium|subscription)$/) ?? [];
   if (!supplementSlug) return null;
 
@@ -186,6 +441,9 @@ export function findCatalogSupplementByProductId(productId: string) {
 }
 
 export function createCatalogProductsForSupplement(supplement: Supplement): Product[] {
+  const curatedProducts = createCuratedProductsForSupplement(supplement);
+  if (curatedProducts.length > 0) return curatedProducts;
+
   const slug = slugify(supplement.supplement_name);
   const brandBase = supplement.category?.split(' ')[0] || 'SuppStack';
   const price = supplement.average_price ?? 24;
@@ -205,9 +463,8 @@ export function createCatalogProductsForSupplement(supplement: Supplement): Prod
       brand_id: 'catalog',
       brands: { brand_name: `${brandBase} Labs` },
       supplements: { supplement_id: supplement.supplement_id, supplement_name: supplement.supplement_name },
-      shopify_checkout_url: `https://www.shopify.com/search?q=${encodeURIComponent(`${supplement.supplement_name} supplement`)}`,
       commerce_channel: 'shopify',
-      ucp_enabled: true,
+      ucp_enabled: false,
       inventory_status: 'in_stock',
       quality_badges: ['Third-party tested', 'Clear label'],
       subscriptions_available: true,
@@ -227,9 +484,8 @@ export function createCatalogProductsForSupplement(supplement: Supplement): Prod
       brand_id: 'catalog',
       brands: { brand_name: `${brandBase} Research` },
       supplements: { supplement_id: supplement.supplement_id, supplement_name: supplement.supplement_name },
-      shopify_checkout_url: `https://www.shopify.com/search?q=${encodeURIComponent(`${supplement.supplement_name} clinical grade`)}`,
       commerce_channel: 'shopify',
-      ucp_enabled: true,
+      ucp_enabled: false,
       inventory_status: 'in_stock',
       quality_badges: ['GMP facility', 'Batch tested'],
       subscriptions_available: true,
@@ -249,9 +505,8 @@ export function createCatalogProductsForSupplement(supplement: Supplement): Prod
       brand_id: 'catalog',
       brands: { brand_name: `${brandBase} Supply` },
       supplements: { supplement_id: supplement.supplement_id, supplement_name: supplement.supplement_name },
-      shopify_checkout_url: `https://www.shopify.com/search?q=${encodeURIComponent(`${supplement.supplement_name} subscription`)}`,
       commerce_channel: 'shopify',
-      ucp_enabled: true,
+      ucp_enabled: false,
       inventory_status: 'in_stock',
       quality_badges: ['Subscribe and save', 'Easy reorder'],
       subscriptions_available: true,

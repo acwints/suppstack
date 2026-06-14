@@ -276,11 +276,11 @@ export default function StackDetailPage() {
               </Card>
             )}
 
-            {/* Core Supplements */}
+            {/* Core Stack Picks */}
             {coreSupplements.length > 0 && (
               <Card padding="md">
                 <Inline gap={2} className="mb-4">
-                  <h3 className="font-semibold text-gray-900">Core Supplements</h3>
+                  <h3 className="font-semibold text-gray-900">Core Stack Picks</h3>
                   <Badge variant="primary">{coreSupplements.length}</Badge>
                 </Inline>
                 <Stack gap={3}>
@@ -323,11 +323,11 @@ export default function StackDetailPage() {
               </Card>
             )}
 
-            {/* Optional Supplements */}
+            {/* Optional Stack Picks */}
             {optionalSupplements.length > 0 && (
               <Card padding="md">
                 <Inline gap={2} className="mb-4">
-                  <h3 className="font-semibold text-gray-900">Optional Supplements</h3>
+                  <h3 className="font-semibold text-gray-900">Optional Stack Picks</h3>
                   <Badge variant="secondary">{optionalSupplements.length}</Badge>
                 </Inline>
                 <Stack gap={3}>
@@ -443,7 +443,7 @@ export default function StackDetailPage() {
             <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-2xl p-6 text-white">
               <h3 className="font-bold mb-2">Want to save this stack?</h3>
               <p className="text-sm text-orange-100 mb-4">
-                Sign in to copy this stack to your profile and start tracking your supplements.
+                Sign in to copy this stack, track refill cost, and keep your gym products organized.
               </p>
               <Link href="/login">
                 <Button variant="secondary" fullWidth className="bg-white text-orange-600 hover:bg-orange-50">

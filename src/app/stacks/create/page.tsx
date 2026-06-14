@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -37,7 +37,7 @@ const sourceTypes: { value: StackType['source_type']; label: string; icon: JSX.E
 
 export default function CreateStackPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { createStack } = useStacks({ enabled: false });
 
   // Form state
@@ -65,11 +65,11 @@ export default function CreateStackPage() {
     searchTerm: debouncedSearch,
   });
 
-  // Redirect if not logged in
-  if (!user) {
-    router.push('/login');
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [authLoading, router, user]);
 
   const addSupplement = (supplement: { supplement_id: number; supplement_name: string }) => {
     if (supplements.some((s) => s.supplement_id === supplement.supplement_id)) {
@@ -160,6 +160,14 @@ export default function CreateStackPage() {
     (s) => !supplements.some((existing) => existing.supplement_id === s.supplement_id)
   );
 
+  if (authLoading || !user) {
+    return (
+      <main className="min-h-[70vh] flex items-center justify-center">
+        <Spinner size="lg" />
+      </main>
+    );
+  }
+
   return (
     <main className="max-w-3xl mx-auto px-4 py-8">
       {/* Back Button */}
@@ -194,7 +202,7 @@ export default function CreateStackPage() {
                   value={stackDescription}
                   onChange={(e) => setStackDescription(e.target.value)}
                   placeholder="Describe what this stack is for and who it's best suited for..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900 resize-none"
                   rows={3}
                   maxLength={500}
                 />
@@ -208,7 +216,7 @@ export default function CreateStackPage() {
                     onClick={() => setIsPublic(true)}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
                       isPublic
-                        ? 'border-orange-500 bg-orange-50 text-orange-700'
+                        ? 'border-gray-900 bg-gray-100 text-gray-900'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
@@ -220,7 +228,7 @@ export default function CreateStackPage() {
                     onClick={() => setIsPublic(false)}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
                       !isPublic
-                        ? 'border-orange-500 bg-orange-50 text-orange-700'
+                        ? 'border-gray-900 bg-gray-100 text-gray-900'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
@@ -248,7 +256,7 @@ export default function CreateStackPage() {
                 {supplements.map((supplement, index) => (
                   <div
                     key={supplement.supplement_id}
-                    className="border border-gray-200 rounded-xl p-4 bg-gray-50"
+                    className="border border-gray-200 rounded p-4 bg-gray-50"
                   >
                     <Inline justify="between" align="start" className="mb-3">
                       <Inline gap={3} align="center">
@@ -278,7 +286,7 @@ export default function CreateStackPage() {
                               updateSupplement(supplement.supplement_id, 'is_core', !supplement.is_core)
                             }
                             className={`text-xs mt-1 flex items-center gap-1 ${
-                              supplement.is_core ? 'text-orange-600' : 'text-gray-500'
+                              supplement.is_core ? 'text-gray-900' : 'text-gray-500'
                             }`}
                           >
                             <FiStar className={supplement.is_core ? 'fill-current' : ''} size={12} />
@@ -305,7 +313,7 @@ export default function CreateStackPage() {
                             updateSupplement(supplement.supplement_id, 'dosage', e.target.value)
                           }
                           placeholder="e.g., 500mg"
-                          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
                         />
                       </div>
                       <div>
@@ -317,7 +325,7 @@ export default function CreateStackPage() {
                             updateSupplement(supplement.supplement_id, 'frequency', e.target.value)
                           }
                           placeholder="e.g., Daily"
-                          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
                         />
                       </div>
                       <div>
@@ -329,7 +337,7 @@ export default function CreateStackPage() {
                             updateSupplement(supplement.supplement_id, 'timing', e.target.value)
                           }
                           placeholder="e.g., Morning with food"
-                          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
                         />
                       </div>
                       <div>
@@ -341,7 +349,7 @@ export default function CreateStackPage() {
                             updateSupplement(supplement.supplement_id, 'notes', e.target.value)
                           }
                           placeholder="Any additional notes"
-                          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
                         />
                       </div>
                     </Grid>
@@ -363,12 +371,12 @@ export default function CreateStackPage() {
                   }}
                   onFocus={() => setShowSupplementPicker(true)}
                   placeholder="Search supplements to add..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
                 />
               </div>
 
               {showSupplementPicker && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg z-10 max-h-60 overflow-y-auto">
                   {supplementsLoading ? (
                     <div className="p-4 text-center">
                       <Spinner size="sm" />
@@ -425,7 +433,7 @@ export default function CreateStackPage() {
                       onClick={() => setSourceType(sourceType === type.value ? '' : type.value)}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
                         sourceType === type.value
-                          ? 'border-orange-500 bg-orange-50 text-orange-700'
+                          ? 'border-gray-900 bg-gray-100 text-gray-900'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -452,7 +460,7 @@ export default function CreateStackPage() {
                     value={sourceUrl}
                     onChange={(e) => setSourceUrl(e.target.value)}
                     placeholder="https://..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
                   />
                 </div>
               </div>

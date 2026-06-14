@@ -48,7 +48,7 @@ export default function StacksPage() {
             Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">Stacks</span>
           </h1>
           <p className="text-gray-600 mt-2">
-            Explore supplement routines from experts and the community
+            Explore gym stacks for protein, strength, pump, recovery, and repeatable restocks
           </p>
         </div>
         {user && (
@@ -121,7 +121,7 @@ export default function StacksPage() {
           title="No stacks found"
           description={
             filter === 'all'
-              ? "Be the first to create a stack!"
+              ? "Be the first to build a training stack!"
               : "Try adjusting your filters"
           }
           action={
@@ -176,9 +176,9 @@ export default function StacksPage() {
       {/* CTA for non-logged in users */}
       {!user && stacks.length > 0 && (
         <div className="mt-16 bg-gradient-to-r from-orange-500 to-pink-500 rounded-2xl p-8 text-center text-white">
-          <h3 className="text-2xl font-bold mb-3">Create Your Own Stack</h3>
+          <h3 className="text-2xl font-bold mb-3">Build Your Gym Stack</h3>
           <p className="text-orange-100 mb-6 max-w-xl mx-auto">
-            Sign in to create and share your supplement routine with the community
+            Sign in to save your training products, compare refill cost, and share your stack.
           </p>
           <Link href="/login">
             <Button variant="secondary" className="bg-white text-orange-600 hover:bg-orange-50">

@@ -35,13 +35,19 @@ export default function Header() {
               href="/"
               className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
-              Discover
+              Shop
             </Link>
             <Link
               href="/stacks"
               className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
               Stacks
+            </Link>
+            <Link
+              href="/brands"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Brands
             </Link>
             {user && (
               <Link
@@ -84,11 +90,11 @@ export default function Header() {
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={handleAuth}
-                    className="btn-editorial text-sm"
-                  >
-                    Sign In
+                    <button
+                      onClick={handleAuth}
+                      className="btn-editorial text-sm"
+                    >
+                    Build Stack
                   </button>
                 )}
               </>

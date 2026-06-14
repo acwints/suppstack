@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/app/supabase';
 import type { Supplement } from '@/types';
 import { SUPPLEMENT_CATEGORIES } from '@/types';
-import { mergeSupplementCatalog } from '@/lib/catalog/supplement-catalog';
+import { mergeSupplementCatalog, supplementCatalog } from '@/lib/catalog/supplement-catalog';
 
 export interface UseSupplementsOptions {
   searchTerm?: string;
@@ -35,7 +35,7 @@ export function useSupplements({
   sortBy = 'name',
   enabled = true,
 }: UseSupplementsOptions = {}): UseSupplementsResult {
-  const [supplements, setSupplements] = useState<Supplement[]>([]);
+  const [supplements, setSupplements] = useState<Supplement[]>(() => supplementCatalog);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 

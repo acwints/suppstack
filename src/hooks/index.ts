@@ -13,6 +13,7 @@ export { useProductInStack } from './useProductInStack';
 export type { UseProductInStackResult } from './useProductInStack';
 
 export { usePriceCalculations, useRegimenCost } from './usePriceCalculations';
+export { useCommerceCheckout } from './useCommerceCheckout';
 
 export { useLocalStorage, useUserPreferences } from './useLocalStorage';
 export type { UserPreferences } from './useLocalStorage';

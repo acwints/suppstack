@@ -10,6 +10,7 @@ import { supabase } from '../../supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useReviews } from '@/hooks/useReviews';
 import { useProductInStack, usePriceCalculations } from '@/hooks';
+import { useCommerceCheckout } from '@/hooks';
 import { formatPrice } from '@/lib/utils';
 import type { Product } from '@/types';
 import {
@@ -30,7 +31,7 @@ import { findCatalogProductById } from '@/lib/catalog/supplement-catalog';
 import {
   canPurchase,
   getInventoryLabel,
-  getPreferredPurchaseUrl,
+  getPurchaseDestination,
   getPurchaseLabel,
 } from '@/lib/commerce/shopify-ucp';
 
@@ -41,6 +42,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState<ReviewSortBy>('newest');
+  const isLocalCatalogProductId = params.id.startsWith('catalog-') || params.id.startsWith('real-');
 
   // Review system hook
   const {
@@ -57,11 +59,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   } = useReviews({
     productId: params.id,
     sortBy,
-    enabled: !!params.id && !params.id.startsWith('catalog-'),
+    enabled: !!params.id && !isLocalCatalogProductId,
   });
 
   // Stack management
   const { isInStack, isUpdating, addToStack } = useProductInStack(params.id);
+  const { isStartingCheckout, startCheckout } = useCommerceCheckout();
 
   // Price calculations
   const { costPerServing, monthlyCost } = usePriceCalculations(
@@ -129,8 +132,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           title="Product not found"
           description="This product may have been removed or doesn't exist."
           action={
-            <Link href="/">
-              <Button variant="primary">Back to Home</Button>
+            <Link
+              href="/"
+              className="inline-flex h-10 items-center justify-center rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
+            >
+              Back to Home
             </Link>
           }
           size="lg"
@@ -141,10 +147,22 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   const rating = stats?.average_rating || 0;
   const reviewCount = stats?.total_reviews || 0;
-  const isCatalogProduct = product.data_source === 'catalog_fallback' || product.product_id.startsWith('catalog-');
-  const purchaseUrl = getPreferredPurchaseUrl(product);
+  const isCatalogProduct =
+    product.data_source === 'catalog_fallback' ||
+    product.product_id.startsWith('catalog-') ||
+    product.product_id.startsWith('real-');
   const purchaseLabel = getPurchaseLabel(product);
+  const purchaseDestination = getPurchaseDestination(product);
   const inventoryLabel = getInventoryLabel(product);
+
+  const handleStartCheckout = async () => {
+    try {
+      await startCheckout(product);
+    } catch (error) {
+      console.error('Failed to start checkout:', error);
+      toast.error('Unable to open purchase link');
+    }
+  };
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8">
@@ -158,7 +176,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
       >
         <FaArrowLeft className="w-4 h-4" />
-        Back to {product.supplements?.supplement_name || 'supplements'}
+        Back to {product.supplements?.supplement_name || 'stack picks'}
       </Link>
 
       {/* Product Header */}
@@ -239,14 +257,20 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           {/* Serving Info */}
           <div className="rounded border border-gray-100 bg-gray-50 p-4">
             <div className="text-sm font-medium text-gray-800">
-              Recommended: {product.servings_per_day} serving
+              Stack plan: {product.servings_per_day} serving
               {product.servings_per_day !== 1 ? 's' : ''} per day
             </div>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Badge variant={product.ucp_enabled ? 'success' : 'primary'}>
-              {product.ucp_enabled ? 'Shopify checkout' : inventoryLabel}
+            <Badge variant={purchaseDestination.channel === 'shopify' || purchaseDestination.channel === 'shopify_ucp' ? 'success' : 'primary'}>
+              {purchaseDestination.mode === 'shopify_checkout'
+                ? 'Shopify checkout'
+                : purchaseDestination.mode === 'shopify_ucp_candidate'
+                ? 'Shopify UCP ready'
+                : purchaseDestination.mode === 'shopify_discovery'
+                ? 'Shopify discovery'
+                : inventoryLabel}
             </Badge>
             {product.subscriptions_available && <Badge variant="secondary">Subscription available</Badge>}
             {product.quality_badges?.slice(0, 3).map((badge) => (
@@ -259,17 +283,17 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
           {/* Actions */}
           <Stack gap={3}>
-            <a href={purchaseUrl} target="_blank" rel="noopener noreferrer">
-              <Button
-                variant="primary"
-                fullWidth
-                size="lg"
-                disabled={!canPurchase(product)}
-                rightIcon={<FaExternalLinkAlt className="w-3 h-3" />}
-              >
-                {purchaseLabel}
-              </Button>
-            </a>
+            <Button
+              variant="primary"
+              fullWidth
+              size="lg"
+              onClick={handleStartCheckout}
+              disabled={!canPurchase(product)}
+              isLoading={isStartingCheckout}
+              rightIcon={<FaExternalLinkAlt className="w-3 h-3" />}
+            >
+              {purchaseLabel}
+            </Button>
 
             {!isCatalogProduct && (
               <Button
@@ -292,15 +316,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   href={product.product_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1"
+                  className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50"
                 >
-                  <Button
-                    variant="outline"
-                    fullWidth
-                    rightIcon={<FaExternalLinkAlt className="w-3 h-3" />}
-                  >
-                    Official Store
-                  </Button>
+                  Brand Store
+                  <FaExternalLinkAlt className="w-3 h-3" />
                 </a>
               )}
               {product.amazon_url && !product.ucp_enabled && (
@@ -308,15 +327,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   href={product.amazon_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1"
+                  className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded bg-gray-100 px-4 text-sm font-medium text-gray-900 hover:bg-gray-200"
                 >
-                  <Button
-                    variant="secondary"
-                    fullWidth
-                    rightIcon={<FaExternalLinkAlt className="w-3 h-3" />}
-                  >
-                    Buy on Amazon
-                  </Button>
+                  Buy on Amazon
+                  <FaExternalLinkAlt className="w-3 h-3" />
                 </a>
               )}
             </Inline>

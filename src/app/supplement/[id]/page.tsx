@@ -153,7 +153,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
         className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
       >
         <FiArrowLeft />
-        <span>Back to Supplements</span>
+        <span>Back to Stack Shop</span>
       </Link>
 
       {/* Header */}
@@ -184,7 +184,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
             )}
             {!!supplement.primary_goals?.length && (
               <div>
-                <div className="font-semibold text-gray-900">Common goals</div>
+                <div className="font-semibold text-gray-900">Training goals</div>
                 <div className="text-gray-600">{supplement.primary_goals.slice(0, 3).join(', ')}</div>
               </div>
             )}
@@ -194,7 +194,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
 
       {/* Products Section */}
       <Stack gap={6}>
-        <h2 className="text-2xl font-semibold text-gray-900">Available Products</h2>
+        <h2 className="text-2xl font-semibold text-gray-900">Shop Stack Picks</h2>
 
         {/* Filter Panel */}
         <ProductFilterPanel
@@ -212,7 +212,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
             title={products.length === 0 ? "No products found" : "No products match your filters"}
             description={
               products.length === 0
-                ? "We don't have any products for this supplement yet."
+                ? "We do not have stack-ready products for this category yet."
                 : "Try adjusting your filters to see more results."
             }
             variant="card"

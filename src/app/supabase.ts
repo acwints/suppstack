@@ -5,7 +5,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: false
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
   },
   global: {
     fetch: (url, options) => {

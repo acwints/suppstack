@@ -104,7 +104,7 @@ function SectionHeader() {
         Featured <span className="text-gradient">Stacks</span>
       </h2>
       <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-        Discover supplement routines from top influencers and health experts.
+        See training stacks from creators, athletes, and gym-heavy routines.
         <span className="text-yellow-600 text-sm block mt-1">
           These profiles are not authenticated on our platform
         </span>
@@ -177,9 +177,9 @@ function StackCard({ stack, index }: { stack: Stack; index: number }) {
           {stack.stack_description}
         </p>
 
-        {/* Core Supplements */}
+        {/* Core Stack Picks */}
         <div className="mb-4">
-          <h5 className="text-sm font-semibold text-gray-700 mb-2">Core Supplements:</h5>
+          <h5 className="text-sm font-semibold text-gray-700 mb-2">Core Stack Picks:</h5>
           <div className="space-y-1">
             {stack.supplements.filter(s => s.is_core).slice(0, 3).map(supplement => (
               <div key={supplement.supplement_id} className="flex items-center justify-between text-xs">
