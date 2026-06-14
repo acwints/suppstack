@@ -9,7 +9,8 @@
     "lint": "next lint",
     "add-supplements": "ts-node src/scripts/addPopularSupplements.ts",
     "seed-influencers": "ts-node --esm src/scripts/seedInfluencers.ts",
-    "seed-amazon-products": "ts-node src/scripts/seedAmazonProducts.ts"
+    "seed-amazon-products": "ts-node src/scripts/seedAmazonProducts.ts",
+    "verify:shopify-catalog": "ts-node src/scripts/verifyShopifyCatalog.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.3",

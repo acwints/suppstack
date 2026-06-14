@@ -5,16 +5,8 @@ import { FiArrowLeft, FiExternalLink, FiShoppingBag } from 'react-icons/fi';
 import ProductCard from '@/app/components/ProductCard';
 import { formatCurrency } from '@/lib/utils';
 import { buildShopifyCartGroups, getPreferredPurchaseUrl } from '@/lib/commerce/shopify-ucp';
+import { compareProductsByCommerceSource } from '@/lib/commerce/product-source';
 import { findCatalogBrandBySlug } from '@/lib/catalog/brand-discovery';
-import type { Product } from '@/types';
-
-function productSortScore(product: Product) {
-  let score = 0;
-  if (product.inventory_status !== 'out_of_stock') score += 100;
-  if (product.shopify_variant_gid && product.shopify_store_domain) score += 20;
-  if (product.subscriptions_available) score += 5;
-  return score;
-}
 
 export default function BrandDetailPage({ params }: { params: { slug: string } }) {
   const brand = findCatalogBrandBySlug(params.slug);
@@ -48,11 +40,7 @@ export default function BrandDetailPage({ params }: { params: { slug: string } }
     );
   }
 
-  const products = [...brand.products].sort((a, b) => {
-    const scoreDifference = productSortScore(b) - productSortScore(a);
-    if (scoreDifference !== 0) return scoreDifference;
-    return a.product_price - b.product_price;
-  });
+  const products = [...brand.products].sort(compareProductsByCommerceSource);
   const cartGroups = buildShopifyCartGroups(products);
   const heroProduct = products[0] ?? brand.heroProduct;
 
