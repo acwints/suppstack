@@ -15,6 +15,100 @@ interface CatalogSeed {
 }
 
 const CATALOG_START_ID = 9000;
+const CATALOG_FALLBACK_ID_START = CATALOG_START_ID + 100;
+
+const stableCatalogIds: Record<string, number> = {
+  'Vitamin D3': 9000,
+  'Vitamin K2': 9001,
+  'Vitamin C': 9002,
+  'Vitamin B12': 9003,
+  'B-Complex': 9004,
+  Folate: 9005,
+  Biotin: 9006,
+  Multivitamin: 9007,
+  'Magnesium Glycinate': 9008,
+  'Magnesium Citrate': 9009,
+  Zinc: 9010,
+  Iron: 9011,
+  Calcium: 9012,
+  Selenium: 9013,
+  Iodine: 9014,
+  Electrolytes: 9015,
+  'Omega-3 Fish Oil': 9016,
+  'Krill Oil': 9017,
+  'Algal Oil': 9018,
+  'Cod Liver Oil': 9019,
+  'Whey Protein': 9020,
+  'Casein Protein': 9021,
+  'Plant Protein': 9022,
+  'Collagen Peptides': 9023,
+  'Creatine Monohydrate': 9024,
+  'Creatine HCl': 9025,
+  'Pre-Workout': 9026,
+  'Beta-Alanine': 9027,
+  'Citrulline Malate': 9028,
+  BCAAs: 9029,
+  EAAs: 9030,
+  Beetroot: 9031,
+  Ashwagandha: 9032,
+  'Rhodiola Rosea': 9033,
+  'Panax Ginseng': 9034,
+  'Maca Root': 9035,
+  'Turmeric Curcumin': 9036,
+  Ginger: 9037,
+  'Garlic Extract': 9038,
+  'Milk Thistle': 9039,
+  'Holy Basil': 9040,
+  'Bacopa Monnieri': 9041,
+  'Ginkgo Biloba': 9042,
+  "Lion's Mane Mushroom": 9043,
+  'Alpha-GPC': 9044,
+  'CDP-Choline': 9045,
+  Phosphatidylserine: 9046,
+  'L-Theanine': 9047,
+  Glycine: 9048,
+  'L-Tyrosine': 9049,
+  NAC: 9050,
+  'L-Carnitine': 9051,
+  'L-Glutamine': 9052,
+  GABA: 9053,
+  Melatonin: 9054,
+  Apigenin: 9055,
+  'Valerian Root': 9056,
+  Passionflower: 9057,
+  'Lemon Balm': 9058,
+  Probiotics: 9059,
+  'Prebiotic Fiber': 9060,
+  'Psyllium Husk': 9061,
+  'Digestive Enzymes': 9062,
+  'Apple Cider Vinegar': 9063,
+  Berberine: 9064,
+  Chromium: 9065,
+  'Cinnamon Extract': 9066,
+  'Myo-Inositol': 9067,
+  CoQ10: 9068,
+  Nattokinase: 9069,
+  Resveratrol: 9070,
+  NMN: 9071,
+  NR: 9072,
+  Spermidine: 9073,
+  PQQ: 9074,
+  Glucosamine: 9075,
+  Chondroitin: 9076,
+  MSM: 9077,
+  'Hyaluronic Acid': 9078,
+  Silica: 9079,
+  Keratin: 9080,
+  'Hemp Seed Oil': 9081,
+  'MCT Oil': 9082,
+  'Green Tea Extract': 9083,
+  Quercetin: 9084,
+  Elderberry: 9085,
+  Echinacea: 9086,
+  'Reishi Mushroom': 9087,
+  Cordyceps: 9088,
+  'Chaga Mushroom': 9089,
+};
 
 const seeds: CatalogSeed[] = [
   { name: 'Vitamin D3', category: 'Vitamins', description: 'Supports vitamin D status, bone mineralization, immune function, and muscle performance when sunlight or dietary intake is low.', aliases: ['cholecalciferol', 'vitamin d'], goals: ['Bone health', 'Immune support', 'Mood support'], forms: ['Softgel', 'Capsule', 'Liquid'], dosage: '1000-5000 IU daily', evidence: 'strong', price: 18 },
@@ -119,6 +213,15 @@ function shopifyGid(type: 'Product' | 'ProductVariant', id: string) {
 
 function shopifyImage(path: string) {
   return path.startsWith('//') ? `https:${path}` : path;
+}
+
+function fallbackCatalogId(name: string) {
+  const hash = Array.from(name).reduce((value, char) => (value * 31 + char.charCodeAt(0)) % 900, 0);
+  return CATALOG_FALLBACK_ID_START + hash;
+}
+
+function catalogIdForSeed(seed: CatalogSeed) {
+  return stableCatalogIds[seed.name] ?? fallbackCatalogId(seed.name);
 }
 
 type CuratedProductSeed = Omit<Product, 'supplement_id' | 'supplements'> & {
@@ -1014,6 +1117,22 @@ const curatedProductSeeds: CuratedProductSeed[] = [
   },
 ];
 
+function curatedSeedsForSupplementName(supplementName: string) {
+  return curatedProductSeeds.filter(
+    (product) => product.supplement_name.toLowerCase() === supplementName.toLowerCase()
+  );
+}
+
+function curatedStatsForSupplementName(supplementName: string) {
+  const products = curatedSeedsForSupplementName(supplementName);
+  if (products.length === 0) return null;
+
+  return {
+    productCount: products.length,
+    averagePrice: products.reduce((total, product) => total + product.product_price, 0) / products.length,
+  };
+}
+
 function findCuratedSeedByProductId(productId: string) {
   return curatedProductSeeds.find((product) => product.product_id === productId) ?? null;
 }
@@ -1030,9 +1149,9 @@ function createCuratedProduct(seed: CuratedProductSeed, supplement: Supplement):
 }
 
 function createCuratedProductsForSupplement(supplement: Supplement): Product[] {
-  return curatedProductSeeds
-    .filter((product) => product.supplement_name.toLowerCase() === supplement.supplement_name.toLowerCase())
-    .map((product) => createCuratedProduct(product, supplement));
+  return curatedSeedsForSupplementName(supplement.supplement_name).map((product) =>
+    createCuratedProduct(product, supplement)
+  );
 }
 
 function categoryImage(category: string) {
@@ -1058,20 +1177,24 @@ function categoryImage(category: string) {
   return imageByCategory[category] ?? imageByCategory.Vitamins;
 }
 
-export const supplementCatalog: Supplement[] = seeds.map((seed, index) => ({
-  supplement_id: CATALOG_START_ID + index,
-  supplement_name: seed.name,
-  supplement_description: seed.description,
-  image_url: categoryImage(seed.category),
-  category: seed.category,
-  aliases: seed.aliases,
-  evidence_rating: seed.evidence,
-  primary_goals: seed.goals,
-  typical_forms: seed.forms,
-  common_dosage: seed.dosage,
-  product_count: 12 + (index % 11) * 3,
-  average_price: seed.price,
-}));
+export const supplementCatalog: Supplement[] = seeds.map((seed, index) => {
+  const curatedStats = curatedStatsForSupplementName(seed.name);
+
+  return {
+    supplement_id: catalogIdForSeed(seed),
+    supplement_name: seed.name,
+    supplement_description: seed.description,
+    image_url: categoryImage(seed.category),
+    category: seed.category,
+    aliases: seed.aliases,
+    evidence_rating: seed.evidence,
+    primary_goals: seed.goals,
+    typical_forms: seed.forms,
+    common_dosage: seed.dosage,
+    product_count: curatedStats?.productCount ?? 12 + (index % 11) * 3,
+    average_price: curatedStats?.averagePrice ?? seed.price,
+  };
+});
 
 export function mergeSupplementCatalog(databaseSupplements: Supplement[]) {
   const byName = new Map<string, Supplement>();
@@ -1085,6 +1208,7 @@ export function mergeSupplementCatalog(databaseSupplements: Supplement[]) {
     byName.set(supplement.supplement_name.toLowerCase(), {
       ...catalogMatch,
       ...supplement,
+      supplement_id: catalogMatch?.supplement_id ?? supplement.supplement_id,
       category: catalogMatch?.category ?? supplement.category,
       image_url: catalogMatch?.image_url ?? supplement.image_url,
       aliases: supplement.aliases ?? catalogMatch?.aliases,
@@ -1092,8 +1216,8 @@ export function mergeSupplementCatalog(databaseSupplements: Supplement[]) {
       primary_goals: supplement.primary_goals ?? catalogMatch?.primary_goals,
       typical_forms: supplement.typical_forms ?? catalogMatch?.typical_forms,
       common_dosage: supplement.common_dosage ?? catalogMatch?.common_dosage,
-      product_count: supplement.product_count ?? catalogMatch?.product_count,
-      average_price: supplement.average_price ?? catalogMatch?.average_price,
+      product_count: catalogMatch?.product_count ?? supplement.product_count,
+      average_price: catalogMatch?.average_price ?? supplement.average_price,
     });
   });
 
@@ -1157,10 +1281,10 @@ export function createCatalogProductsForSupplement(supplement: Supplement): Prod
     },
     {
       product_id: `catalog-${slug}-premium`,
-      product_name: `${supplement.supplement_name} Clinical Grade`,
+      product_name: `${supplement.supplement_name} Premium Formula`,
       product_description: `A higher-spec ${supplement.supplement_name} product profile for users who prioritize testing, form, and serving transparency.`,
       product_price: price + 8,
-      product_url: `https://www.shopify.com/search?q=${encodeURIComponent(`${supplement.supplement_name} clinical grade`)}`,
+      product_url: `https://www.shopify.com/search?q=${encodeURIComponent(`${supplement.supplement_name} premium formula`)}`,
       amazon_url: '',
       product_image: supplement.image_url || '',
       servings_per_container: 90,
