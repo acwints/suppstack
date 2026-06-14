@@ -1,4 +1,8 @@
 import type { Product, Supplement } from '@/types';
+import {
+  isVerifiedMerchantProduct,
+  mergeProductSources,
+} from '@/lib/commerce/product-source';
 
 type EvidenceRating = NonNullable<Supplement['evidence_rating']>;
 
@@ -1818,12 +1822,10 @@ export function resolveProductsForSupplement(
   databaseProducts: Product[] = []
 ) {
   const catalogProducts = createCanonicalCatalogProductsForSupplement(supplement);
-  const hasCuratedCatalogProducts = catalogProducts.some(
-    (product) => product.data_source !== 'catalog_fallback'
-  );
+  const mergedProducts = mergeProductSources(catalogProducts, databaseProducts);
+  const hasCuratedCatalogProducts = catalogProducts.some(isVerifiedMerchantProduct);
 
-  if (hasCuratedCatalogProducts) return catalogProducts;
-  if (databaseProducts.length > 0) return databaseProducts;
+  if (hasCuratedCatalogProducts || databaseProducts.length > 0) return mergedProducts;
   return catalogProducts;
 }
 

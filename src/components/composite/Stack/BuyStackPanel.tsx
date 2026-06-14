@@ -11,7 +11,9 @@ import {
   buildShopifyCartGroups,
   getPreferredPurchaseUrl,
   getPurchaseLabel,
+  isShopifySearchUrl,
 } from '@/lib/commerce/shopify-ucp';
+import { mergeProductSources } from '@/lib/commerce/product-source';
 import {
   findCatalogSupplementById,
   findCatalogSupplementByName,
@@ -31,23 +33,6 @@ interface StackProduct {
   is_core: boolean;
   products: Product[];
   selectedProduct: Product | null;
-}
-
-function productRank(product: Product) {
-  let score = 0;
-  if (product.inventory_status !== 'out_of_stock') score += 100;
-  if (product.shopify_variant_gid && product.shopify_store_domain) score += 30;
-  if (product.ucp_enabled || product.commerce_channel === 'shopify') score += 20;
-  if (product.subscriptions_available) score += 5;
-  return score;
-}
-
-function sortStackProducts(products: Product[]) {
-  return [...products].sort((a, b) => {
-    const rankDelta = productRank(b) - productRank(a);
-    if (rankDelta !== 0) return rankDelta;
-    return a.product_price - b.product_price;
-  });
 }
 
 export function BuyStackPanel({
@@ -85,7 +70,7 @@ export function BuyStackPanel({
         const databaseForSupplement = productsBySupp.get(s.supplement_id) || [];
         const catalogSupplement =
           findCatalogSupplementById(s.supplement_id) ?? findCatalogSupplementByName(s.supplement_name);
-        const prods = sortStackProducts(
+        const prods = mergeProductSources(
           resolveProductsForSupplement(
             {
               supplement_id: s.supplement_id,
@@ -368,7 +353,7 @@ export function BuyStackPanel({
                           {item.supplement_name} · {getPurchaseLabel(p)}
                         </a>
                       )}
-                      {p.product_url && p.product_url !== getPreferredPurchaseUrl(p) && (
+                      {p.product_url && !isShopifySearchUrl(p.product_url) && p.product_url !== getPreferredPurchaseUrl(p) && (
                         <a
                           href={p.product_url}
                           target="_blank"

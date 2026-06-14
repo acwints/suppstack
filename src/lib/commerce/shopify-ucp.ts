@@ -105,7 +105,7 @@ export function buildShopifyCartGroups(products: Product[]): ShopifyCartGroup[] 
   });
 }
 
-function isShopifySearchUrl(value?: string | null) {
+export function isShopifySearchUrl(value?: string | null) {
   if (!value) return false;
 
   try {
@@ -124,19 +124,22 @@ export function getPreferredPurchaseUrl(product: Product, quantity = 1) {
   if (hasDirectShopifyCheckout(product)) return product.shopify_checkout_url as string;
   const cartPermalink = getShopifyCartPermalink(product, quantity);
   if (cartPermalink) return cartPermalink;
-  if (product.ucp_enabled || product.commerce_channel === 'shopify') return getShopifySearchUrl(product);
-  if (product.product_url) return product.product_url;
+  if (product.product_url && !isShopifySearchUrl(product.product_url)) return product.product_url;
   if (product.amazon_url) return product.amazon_url;
+  if (product.product_url) return product.product_url;
+  if (product.ucp_enabled || product.commerce_channel === 'shopify') return getShopifySearchUrl(product);
   return getShopifySearchUrl(product);
 }
 
 export function getPurchaseChannel(product: Product) {
-  if (hasDirectShopifyCheckout(product) || product.ucp_enabled || product.commerce_channel === 'shopify') {
+  if (hasDirectShopifyCheckout(product) || getShopifyCartPermalink(product)) {
     return 'shopify';
   }
 
   if (product.amazon_url) return 'amazon';
-  if (product.product_url) return 'official';
+  if (product.product_url && !isShopifySearchUrl(product.product_url)) return 'official';
+  if (product.ucp_enabled || product.commerce_channel === 'shopify') return 'shopify';
+  if (product.product_url) return 'shopify';
   return 'marketplace';
 }
 
@@ -171,12 +174,12 @@ export function getPurchaseDestination(
     };
   }
 
-  if (product.ucp_enabled || product.commerce_channel === 'shopify') {
+  if (product.product_url && !isShopifySearchUrl(product.product_url)) {
     return {
-      url: getShopifySearchUrl(product),
-      label: 'Find on Shopify',
-      channel: 'shopify',
-      mode: 'shopify_discovery',
+      url: product.product_url,
+      label: 'Brand Store',
+      channel: 'official',
+      mode: 'official',
       isDirectCheckout: false,
     };
   }
@@ -187,6 +190,16 @@ export function getPurchaseDestination(
       label: 'Buy on Amazon',
       channel: 'amazon',
       mode: 'amazon',
+      isDirectCheckout: false,
+    };
+  }
+
+  if (product.ucp_enabled || product.commerce_channel === 'shopify' || isShopifySearchUrl(product.product_url)) {
+    return {
+      url: product.product_url || getShopifySearchUrl(product),
+      label: 'Find on Shopify',
+      channel: 'shopify',
+      mode: 'shopify_discovery',
       isDirectCheckout: false,
     };
   }

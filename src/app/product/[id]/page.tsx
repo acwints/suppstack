@@ -33,6 +33,7 @@ import {
   getInventoryLabel,
   getPurchaseDestination,
   getPurchaseLabel,
+  isShopifySearchUrl,
 } from '@/lib/commerce/shopify-ucp';
 
 export default function ProductPage({ params }: { params: { id: string } }) {
@@ -313,7 +314,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             )}
 
             <Inline gap={3}>
-              {product.product_url && (
+              {product.product_url && !isShopifySearchUrl(product.product_url) && (
                 <a
                   href={product.product_url}
                   target="_blank"

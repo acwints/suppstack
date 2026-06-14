@@ -4,6 +4,12 @@ import {
   getCanonicalSupplementCategory,
   supplementCatalog,
 } from './supplement-catalog';
+import {
+  compareProductsByCommerceSource,
+  hasAnyPurchasePath,
+  isCatalogFallbackProduct,
+  isVerifiedMerchantProduct,
+} from '@/lib/commerce/product-source';
 
 export interface BrandDiscoveryItem {
   brandName: string;
@@ -33,27 +39,11 @@ export function brandSlug(value: string) {
 }
 
 function isCommerceReady(product: Product) {
-  return Boolean(
-    product.shopify_variant_gid ||
-      product.shopify_checkout_url ||
-      product.ucp_enabled ||
-      product.commerce_channel === 'shopify' ||
-      product.product_url ||
-      product.amazon_url
-  );
-}
-
-function heroScore(product: Product) {
-  let score = 0;
-  if (product.inventory_status !== 'out_of_stock') score += 10;
-  if (product.shopify_variant_gid && product.shopify_store_domain) score += 8;
-  if (product.ucp_enabled || product.commerce_channel === 'shopify') score += 5;
-  if (product.subscriptions_available) score += 2;
-  return score;
+  return hasAnyPurchasePath(product);
 }
 
 function preferredHeroProduct(current: Product, candidate: Product) {
-  return heroScore(candidate) > heroScore(current) ? candidate : current;
+  return compareProductsByCommerceSource(candidate, current) < 0 ? candidate : current;
 }
 
 export function buildBrandDiscovery(
@@ -64,7 +54,7 @@ export function buildBrandDiscovery(
 
   supplements.forEach((supplement) => {
     createCatalogProductsForSupplement(supplement).forEach((product) => {
-      if (!includeCatalogFallback && product.data_source === 'catalog_fallback') return;
+      if (!includeCatalogFallback && isCatalogFallbackProduct(product)) return;
 
       const brandName = product.brands?.brand_name || 'SuppStack Verified';
       const category =
@@ -106,8 +96,8 @@ export function buildBrandDiscovery(
   });
 
   return Array.from(brandMap.values()).sort((a, b) => {
-    const aCurated = a.products.some((product) => product.data_source !== 'catalog_fallback');
-    const bCurated = b.products.some((product) => product.data_source !== 'catalog_fallback');
+    const aCurated = a.products.some(isVerifiedMerchantProduct);
+    const bCurated = b.products.some(isVerifiedMerchantProduct);
     if (aCurated !== bCurated) return bCurated ? 1 : -1;
     if (b.productCount !== a.productCount) return b.productCount - a.productCount;
     return a.brandName.localeCompare(b.brandName);
