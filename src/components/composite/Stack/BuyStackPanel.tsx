@@ -1,17 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { FiShoppingCart, FiExternalLink, FiDollarSign, FiChevronDown, FiChevronUp, FiCheck } from 'react-icons/fi';
+import { FiShoppingCart, FiExternalLink, FiChevronDown, FiChevronUp, FiCheck } from 'react-icons/fi';
 import { supabase } from '@/app/supabase';
 import { Card, Button, Spinner, Badge } from '@/components/ui';
 import { cn } from '@/lib/design-system/utils';
 import { formatPrice } from '@/lib/utils';
 import type { StackSupplement, Product } from '@/types';
 import {
+  buildShopifyCartGroups,
   getPreferredPurchaseUrl,
   getPurchaseLabel,
 } from '@/lib/commerce/shopify-ucp';
+import {
+  createCatalogProductsForSupplement,
+  findCatalogSupplementById,
+  findCatalogSupplementByName,
+} from '@/lib/catalog/supplement-catalog';
 
 export interface BuyStackPanelProps {
   stackId: string;
@@ -26,6 +31,23 @@ interface StackProduct {
   is_core: boolean;
   products: Product[];
   selectedProduct: Product | null;
+}
+
+function productRank(product: Product) {
+  let score = 0;
+  if (product.inventory_status !== 'out_of_stock') score += 100;
+  if (product.shopify_variant_gid && product.shopify_store_domain) score += 30;
+  if (product.ucp_enabled || product.commerce_channel === 'shopify') score += 20;
+  if (product.subscriptions_available) score += 5;
+  return score;
+}
+
+function sortStackProducts(products: Product[]) {
+  return [...products].sort((a, b) => {
+    const rankDelta = productRank(b) - productRank(a);
+    if (rankDelta !== 0) return rankDelta;
+    return a.product_price - b.product_price;
+  });
 }
 
 export function BuyStackPanel({
@@ -51,37 +73,49 @@ export function BuyStackPanel({
         .in('supplement_id', supplementIds)
         .order('product_price', { ascending: true });
 
-      if (!error && data) {
-        const productsBySupp = new Map<number, Product[]>();
-        data.forEach((p: any) => {
-          const existing = productsBySupp.get(p.supplement_id) || [];
-          existing.push(p);
-          productsBySupp.set(p.supplement_id, existing);
-        });
+      const databaseProducts = !error && data ? data : [];
+      const productsBySupp = new Map<number, Product[]>();
+      databaseProducts.forEach((p: Product) => {
+        const existing = productsBySupp.get(p.supplement_id) || [];
+        existing.push(p);
+        productsBySupp.set(p.supplement_id, existing);
+      });
 
-        const items: StackProduct[] = supplements.map(s => {
-          const prods = productsBySupp.get(s.supplement_id) || [];
-          return {
-            supplement_name: s.supplement_name,
-            supplement_id: s.supplement_id,
-            dosage: s.dosage,
-            is_core: s.is_core,
-            products: prods,
-            selectedProduct: prods[0] || null, // Default to cheapest
-          };
-        });
+      const items: StackProduct[] = supplements.map(s => {
+        const databaseForSupplement = productsBySupp.get(s.supplement_id) || [];
+        const catalogSupplement =
+          findCatalogSupplementById(s.supplement_id) ?? findCatalogSupplementByName(s.supplement_name);
+        const catalogProducts = catalogSupplement ? createCatalogProductsForSupplement(catalogSupplement) : [];
+        const hasCuratedCatalogProducts = catalogProducts.some(
+          (product) => product.data_source !== 'catalog_fallback'
+        );
+        const prods = sortStackProducts(
+          hasCuratedCatalogProducts
+            ? catalogProducts
+            : databaseForSupplement.length > 0
+            ? databaseForSupplement
+            : catalogProducts
+        );
 
-        setStackProducts(items);
-        // Check all core items by default
-        const defaultChecked = new Set<number>();
-        items.forEach((item, i) => {
-          if (item.is_core && item.selectedProduct) {
-            defaultChecked.add(i);
-          }
-        });
-        setCheckedItems(defaultChecked);
-      }
+        return {
+          supplement_name: s.supplement_name,
+          supplement_id: s.supplement_id,
+          dosage: s.dosage,
+          is_core: s.is_core,
+          products: prods,
+          selectedProduct: prods[0] || null,
+        };
+      });
 
+      setStackProducts(items);
+      // Check all core items by default
+      const defaultChecked = new Set<number>();
+      items.forEach((item, i) => {
+        if (item.is_core && item.selectedProduct) {
+          defaultChecked.add(i);
+        }
+      });
+      setCheckedItems(defaultChecked);
       setIsLoading(false);
     }
 
@@ -122,12 +156,21 @@ export function BuyStackPanel({
   const purchasableProducts = checkedProducts.filter(
     item => item.selectedProduct
   );
+  const selectedProducts = purchasableProducts
+    .map(item => item.selectedProduct)
+    .filter((product): product is Product => Boolean(product));
+  const cartGroups = buildShopifyCartGroups(selectedProducts);
+  const groupedProductIds = new Set(cartGroups.flatMap(group => group.products.map(product => product.product_id)));
+  const individualFallbackProducts = selectedProducts.filter(
+    product => !groupedProductIds.has(product.product_id)
+  );
 
   const handleBuySelected = () => {
-    purchasableProducts.forEach(item => {
-      if (item.selectedProduct) {
-        window.open(getPreferredPurchaseUrl(item.selectedProduct), '_blank', 'noopener,noreferrer');
-      }
+    cartGroups.forEach(group => {
+      window.open(group.url, '_blank', 'noopener,noreferrer');
+    });
+    individualFallbackProducts.forEach(product => {
+      window.open(getPreferredPurchaseUrl(product), '_blank', 'noopener,noreferrer');
     });
   };
 
@@ -262,6 +305,35 @@ export function BuyStackPanel({
             </div>
           </div>
 
+          {cartGroups.length > 0 && (
+            <div className="mb-4 rounded-lg border border-orange-100 bg-orange-50 p-3">
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-orange-800">
+                Shopify merchant carts
+              </div>
+              <div className="space-y-2">
+                {cartGroups.map(group => (
+                  <a
+                    key={group.storeDomain}
+                    href={group.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between gap-3 rounded border border-orange-100 bg-white px-3 py-2 text-sm text-gray-800 hover:border-orange-200 hover:bg-orange-50"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium">
+                        {group.brandNames.join(', ') || group.storeDomain}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {group.products.length} item{group.products.length !== 1 ? 's' : ''} in one cart
+                      </span>
+                    </span>
+                    <FiExternalLink className="shrink-0 text-orange-700" size={14} />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Buy Actions */}
           <div className="space-y-2">
             {purchasableProducts.length > 0 && (
@@ -271,7 +343,9 @@ export function BuyStackPanel({
                 onClick={handleBuySelected}
                 leftIcon={<FiShoppingCart />}
               >
-                Buy {purchasableProducts.length > 1 ? `All ${purchasableProducts.length}` : ''} Selected
+                {cartGroups.length > 0
+                  ? `Open ${cartGroups.length} Merchant Cart${cartGroups.length !== 1 ? 's' : ''}`
+                  : `Buy ${purchasableProducts.length > 1 ? `All ${purchasableProducts.length}` : ''} Selected`}
               </Button>
             )}
 

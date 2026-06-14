@@ -120,7 +120,7 @@ const seeds: CatalogSeed[] = [
   { name: 'Folate', category: 'Vitamins', description: 'Supports methylation, DNA synthesis, and prenatal neural tube development when intake is adequate before and during pregnancy.', aliases: ['folic acid', '5-mthf'], goals: ['Prenatal support', 'Methylation'], forms: ['Capsule', 'Tablet'], dosage: '400-1000 mcg DFE daily', evidence: 'strong', price: 14 },
   { name: 'Biotin', category: 'Vitamins', description: 'A B vitamin involved in macronutrient metabolism and commonly used in hair, skin, and nail routines.', aliases: ['vitamin b7'], goals: ['Hair support', 'Nail support'], forms: ['Capsule', 'Gummy'], dosage: '30-5000 mcg daily', evidence: 'moderate', price: 13 },
   { name: 'Multivitamin', category: 'Vitamins', description: 'Broad micronutrient coverage designed to close common diet gaps across vitamins, minerals, and trace nutrients.', goals: ['Daily essentials', 'Nutrient gaps'], forms: ['Tablet', 'Capsule', 'Powder'], dosage: '1 serving daily', evidence: 'moderate', price: 28 },
-  { name: 'Magnesium Glycinate', category: 'Minerals', description: 'A gentle magnesium form often chosen for sleep, relaxation, muscle function, and nervous system support.', aliases: ['magnesium bisglycinate'], goals: ['Sleep support', 'Relaxation', 'Muscle function'], forms: ['Capsule', 'Powder'], dosage: '100-400 mg elemental magnesium daily', evidence: 'strong', price: 25 },
+  { name: 'Magnesium Glycinate', category: 'Minerals', description: 'A gentle magnesium form often chosen for sleep, relaxation, muscle function, and nervous system support.', aliases: ['magnesium', 'magnesium bisglycinate'], goals: ['Sleep support', 'Relaxation', 'Muscle function'], forms: ['Capsule', 'Powder'], dosage: '100-400 mg elemental magnesium daily', evidence: 'strong', price: 25 },
   { name: 'Magnesium Citrate', category: 'Minerals', description: 'A bioavailable magnesium form used for magnesium repletion and occasional constipation support.', goals: ['Mineral support', 'Digestive regularity'], forms: ['Capsule', 'Powder'], dosage: '100-300 mg elemental magnesium daily', evidence: 'strong', price: 18 },
   { name: 'Zinc', category: 'Minerals', description: 'Essential mineral for immune function, wound healing, skin health, and normal testosterone production.', aliases: ['zinc picolinate', 'zinc gluconate'], goals: ['Immune support', 'Skin health'], forms: ['Capsule', 'Lozenge'], dosage: '10-30 mg daily', evidence: 'strong', price: 12 },
   { name: 'Iron', category: 'Minerals', description: 'Supports hemoglobin production and energy when iron status is low; best selected with lab guidance.', aliases: ['ferrous bisglycinate', 'ferrous sulfate'], goals: ['Energy metabolism', 'Red blood cells'], forms: ['Capsule', 'Liquid'], dosage: '18-65 mg daily as directed', evidence: 'strong', price: 16 },
@@ -128,7 +128,7 @@ const seeds: CatalogSeed[] = [
   { name: 'Selenium', category: 'Minerals', description: 'Trace mineral involved in thyroid hormone metabolism and antioxidant enzyme systems.', goals: ['Thyroid support', 'Antioxidant support'], forms: ['Capsule', 'Tablet'], dosage: '55-200 mcg daily', evidence: 'moderate', price: 12 },
   { name: 'Iodine', category: 'Minerals', description: 'Essential mineral for thyroid hormone production, especially when iodine intake from food is low.', aliases: ['kelp iodine'], goals: ['Thyroid support'], forms: ['Capsule', 'Liquid'], dosage: '150 mcg daily', evidence: 'strong', price: 11 },
   { name: 'Electrolytes', category: 'Minerals', description: 'Blends sodium, potassium, magnesium, and sometimes calcium for hydration, sweat replacement, and endurance support.', aliases: ['hydration salts'], goals: ['Hydration', 'Endurance'], forms: ['Powder', 'Tablet'], dosage: '1 serving around training or heat exposure', evidence: 'strong', price: 27 },
-  { name: 'Omega-3 Fish Oil', category: 'Omega & Fish Oil', description: 'EPA and DHA fatty acids that support heart, brain, eye, and inflammatory balance.', aliases: ['epa', 'dha'], goals: ['Heart health', 'Brain health', 'Inflammatory balance'], forms: ['Softgel', 'Liquid'], dosage: '1000-2000 mg combined EPA/DHA daily', evidence: 'strong', price: 32 },
+  { name: 'Omega-3 Fish Oil', category: 'Omega & Fish Oil', description: 'EPA and DHA fatty acids that support heart, brain, eye, and inflammatory balance.', aliases: ['omega-3', 'fish oil', 'epa', 'dha'], goals: ['Heart health', 'Brain health', 'Inflammatory balance'], forms: ['Softgel', 'Liquid'], dosage: '1000-2000 mg combined EPA/DHA daily', evidence: 'strong', price: 32 },
   { name: 'Krill Oil', category: 'Omega & Fish Oil', description: 'A phospholipid-rich omega-3 source that includes astaxanthin and supports omega-3 intake.', goals: ['Heart health', 'Omega-3 intake'], forms: ['Softgel'], dosage: '500-1000 mg daily', evidence: 'moderate', price: 34 },
   { name: 'Algal Oil', category: 'Omega & Fish Oil', description: 'Vegan EPA and DHA source made from algae for plant-based omega-3 support.', aliases: ['vegan dha'], goals: ['Vegan omega-3', 'Brain health'], forms: ['Softgel'], dosage: '250-1000 mg DHA/EPA daily', evidence: 'strong', price: 30 },
   { name: 'Cod Liver Oil', category: 'Omega & Fish Oil', description: 'Traditional omega-3 oil that also provides naturally occurring vitamins A and D.', goals: ['Omega-3 intake', 'Fat-soluble vitamins'], forms: ['Liquid', 'Softgel'], dosage: '1 serving daily', evidence: 'moderate', price: 26 },
@@ -1765,6 +1765,19 @@ export function getCanonicalSupplementCategory(supplementName?: string | null) {
 
 export function findCatalogSupplementById(id: number) {
   return supplementCatalog.find((supplement) => supplement.supplement_id === id);
+}
+
+export function findCatalogSupplementByName(name?: string | null) {
+  if (!name) return null;
+  const normalizedName = name.toLowerCase();
+
+  return (
+    supplementCatalog.find(
+      (supplement) =>
+        supplement.supplement_name.toLowerCase() === normalizedName ||
+        supplement.aliases?.some((alias) => alias.toLowerCase() === normalizedName)
+    ) ?? null
+  );
 }
 
 export function findCatalogSupplementByProductId(productId: string) {

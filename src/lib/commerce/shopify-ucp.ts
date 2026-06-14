@@ -61,6 +61,50 @@ export function getShopifyCartPermalink(product: Product, quantity = 1) {
   return url.toString();
 }
 
+export interface ShopifyCartGroup {
+  storeDomain: string;
+  brandNames: string[];
+  products: Product[];
+  url: string;
+}
+
+export function buildShopifyCartGroups(products: Product[]): ShopifyCartGroup[] {
+  const groups = new Map<string, { brandNames: Set<string>; products: Product[]; lines: string[] }>();
+
+  products.forEach((product) => {
+    const origin = normalizeShopifyStoreOrigin(product.shopify_store_domain);
+    const variantId = getShopifyVariantNumericId(product.shopify_variant_gid);
+    if (!origin || !variantId || product.inventory_status === 'out_of_stock') return;
+
+    const group = groups.get(origin) ?? {
+      brandNames: new Set<string>(),
+      products: [],
+      lines: [],
+    };
+    const quantity = Math.max(1, Math.floor(product.servings_per_day || 1));
+    group.products.push(product);
+    group.lines.push(`${variantId}:${quantity}`);
+    if (product.brands?.brand_name) {
+      group.brandNames.add(product.brands.brand_name);
+    }
+    groups.set(origin, group);
+  });
+
+  return Array.from(groups.entries()).map(([origin, group]) => {
+    const url = new URL(`/cart/${group.lines.join(',')}`, origin);
+    url.searchParams.set('utm_source', 'suppstack');
+    url.searchParams.set('utm_medium', 'stack_cart');
+    url.searchParams.set('utm_campaign', 'buy_stack');
+
+    return {
+      storeDomain: new URL(origin).hostname,
+      brandNames: Array.from(group.brandNames),
+      products: group.products,
+      url: url.toString(),
+    };
+  });
+}
+
 function isShopifySearchUrl(value?: string | null) {
   if (!value) return false;
 
