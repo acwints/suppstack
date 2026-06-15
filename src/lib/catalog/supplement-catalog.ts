@@ -2183,7 +2183,7 @@ function categoryImage(category: string) {
     Vitamins: 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=640&h=480&fit=crop',
     Minerals: 'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=640&h=480&fit=crop',
     'Omega & Fish Oil': 'https://images.unsplash.com/photo-1535185384036-28bbc8035f28?w=640&h=480&fit=crop',
-    Protein: 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=640&h=480&fit=crop',
+    Protein: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=640&h=480&fit=crop',
     Performance: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=640&h=480&fit=crop',
     'Herbs & Adaptogens': 'https://images.unsplash.com/photo-1515586838455-8f8f940d6853?w=640&h=480&fit=crop',
     'Brain & Focus': 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=640&h=480&fit=crop',

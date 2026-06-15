@@ -14,7 +14,7 @@ import FeaturedStacks from './components/FeaturedStacks';
 
 const heroBackgroundStyle = {
   backgroundImage:
-    'linear-gradient(90deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.84) 45%, rgba(255,255,255,0.18) 100%), url(https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=1600&h=900&fit=crop)',
+    'linear-gradient(90deg, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.9) 48%, rgba(255,255,255,0.34) 100%), url(https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=1600&h=900&fit=crop)',
 };
 
 export default function Home() {
