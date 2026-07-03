@@ -164,8 +164,8 @@ export default function StackDetailPage() {
           title="Stack not found"
           description="This stack may have been deleted or made private."
           action={
-            <Link href="/stacks">
-              <Button variant="primary">Browse Stacks</Button>
+            <Link href="/">
+              <Button variant="primary">Back to Shop</Button>
             </Link>
           }
           size="lg"
@@ -181,11 +181,11 @@ export default function StackDetailPage() {
     <main className="max-w-7xl mx-auto px-4 py-8">
       {/* Back Button */}
       <Link
-        href="/stacks"
+        href="/profile"
         className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
       >
         <FiArrowLeft />
-        <span>Back to Stacks</span>
+        <span>Back to My Collection</span>
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -404,14 +404,11 @@ export default function StackDetailPage() {
               )}
 
               <Inline gap={2} className="mt-4">
-                <Link href={`/users/${stack.profile.username}`} className="flex-1">
-                  <Button variant="outline" fullWidth>View Profile</Button>
-                </Link>
                 <Button
                   variant={isFollowing ? 'secondary' : 'primary'}
                   onClick={handleFollow}
                   isLoading={followLoading}
-                  className="flex-1"
+                  fullWidth
                 >
                   {isFollowing ? 'Following' : 'Follow'}
                 </Button>

@@ -1,4 +1,4 @@
-# Database Setup Instructions for Featured Stacks
+# Database Setup Instructions for Personal Stacks
 
 Since Supabase doesn't allow executing complex SQL via the API, you need to manually run the following SQL in your Supabase dashboard.
 
@@ -221,57 +221,11 @@ CREATE POLICY "Users can unfollow" ON user_follows
   );
 ```
 
-## Step 2: Seed the Data (Admin Only)
+## Step 2: Verify Setup
 
-Seeding influencer data requires admin access. Use **one** of these methods:
+Sign in and create a personal stack from `/stacks/create`, then confirm it appears under **My Collection** on `/profile`.
 
-### Option A: Supabase Dashboard (Recommended)
-Run the seed SQL directly in Supabase SQL Editor where you have full access.
-
-### Option B: Service Role Key (Server-Side Only)
-Create a server-side seeding script that uses `SUPABASE_SERVICE_ROLE_KEY`:
-
-```typescript
-// NEVER expose service role key to the client
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // Server-side only!
-);
-
-// Service role bypasses RLS - use with caution
-```
-
-### Option C: API Route with Auth Check
-```bash
-curl -X POST http://localhost:3000/api/simple-setup \
-  -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
-```
-
-## Step 3: Verify Setup
-
-Check that everything worked by calling:
-
-```bash
-curl http://localhost:3000/api/test-stacks
-```
-
-You should see data for Joe Rogan, Tim Ferriss, and Andrew Huberman with their featured stacks.
-
-## What This Creates
-
-- **Joe Rogan**: Daily supplement stack with Vitamin D3, Omega-3, B-Complex, Creatine
-- **Tim Ferriss**: Morning productivity stack with Magnesium, Vitamin C, Zinc, Ashwagandha  
-- **Andrew Huberman**: Sleep optimization stack with Magnesium, Omega-3, Vitamin D3
-
-Each profile includes:
-- ⚠️ **Unverified status** (not authenticated on platform)
-- **Source attribution** (YouTube, podcast, article links)
-- **Follower counts** and **engagement metrics**
-- **Dosage and timing information** for each supplement
-
-The homepage will then display these as **Featured Stacks** with proper authentication warnings and source links.
+> Note: Public influencer stacks (Joe Rogan, Tim Ferriss, Andrew Huberman) have been removed. Stacks are now personal collections only — there is no influencer seeding step.
 
 ## Security Note
 
