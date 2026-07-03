@@ -2184,27 +2184,16 @@ function createCuratedProductsForSupplement(supplement: Supplement): Product[] {
   );
 }
 
-function categoryImage(category: string) {
-  const imageByCategory: Record<string, string> = {
-    Vitamins: 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=640&h=480&fit=crop',
-    Minerals: 'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=640&h=480&fit=crop',
-    'Omega & Fish Oil': 'https://images.unsplash.com/photo-1535185384036-28bbc8035f28?w=640&h=480&fit=crop',
-    Protein: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=640&h=480&fit=crop',
-    Performance: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=640&h=480&fit=crop',
-    'Herbs & Adaptogens': 'https://images.unsplash.com/photo-1515586838455-8f8f940d6853?w=640&h=480&fit=crop',
-    'Brain & Focus': 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=640&h=480&fit=crop',
-    'Amino Acids': 'https://images.unsplash.com/photo-1579722820308-d74e571900a9?w=640&h=480&fit=crop',
-    'Sleep & Relaxation': 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=640&h=480&fit=crop',
-    'Gut Health': 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=640&h=480&fit=crop',
-    Metabolic: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=640&h=480&fit=crop',
-    'Heart Health': 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=640&h=480&fit=crop',
-    Longevity: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=640&h=480&fit=crop',
-    'Joint & Bone': 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=640&h=480&fit=crop',
-    Beauty: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=640&h=480&fit=crop',
-    'Immune Support': 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=640&h=480&fit=crop',
-  };
-
-  return imageByCategory[category] ?? imageByCategory.Vitamins;
+/**
+ * Real merchant product photography — every catalog supplement has at least
+ * one curated product with a Shopify CDN image, so supplement tiles show an
+ * actual product instead of stock category imagery.
+ */
+function productImageForSupplementName(supplementName: string) {
+  const withImage = curatedSeedsForSupplementName(supplementName).find(
+    (product) => product.product_image
+  );
+  return withImage?.product_image ?? '';
 }
 
 export const supplementCatalog: Supplement[] = seeds.map((seed, index) => {
@@ -2214,7 +2203,7 @@ export const supplementCatalog: Supplement[] = seeds.map((seed, index) => {
     supplement_id: catalogIdForSeed(seed),
     supplement_name: seed.name,
     supplement_description: seed.description,
-    image_url: categoryImage(seed.category),
+    image_url: productImageForSupplementName(seed.name),
     category: seed.category,
     aliases: seed.aliases,
     evidence_rating: seed.evidence,

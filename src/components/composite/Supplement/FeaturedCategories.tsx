@@ -1,63 +1,71 @@
 'use client';
 
 import Link from 'next/link';
-import { FiActivity, FiRefreshCw, FiZap } from 'react-icons/fi';
+import Image from 'next/image';
 import type { Supplement } from '@/types';
+import { formatPrice } from '@/lib/utils';
 
 export interface FeaturedCategoriesProps {
   supplements: Supplement[];
 }
 
+/**
+ * Amazon-style category shelves: each goal is a 2x2 grid of real product
+ * photos that link straight into supplement pages.
+ */
 export function FeaturedCategories({ supplements }: FeaturedCategoriesProps) {
   const featuredCategories = [
     {
       name: 'Protein & Mass',
-      description: 'Whey, casein, plant protein, and muscle-building staples',
-      supplements: supplements
-        .filter(s => ['Protein'].includes(s.category || ''))
-        .slice(0, 4),
-      icon: <FiActivity className="h-5 w-5" />
+      supplements: supplements.filter((s) => ['Protein'].includes(s.category || '')).slice(0, 4),
     },
     {
       name: 'Strength & Performance',
-      description: 'Creatine, pump, power, and pre-workout stack builders',
       supplements: supplements
-        .filter(s => ['Performance', 'Amino Acids'].includes(s.category || ''))
+        .filter((s) => ['Performance', 'Amino Acids'].includes(s.category || ''))
         .slice(0, 4),
-      icon: <FiZap className="h-5 w-5" />
     },
     {
       name: 'Recovery & Hydration',
-      description: 'Electrolytes, omega-3s, magnesium, and post-training support',
       supplements: supplements
-        .filter(s => ['Minerals', 'Omega & Fish Oil', 'Sleep & Relaxation'].includes(s.category || ''))
+        .filter((s) => ['Minerals', 'Omega & Fish Oil', 'Sleep & Relaxation'].includes(s.category || ''))
         .slice(0, 4),
-      icon: <FiRefreshCw className="h-5 w-5" />
-    }
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
-      {featuredCategories.map((category, index) => (
-        <div
-          key={index}
-          className="rounded-lg border border-gray-100 bg-white p-6 text-gray-900 transition-colors duration-150 hover:border-gray-300"
-          style={{ animationDelay: `${index * 0.2}s` }}
-        >
-          <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded bg-gray-100 text-gray-700">
-            {category.icon}
-          </div>
-          <h3 className="mb-2 font-serif text-2xl text-gray-900">{category.name}</h3>
-          <p className="mb-5 text-sm leading-6 text-gray-600">{category.description}</p>
-          <div className="space-y-1">
-            {category.supplements.slice(0, 3).map(supplement => (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      {featuredCategories.map((category) => (
+        <div key={category.name} className="rounded border border-gray-200 bg-white p-4">
+          <h3 className="mb-3 text-base font-semibold text-gray-900">{category.name}</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {category.supplements.map((supplement) => (
               <Link
                 key={supplement.supplement_id}
                 href={`/supplement/${supplement.supplement_id}`}
-                className="flex items-center justify-between rounded px-2 py-2 text-sm text-gray-700 transition-colors duration-150 hover:bg-gray-50 hover:text-gray-900"
+                className="group block"
               >
-                <span>{supplement.supplement_name}</span>
-                <span className="text-gray-400">View</span>
+                <div className="relative aspect-square overflow-hidden rounded border border-gray-100 bg-white">
+                  {supplement.image_url ? (
+                    <Image
+                      src={supplement.image_url}
+                      alt={supplement.supplement_name}
+                      fill
+                      className="object-contain p-2 transition-transform duration-200 group-hover:scale-[1.05]"
+                      sizes="(max-width: 768px) 40vw, 15vw"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-xl font-semibold text-gray-300">
+                      {supplement.supplement_name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <p className="mt-1 truncate text-xs text-gray-700 group-hover:underline">
+                  {supplement.supplement_name}
+                </p>
+                <p className="text-xs font-semibold text-gray-900">
+                  ${formatPrice(supplement.average_price ?? 24)}
+                </p>
               </Link>
             ))}
           </div>
