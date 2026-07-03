@@ -26,8 +26,15 @@ function extractString(block: string, key: string) {
 }
 
 function extractShopifyGid(block: string, key: 'shopify_product_gid' | 'shopify_variant_gid') {
-  const match = block.match(new RegExp(`${key}: shopifyGid\\('(?:Product|ProductVariant)', '([^']+)'\\)`));
-  return match?.[1] ?? null;
+  const helperMatch = block.match(
+    new RegExp(`${key}: shopifyGid\\('(?:Product|ProductVariant)', '([^']+)'\\)`)
+  );
+  if (helperMatch) return helperMatch[1];
+
+  const rawMatch = block.match(
+    new RegExp(`${key}: 'gid://shopify/(?:Product|ProductVariant)/([^']+)'`)
+  );
+  return rawMatch?.[1] ?? null;
 }
 
 function catalogEntriesFromSource(source: string): CatalogShopifyEntry[] {
@@ -76,9 +83,24 @@ async function fetchWithTimeout(url: string, timeoutMs = 10000) {
   }
 }
 
+function sleep(ms: number) {
+  return new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
+}
+
+async function fetchWithRetry(url: string, attempts = 3) {
+  let response = await fetchWithTimeout(url);
+
+  for (let attempt = 1; attempt < attempts && response.status === 429; attempt += 1) {
+    await sleep(2000 * attempt);
+    response = await fetchWithTimeout(url);
+  }
+
+  return response;
+}
+
 async function verifyEntry(entry: CatalogShopifyEntry) {
   const url = productJsonUrl(entry.productUrl);
-  const response = await fetchWithTimeout(url);
+  const response = await fetchWithRetry(url);
   const body = await response.text();
 
   if (!response.ok || body.trim().startsWith('<')) {
@@ -104,8 +126,13 @@ async function verifyEntry(entry: CatalogShopifyEntry) {
 }
 
 async function main() {
-  const sourcePath = resolve(process.cwd(), 'src/lib/catalog/supplement-catalog.ts');
-  const entries = catalogEntriesFromSource(readFileSync(sourcePath, 'utf8'));
+  const sourcePaths = [
+    resolve(process.cwd(), 'src/lib/catalog/supplement-catalog.ts'),
+    resolve(process.cwd(), 'src/lib/catalog/shopify-sourced-products.ts'),
+  ];
+  const entries = sourcePaths.flatMap((sourcePath) =>
+    catalogEntriesFromSource(readFileSync(sourcePath, 'utf8'))
+  );
 
   console.log(`Verifying ${entries.length} Shopify-backed catalog products...`);
 

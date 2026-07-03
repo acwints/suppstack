@@ -3,6 +3,7 @@ import {
   isVerifiedMerchantProduct,
   mergeProductSources,
 } from '@/lib/commerce/product-source';
+import { sourcedProductSeeds } from './shopify-sourced-products';
 
 type EvidenceRating = NonNullable<Supplement['evidence_rating']>;
 
@@ -240,7 +241,7 @@ function catalogIdForSeed(seed: CatalogSeed) {
   return stableCatalogIds[seed.name] ?? fallbackCatalogId(seed.name);
 }
 
-type CuratedProductSeed = Omit<Product, 'supplement_id' | 'supplements'> & {
+export type CuratedProductSeed = Omit<Product, 'supplement_id' | 'supplements'> & {
   supplement_name: string;
 };
 
@@ -773,49 +774,49 @@ const curatedProductSeeds: CuratedProductSeed[] = [
   },
   {
     product_id: 'real-jocko-hydrate-sticks',
-    product_name: 'Jocko Hydrate Sticks',
+    product_name: 'Rapid Hydration+ (12-Pack)',
     product_description:
       'Hydration sticks for sweat replacement, repeat training days, and shoppers comparing portable electrolyte formats.',
-    product_price: 28.99,
-    product_url: 'https://jockofuel.com/products/jocko-hydrate',
+    product_price: 19.99,
+    product_url: 'https://jockofuel.com/products/rapid-hydration',
     amazon_url: '',
-    product_image: shopifyImage('//cdn.shopify.com/s/files/1/0793/7802/2695/files/web_JockoFuel_r1_ATX26863-32locmzqnj_1x1_b6102c45-2ba8-46f6-8f55-559440526c22_v2.jpg?v=1762440160'),
-    servings_per_container: 30,
+    product_image: shopifyImage('//cdn.shopify.com/s/files/1/0793/7802/2695/files/STRAW_12_1.jpg?v=1782151900'),
+    servings_per_container: 12,
     servings_per_day: 1,
     brand_id: 'jocko-fuel',
     brands: { brand_name: 'Jocko Fuel' },
     supplement_name: 'Electrolytes',
-    shopify_product_gid: shopifyGid('Product', '8774521487655'),
-    shopify_variant_gid: shopifyGid('ProductVariant', '46962446106919'),
+    shopify_product_gid: shopifyGid('Product', '10222248886567'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '51510686023975'),
     shopify_store_domain: 'jockofuel.com',
     commerce_channel: 'shopify',
     ucp_enabled: true,
     inventory_status: 'in_stock',
-    quality_badges: ['Hydration', 'Shopify UCP', '30 sticks'],
+    quality_badges: ['Hydration', 'Shopify UCP', '12 sticks'],
     subscriptions_available: true,
     data_source: 'manual',
   },
   {
     product_id: 'real-1st-phorm-hydration-sport',
-    product_name: '1st Phorm Hydration Sport',
+    product_name: '1st Phorm Hydration Daily',
     product_description:
-      'Sports hydration sticks for lifters and athletes comparing electrolyte products around training volume and sweat loss.',
+      'Daily hydration sticks for lifters and athletes comparing electrolyte products around training volume and sweat loss.',
     product_price: 36.99,
-    product_url: 'https://1stphorm.com/products/hydration-sport',
+    product_url: 'https://1stphorm.com/products/hydration-daily',
     amazon_url: '',
-    product_image: shopifyImage('//cdn.shopify.com/s/files/1/0072/7754/3493/files/hydration-sticks-sport-salted-lime.png?v=1759442563'),
+    product_image: shopifyImage('//cdn.shopify.com/s/files/1/0072/7754/3493/files/hydration-daily-strawberry.png?v=1761607128'),
     servings_per_container: 30,
     servings_per_day: 1,
     brand_id: '1st-phorm',
     brands: { brand_name: '1st Phorm' },
     supplement_name: 'Electrolytes',
-    shopify_product_gid: shopifyGid('Product', '7666620891222'),
-    shopify_variant_gid: shopifyGid('ProductVariant', '43424015155286'),
+    shopify_product_gid: shopifyGid('Product', '6640249372758'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '39564987433046'),
     shopify_store_domain: '1stphorm.com',
     commerce_channel: 'shopify',
     ucp_enabled: true,
     inventory_status: 'in_stock',
-    quality_badges: ['Hydration sport', 'Shopify UCP', 'Electrolytes'],
+    quality_badges: ['Hydration daily', 'Shopify UCP', 'Electrolytes'],
     subscriptions_available: true,
     data_source: 'manual',
   },
@@ -834,7 +835,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brands: { brand_name: 'Optimum Nutrition' },
     supplement_name: 'Pre-Workout',
     shopify_product_gid: shopifyGid('Product', '10677190131979'),
-    shopify_variant_gid: shopifyGid('ProductVariant', '52106232103179'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '52106232070411'),
     shopify_store_domain: 'www.optimumnutrition.com',
     commerce_channel: 'shopify',
     ucp_enabled: true,
@@ -978,7 +979,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brands: { brand_name: 'RYSE' },
     supplement_name: 'Pre-Workout',
     shopify_product_gid: shopifyGid('Product', '6559881592928'),
-    shopify_variant_gid: shopifyGid('ProductVariant', '41232772071520'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '41558805119072'),
     shopify_store_domain: 'rysesupps.com',
     commerce_channel: 'shopify',
     ucp_enabled: true,
@@ -1002,7 +1003,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brands: { brand_name: 'Gorilla Mind' },
     supplement_name: 'Pre-Workout',
     shopify_product_gid: shopifyGid('Product', '4898112667693'),
-    shopify_variant_gid: shopifyGid('ProductVariant', '34895077834797'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '41531458813997'),
     shopify_store_domain: 'gorillamind.com',
     commerce_channel: 'shopify',
     ucp_enabled: true,
@@ -2141,8 +2142,13 @@ const curatedProductSeeds: CuratedProductSeed[] = [
   },
 ];
 
+const allCuratedProductSeeds: CuratedProductSeed[] = [
+  ...curatedProductSeeds,
+  ...sourcedProductSeeds,
+];
+
 function curatedSeedsForSupplementName(supplementName: string) {
-  return curatedProductSeeds.filter(
+  return allCuratedProductSeeds.filter(
     (product) => product.supplement_name.toLowerCase() === supplementName.toLowerCase()
   );
 }
@@ -2158,7 +2164,7 @@ function curatedStatsForSupplementName(supplementName: string) {
 }
 
 function findCuratedSeedByProductId(productId: string) {
-  return curatedProductSeeds.find((product) => product.product_id === productId) ?? null;
+  return allCuratedProductSeeds.find((product) => product.product_id === productId) ?? null;
 }
 
 function createCuratedProduct(seed: CuratedProductSeed, supplement: Supplement): Product {
@@ -2221,7 +2227,7 @@ export const supplementCatalog: Supplement[] = seeds.map((seed, index) => {
 });
 
 export function getCuratedCatalogProducts() {
-  return curatedProductSeeds.flatMap((seed) => {
+  return allCuratedProductSeeds.flatMap((seed) => {
     const supplement = supplementCatalog.find(
       (item) => item.supplement_name.toLowerCase() === seed.supplement_name.toLowerCase()
     );
