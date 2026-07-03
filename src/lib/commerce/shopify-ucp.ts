@@ -81,9 +81,10 @@ export function buildShopifyCartGroups(products: Product[]): ShopifyCartGroup[] 
       products: [],
       lines: [],
     };
-    const quantity = Math.max(1, Math.floor(product.servings_per_day || 1));
+    // One container per product; servings_per_day is a dosage figure, not a
+    // purchase quantity.
     group.products.push(product);
-    group.lines.push(`${variantId}:${quantity}`);
+    group.lines.push(`${variantId}:1`);
     if (product.brands?.brand_name) {
       group.brandNames.add(product.brands.brand_name);
     }

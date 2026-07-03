@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { FiExternalLink, FiLock, FiMinus, FiPlus, FiShoppingBag } from 'react-icons/fi';
+import { FiAlertCircle, FiExternalLink, FiLock, FiMinus, FiPlus, FiShoppingBag } from 'react-icons/fi';
 import type { Product } from '@/types';
-import { Badge, Button, Inline, Modal, Stack } from '@/components/ui';
+import { Badge, Button, Inline, Modal, Spinner, Stack } from '@/components/ui';
 import { formatPrice } from '@/lib/utils';
 import { useCommerceCheckout } from '@/hooks';
-import type { PurchaseSession } from '@/lib/commerce/purchase-session';
 import {
   getPurchaseDestination,
   getShopifyCartPermalink,
@@ -21,6 +20,12 @@ export interface EmbeddedCheckoutProps {
 }
 
 type CheckoutStage = 'review' | 'opened' | 'blocked';
+
+interface LiveStatus {
+  status: 'loading' | 'available' | 'unavailable' | 'unknown';
+  price: number | null;
+  variantTitle: string | null;
+}
 
 const CHECKOUT_WINDOW_NAME = 'suppstack_shopify_checkout';
 
@@ -48,37 +53,70 @@ function openCheckoutWindow(url: string) {
   return window.open(
     url,
     CHECKOUT_WINDOW_NAME,
-    `popup=yes,noopener=no,width=${width},height=${height},left=${left},top=${top}`
+    `popup=yes,width=${width},height=${height},left=${left},top=${top}`
   );
 }
 
 export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutProps) {
   const [quantity, setQuantity] = useState(1);
   const [stage, setStage] = useState<CheckoutStage>('review');
-  const [session, setSession] = useState<PurchaseSession | null>(null);
-  const { isStartingCheckout, resolveCheckoutSession } = useCommerceCheckout();
+  const [live, setLive] = useState<LiveStatus>({ status: 'loading', price: null, variantTitle: null });
+  const { resolveCheckoutSession } = useCommerceCheckout();
 
   useEffect(() => {
-    if (isOpen) {
-      setQuantity(1);
-      setStage('review');
-      setSession(null);
-    }
-  }, [isOpen, product.product_id]);
+    if (!isOpen) return;
+
+    setQuantity(1);
+    setStage('review');
+    setLive({ status: 'loading', price: null, variantTitle: null });
+
+    // Resolve the merchant's live variant state at view time so the panel
+    // shows current price and availability rather than the catalog snapshot.
+    let cancelled = false;
+    fetch('/api/commerce/product-status', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        productUrl: product.product_url,
+        variantGid: product.shopify_variant_gid,
+      }),
+    })
+      .then((response) => (response.ok ? response.json() : { status: 'unknown' }))
+      .then((payload) => {
+        if (cancelled) return;
+        setLive({
+          status: payload.status === 'available' || payload.status === 'unavailable' ? payload.status : 'unknown',
+          price: typeof payload.price === 'number' ? payload.price : null,
+          variantTitle: typeof payload.variantTitle === 'string' ? payload.variantTitle : null,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setLive({ status: 'unknown', price: null, variantTitle: null });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, product.product_id, product.product_url, product.shopify_variant_gid]);
 
   const domain = merchantDomain(product);
   const variantId = getShopifyVariantNumericId(product.shopify_variant_gid);
   const hasVerifiedVariant = Boolean(domain && variantId);
   const cartPermalink = getShopifyCartPermalink(product, quantity);
   const destination = getPurchaseDestination(product, quantity);
-  const subtotal = product.product_price * quantity;
+  const unitPrice = live.price ?? product.product_price;
+  const subtotal = unitPrice * quantity;
+  const checkoutUrl = cartPermalink ?? destination.url;
+  const isUnavailable = live.status === 'unavailable';
 
-  const launchCheckout = async () => {
-    const resolved = session ?? (await resolveCheckoutSession(product, quantity));
-    setSession(resolved);
-
-    const url = cartPermalink ?? resolved.purchaseUrl;
-    const checkoutWindow = openCheckoutWindow(url);
+  /**
+   * The cart permalink is known synchronously, so the checkout window opens
+   * inside the click's user-activation window — no await before window.open,
+   * which would trip popup blockers. Session logging happens in the
+   * background and never gates the checkout.
+   */
+  const launchCheckout = () => {
+    const checkoutWindow = openCheckoutWindow(checkoutUrl);
 
     if (checkoutWindow) {
       checkoutWindow.focus();
@@ -86,6 +124,8 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
     } else {
       setStage('blocked');
     }
+
+    resolveCheckoutSession(product, quantity).catch(() => undefined);
   };
 
   return (
@@ -122,6 +162,11 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
             </h3>
             <Inline gap={2} className="mt-2" wrap>
               {hasVerifiedVariant && <Badge variant="success">Shopify UCP</Badge>}
+              {live.variantTitle && (
+                <span className="rounded border border-gray-200 px-2 py-0.5 text-xs text-gray-600">
+                  {live.variantTitle}
+                </span>
+              )}
               {domain && (
                 <span className="inline-flex items-center gap-1 rounded border border-gray-200 px-2 py-0.5 text-xs text-gray-600">
                   <FiLock className="h-3 w-3" />
@@ -132,7 +177,30 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
           </div>
         </div>
 
-        {stage === 'review' && (
+        {/* Live merchant status */}
+        {live.status === 'loading' && (
+          <div className="flex items-center gap-2 rounded border border-gray-100 bg-gray-50 px-4 py-2.5 text-sm text-gray-600">
+            <Spinner size="sm" />
+            Confirming live availability with {domain ?? 'the merchant'}...
+          </div>
+        )}
+        {live.status === 'available' && (
+          <div className="flex items-center justify-between rounded border border-success-200 bg-success-50 px-4 py-2.5 text-sm">
+            <span className="text-success-700">In stock at {domain}</span>
+            <span className="font-semibold text-success-700">${formatPrice(unitPrice)} live price</span>
+          </div>
+        )}
+        {isUnavailable && (
+          <div className="flex items-start gap-2 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-gray-700">
+            <FiAlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
+            <span>
+              This variant is currently unavailable at the merchant. You can still visit the
+              product page to pick another size or flavor.
+            </span>
+          </div>
+        )}
+
+        {stage === 'review' && !isUnavailable && (
           <>
             {/* Quantity + totals */}
             <div className="rounded border border-gray-200">
@@ -176,7 +244,6 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
                 fullWidth
                 size="lg"
                 onClick={launchCheckout}
-                isLoading={isStartingCheckout}
                 leftIcon={<FiShoppingBag />}
               >
                 Complete secure Shopify checkout
@@ -190,7 +257,19 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
           </>
         )}
 
-        {stage === 'opened' && (
+        {isUnavailable && product.product_url && (
+          <a
+            href={product.product_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded bg-gray-900 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-gray-800"
+          >
+            View on {domain ?? 'merchant store'}
+            <FiExternalLink />
+          </a>
+        )}
+
+        {stage === 'opened' && !isUnavailable && (
           <div className="rounded border border-gray-200 bg-gray-50 p-5 text-center">
             <FiLock className="mx-auto mb-3 h-5 w-5 text-gray-500" />
             <p className="font-medium text-gray-900">Secure checkout window opened</p>
@@ -199,7 +278,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
               {domain ? ` on ${domain}` : ''}. You can keep browsing here.
             </p>
             <Inline gap={3} justify="center" className="mt-4">
-              <Button variant="outline" onClick={launchCheckout} isLoading={isStartingCheckout}>
+              <Button variant="outline" onClick={launchCheckout}>
                 Reopen checkout
               </Button>
               <Button variant="primary" onClick={onClose}>
@@ -209,14 +288,14 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
           </div>
         )}
 
-        {stage === 'blocked' && (
+        {stage === 'blocked' && !isUnavailable && (
           <div className="rounded border border-amber-200 bg-amber-50 p-5 text-center">
             <p className="font-medium text-gray-900">Popup was blocked</p>
             <p className="mt-1 text-sm text-gray-600">
               Use the link below to open the Shopify checkout directly.
             </p>
             <a
-              href={cartPermalink ?? session?.purchaseUrl ?? destination.url}
+              href={checkoutUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded bg-gray-900 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-gray-800"

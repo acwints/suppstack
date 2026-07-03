@@ -55,7 +55,13 @@ export function useCommerceCheckout() {
   const startCheckout = async (product: Product, quantity = 1): Promise<PurchaseSession> => {
     const session = await resolveCheckoutSession(product, quantity);
     if (session.purchaseUrl) {
-      window.open(session.purchaseUrl, '_blank', 'noopener,noreferrer');
+      const opened = window.open(session.purchaseUrl, '_blank', 'noopener,noreferrer');
+      // The await above can expire the user-activation window and get the
+      // popup blocked; fall back to same-tab navigation so the click never
+      // silently does nothing.
+      if (!opened) {
+        window.location.assign(session.purchaseUrl);
+      }
     }
     return session;
   };

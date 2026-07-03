@@ -269,10 +269,14 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
           </>
         )}
 
-        {/* Compare Products */}
-        {products.length >= 2 && !products.some(product => product.data_source === 'catalog_fallback') && (
-          <CompareProducts supplementId={supplementId} />
-        )}
+        {/* Compare Products — only for database-backed products, since the
+            compare picker queries Supabase and local catalog products have no
+            rows there. */}
+        {products.filter(
+          (product) =>
+            !String(product.product_id).startsWith('real-') &&
+            !String(product.product_id).startsWith('catalog-')
+        ).length >= 2 && <CompareProducts supplementId={supplementId} />}
       </Stack>
     </main>
   );
