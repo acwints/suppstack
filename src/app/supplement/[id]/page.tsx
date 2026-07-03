@@ -171,14 +171,14 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
       {/* Back Navigation */}
       <Link
         href="/"
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 transition-colors"
       >
         <FiArrowLeft />
-        <span>Back to Stack Shop</span>
+        <span>All products</span>
       </Link>
 
       {/* Header */}
-      <Stack gap={2} className="mb-8">
+      <Stack gap={2} className="mb-6">
         <div className="flex flex-wrap items-center gap-2">
           {supplement.category && (
             <span className="rounded border border-gray-200 px-2 py-1 text-xs font-medium text-gray-600">
@@ -191,31 +191,19 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
             </span>
           )}
         </div>
-        <h1 className="text-4xl font-serif text-gray-900">
+        <h1 className="text-3xl font-serif text-gray-900">
           {supplement.supplement_name}
         </h1>
-        <p className="text-xl text-gray-600">{supplement.supplement_description}</p>
-        {(supplement.common_dosage || !!supplement.primary_goals?.length) && (
-          <div className="grid grid-cols-1 gap-3 border-y border-gray-100 py-4 text-sm md:grid-cols-2">
-            {supplement.common_dosage && (
-              <div>
-                <div className="font-semibold text-gray-900">Typical dose</div>
-                <div className="text-gray-600">{supplement.common_dosage}</div>
-              </div>
-            )}
-            {!!supplement.primary_goals?.length && (
-              <div>
-                <div className="font-semibold text-gray-900">Training goals</div>
-                <div className="text-gray-600">{supplement.primary_goals.slice(0, 3).join(', ')}</div>
-              </div>
-            )}
-          </div>
+        <p className="text-sm text-gray-600 line-clamp-2 max-w-3xl">
+          {supplement.supplement_description}
+        </p>
+        {supplement.common_dosage && (
+          <p className="text-xs text-gray-500">Typical dose: {supplement.common_dosage}</p>
         )}
       </Stack>
 
       {/* Products Section */}
       <Stack gap={6}>
-        <h2 className="text-2xl font-semibold text-gray-900">Shop Stack Picks</h2>
 
         {/* Filter Panel */}
         <ProductFilterPanel
@@ -253,7 +241,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
           />
         ) : (
           <>
-            <Grid cols={{ sm: 1, md: 2, lg: 3 }} gap={6}>
+            <Grid cols={{ sm: 2, md: 3, lg: 4 }} gap={4}>
               {displayedProducts.map((product) => (
                 <ProductCard key={product.product_id} product={product} />
               ))}

@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FaCheck, FaShoppingCart } from 'react-icons/fa';
-import { FiExternalLink, FiShield } from 'react-icons/fi';
 import type { Product, ProductRatingStats } from '@/types';
 import { useAuth } from '../context/AuthContext';
 import { useProductInStack, usePriceCalculations } from '@/hooks';
@@ -29,7 +28,6 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, ratingStats: initialStats }: ProductCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [ratingStats, setRatingStats] = useState<ProductRatingStats | null>(initialStats || null);
   const { user } = useAuth();
@@ -42,7 +40,7 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
   const { isStartingCheckout, startCheckout } = useCommerceCheckout();
 
   // Use custom hook for price calculations
-  const { costPerServing, monthlyCost } = usePriceCalculations(
+  const { costPerServing } = usePriceCalculations(
     product.product_price,
     product.servings_per_container,
     product.servings_per_day
@@ -103,124 +101,87 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
   };
 
   return (
-    <div
-      className="group flex h-full flex-col overflow-hidden rounded-lg border border-gray-100 bg-white transition-colors duration-150 hover:border-gray-300 animate-fade-in"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <div className="group flex h-full flex-col overflow-hidden rounded border border-gray-200 bg-white transition-all duration-150 hover:border-gray-300 hover:shadow-md">
       {/* Clickable Product Link - wraps image and basic info */}
       <Link href={`/product/${productId}`} className="block">
         {/* Product Image */}
-        <div className="relative h-64 overflow-hidden border-b border-gray-100 bg-gray-50">
+        <div className="relative aspect-square overflow-hidden bg-white">
           {product.product_image ? (
             <Image
               src={product.product_image}
               alt={product.product_name}
               fill
-              className="object-contain p-5 transition-transform duration-300 group-hover:scale-[1.03]"
+              className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.04]"
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full border border-gray-200 bg-white">
-                <span className="text-2xl font-semibold text-gray-900">
-                  {product.product_name.charAt(0)}
-                </span>
-              </div>
+              <span className="text-3xl font-semibold text-gray-300">
+                {product.product_name.charAt(0)}
+              </span>
             </div>
           )}
 
-          <div className="absolute left-3 top-3">
+          <div className="absolute left-2 top-2">
             <Badge variant={purchaseDestination.channel === 'shopify' || purchaseDestination.channel === 'shopify_ucp' ? 'success' : 'primary'}>
-              {purchaseDestination.mode === 'shopify_checkout'
-                ? 'Shopify checkout'
-                : purchaseDestination.mode === 'shopify_cart_permalink'
-                ? 'Shopify cart'
-                : purchaseDestination.mode === 'shopify_ucp_candidate'
-                ? 'Shopify UCP'
-                : purchaseDestination.mode === 'shopify_discovery'
+              {purchaseDestination.channel === 'shopify' || purchaseDestination.channel === 'shopify_ucp'
                 ? 'Shopify'
                 : inventoryLabel}
             </Badge>
           </div>
-
-          <div className="absolute bottom-3 left-3 rounded bg-gray-900 px-3 py-1.5 text-sm font-semibold text-white">
-            ${formatPrice(product.product_price)}
-          </div>
         </div>
 
         {/* Product Info (clickable) */}
-        <div className="p-5 pb-0">
-          <div className="mb-2 text-sm font-medium text-gray-500">
-            {product.brands?.brand_name || 'Premium Brand'}
-          </div>
-
-          <h3 className="mb-3 font-serif text-xl text-gray-900 line-clamp-2">
+        <div className="border-t border-gray-100 p-3 pb-0">
+          <p className="text-xs text-gray-500">{product.brands?.brand_name || 'Premium Brand'}</p>
+          <h3 className="mt-0.5 text-sm font-medium leading-5 text-gray-900 line-clamp-2 group-hover:underline">
             {product.product_name}
           </h3>
 
-          <div className="flex items-center gap-2 mb-4">
-            <Rating value={rating} size="md" />
-            <span className="text-sm font-medium text-gray-600">
-              {rating > 0 ? `${Number(rating).toFixed(1)} (${reviewCount.toLocaleString()})` : 'No reviews yet'}
+          <div className="mt-1 flex items-center gap-1.5">
+            <Rating value={rating} size="sm" />
+            {reviewCount > 0 && (
+              <span className="text-xs text-gray-500">({reviewCount.toLocaleString()})</span>
+            )}
+          </div>
+
+          <div className="mt-1.5 flex items-baseline gap-2">
+            <span className="text-lg font-semibold text-gray-900">
+              ${formatPrice(product.product_price)}
+            </span>
+            <span className="text-xs text-gray-500">
+              ${formatPrice(costPerServing)}/serving
             </span>
           </div>
         </div>
       </Link>
 
       {/* Non-clickable actions section */}
-      <div className="flex flex-1 flex-col px-5 pb-5">
-        <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
-          <div className="rounded border border-gray-100 bg-gray-50 p-3 text-center">
-            <div className="font-semibold text-gray-900">${formatPrice(costPerServing)}</div>
-            <div className="text-gray-500">per serving</div>
-          </div>
-          <div className="rounded border border-gray-100 bg-gray-50 p-3 text-center">
-            <div className="font-semibold text-gray-900">${formatPrice(monthlyCost)}</div>
-            <div className="text-gray-500">per month</div>
-          </div>
-        </div>
+      <div className="mt-auto flex flex-col gap-2 p-3">
+        <Button
+          variant="primary"
+          size="sm"
+          fullWidth
+          onClick={handleStartCheckout}
+          disabled={!canPurchase(product)}
+          isLoading={isStartingCheckout}
+        >
+          {purchaseLabel}
+        </Button>
 
-        <div className="mb-3 text-xs font-medium text-gray-500">
-          {product.servings_per_container} servings • {product.servings_per_day} per day recommended
-        </div>
-
-        {product.quality_badges && product.quality_badges.length > 0 && (
-          <div className="mb-4 flex flex-wrap gap-2">
-            {product.quality_badges.slice(0, 2).map((badge) => (
-              <span key={badge} className="inline-flex items-center gap-1 rounded border border-gray-100 px-2 py-1 text-xs text-gray-600">
-                <FiShield className="h-3 w-3" />
-                {badge}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <div className="mt-auto space-y-3">
+        {!isCatalogProduct && (
           <Button
-            variant="primary"
+            onClick={handleAddToStack}
+            disabled={isInStack || isUpdating}
+            variant={isInStack ? 'outline' : 'ghost'}
+            size="sm"
             fullWidth
-            onClick={handleStartCheckout}
-            disabled={!canPurchase(product)}
-            isLoading={isStartingCheckout}
-            rightIcon={<FiExternalLink />}
+            leftIcon={isInStack ? <FaCheck className="w-3.5 h-3.5" /> : <FaShoppingCart className="w-3.5 h-3.5" />}
+            isLoading={isUpdating}
+            className={isInStack ? 'bg-success-50 text-success-700 border-success-200 hover:bg-success-100' : ''}
           >
-            {purchaseLabel}
+            {isInStack ? 'In Stack' : 'Add to Stack'}
           </Button>
-
-          {!isCatalogProduct && (
-            <Button
-              onClick={handleAddToStack}
-              disabled={isInStack || isUpdating}
-              variant={isInStack ? 'outline' : 'ghost'}
-              fullWidth
-              leftIcon={isInStack ? <FaCheck className="w-4 h-4" /> : <FaShoppingCart className="w-4 h-4" />}
-              isLoading={isUpdating}
-              className={isInStack ? 'bg-success-50 text-success-700 border-success-200 hover:bg-success-100' : ''}
-            >
-              {isInStack ? 'Added to Stack' : 'Add to My Stack'}
-            </Button>
-          )}
-        </div>
+        )}
       </div>
 
       <EmbeddedCheckout
