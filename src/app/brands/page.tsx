@@ -35,14 +35,14 @@ export default function BrandsPage() {
         <div className="container-custom py-12 lg:py-16">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-3">
-              Performance Brand Shop
+              Brand Shop
             </p>
             <h1 className="text-4xl lg:text-5xl font-serif text-gray-900">
-              Compare gym supplement brands by stack fit, price, and refill path.
+              Compare supplement brands by price, quality, and checkout path.
             </h1>
             <p className="text-lg text-gray-600 mt-5">
-              Compare protein, creatine, pre-workout, recovery, and hydration brands by category,
-              price, refill fit, and Shopify purchase path.
+              Browse vitamins, protein, herbs, and everyday wellness brands by category, price,
+              and Shopify purchase path.
             </p>
           </div>
 
@@ -51,7 +51,7 @@ export default function BrandsPage() {
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search whey, creatine, pre-workout, brands..."
+              placeholder="Search supplements and brands..."
               className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
             />
           </div>

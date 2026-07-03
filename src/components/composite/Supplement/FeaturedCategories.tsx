@@ -16,19 +16,21 @@ export interface FeaturedCategoriesProps {
 export function FeaturedCategories({ supplements }: FeaturedCategoriesProps) {
   const featuredCategories = [
     {
-      name: 'Protein & Mass',
-      supplements: supplements.filter((s) => ['Protein'].includes(s.category || '')).slice(0, 4),
-    },
-    {
-      name: 'Strength & Performance',
+      name: 'Daily Essentials',
       supplements: supplements
-        .filter((s) => ['Performance', 'Amino Acids'].includes(s.category || ''))
+        .filter((s) => ['Vitamins', 'Minerals'].includes(s.category || ''))
         .slice(0, 4),
     },
     {
-      name: 'Recovery & Hydration',
+      name: 'Mind & Mood',
       supplements: supplements
-        .filter((s) => ['Minerals', 'Omega & Fish Oil', 'Sleep & Relaxation'].includes(s.category || ''))
+        .filter((s) => ['Brain & Focus', 'Sleep & Relaxation', 'Herbs & Adaptogens'].includes(s.category || ''))
+        .slice(0, 4),
+    },
+    {
+      name: 'Active Lifestyle',
+      supplements: supplements
+        .filter((s) => ['Protein', 'Performance', 'Omega & Fish Oil'].includes(s.category || ''))
         .slice(0, 4),
     },
   ];

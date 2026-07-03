@@ -440,7 +440,7 @@ export default function StackDetailPage() {
             <div className="rounded border border-orange-200 bg-orange-50 p-6">
               <h3 className="font-bold mb-2 text-gray-900">Want to save this stack?</h3>
               <p className="text-sm text-gray-700 mb-4">
-                Sign in to copy this stack, track refill cost, and keep your gym products organized.
+                Sign in to copy this stack, track refill cost, and keep your supplements organized.
               </p>
               <Link href="/login">
                 <Button variant="primary" fullWidth>

@@ -64,14 +64,14 @@ export default function Home() {
 
             <section>
               <div className="section-header">
-                <h2>Shop by Training Goal</h2>
+                <h2>Shop by Goal</h2>
               </div>
               <FeaturedCategories supplements={supplements} />
             </section>
 
             <section>
               <Inline justify="between" align="end" className="section-header">
-                <h2>Shop Gym Brands</h2>
+                <h2>Shop Brands</h2>
                 <Link href="/brands" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                   View all
                 </Link>

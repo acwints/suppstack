@@ -426,9 +426,9 @@ export interface SupplementCategory {
 // ============================================================================
 
 export const SUPPLEMENT_CATEGORIES: SupplementCategory[] = [
-  { id: 'all', name: 'All Gym Supplements', icon: 'all', keywords: [] },
-  { id: 'protein', name: 'Protein & Mass', icon: 'protein', keywords: ['protein', 'whey', 'casein', 'mass gainer', 'plant protein'] },
-  { id: 'performance', name: 'Strength & Performance', icon: 'performance', keywords: ['creatine', 'pre-workout', 'bcaa', 'beta-alanine', 'citrulline', 'hmb', 'beetroot', 'eaa', 'l-arginine', 'l-citrulline', 'taurine'] },
+  { id: 'all', name: 'All Supplements', icon: 'all', keywords: [] },
+  { id: 'protein', name: 'Protein', icon: 'protein', keywords: ['protein', 'whey', 'casein', 'mass gainer', 'plant protein'] },
+  { id: 'performance', name: 'Sports Nutrition', icon: 'performance', keywords: ['creatine', 'pre-workout', 'bcaa', 'beta-alanine', 'citrulline', 'hmb', 'beetroot', 'eaa', 'l-arginine', 'l-citrulline', 'taurine'] },
   { id: 'recovery', name: 'Recovery & Hydration', icon: 'recovery', keywords: ['electrolytes', 'magnesium', 'omega', 'fish oil', 'krill', 'algal', 'cod liver', 'dha', 'epa', 'recovery', 'hydration'] },
   { id: 'amino', name: 'Amino Acids', icon: 'amino', keywords: ['l-theanine', 'l-glutamine', 'l-carnitine', 'l-tyrosine', 'glycine', 'gaba', '5-htp', 'nac', 'n-acetyl', 'eaa', 'bcaa'] },
   { id: 'vitamins', name: 'Vitamins', icon: 'vitamins', keywords: ['vitamin', 'multivitamin', 'biotin', 'folate', 'folic', 'niacin'] },
