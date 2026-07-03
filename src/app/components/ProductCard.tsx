@@ -13,6 +13,7 @@ import { formatPrice } from '@/lib/utils';
 import { Button, Badge, useToast } from '@/components/ui';
 import { Rating } from '@/components/composite/Rating';
 import { EmbeddedCheckout } from '@/components/composite/Commerce';
+import { BrandLogo } from '@/components/composite/Brand';
 import { supabase } from '../supabase';
 import {
   canPurchase,
@@ -122,17 +123,24 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
           )}
 
           <div className="absolute left-2 top-2">
-            <Badge variant={purchaseDestination.channel === 'shopify' || purchaseDestination.channel === 'shopify_ucp' ? 'success' : 'primary'}>
-              {purchaseDestination.channel === 'shopify' || purchaseDestination.channel === 'shopify_ucp'
-                ? 'Shopify'
-                : inventoryLabel}
+            <Badge variant={purchaseDestination.isDirectCheckout ? 'success' : 'primary'}>
+              {purchaseDestination.isDirectCheckout ? 'Instant checkout' : inventoryLabel}
             </Badge>
           </div>
         </div>
 
         {/* Product Info (clickable) */}
         <div className="border-t border-gray-100 p-3 pb-0">
-          <p className="text-xs text-gray-500">{product.brands?.brand_name || 'Premium Brand'}</p>
+          <span className="flex items-center gap-1.5">
+            <BrandLogo
+              domain={product.shopify_store_domain}
+              brandName={product.brands?.brand_name || 'Brand'}
+              size="sm"
+            />
+            <span className="truncate text-xs text-gray-500">
+              {product.brands?.brand_name || 'Premium Brand'}
+            </span>
+          </span>
           <h3 className="mt-0.5 text-sm font-medium leading-5 text-gray-900 line-clamp-2 group-hover:underline">
             {product.product_name}
           </h3>

@@ -27,6 +27,7 @@ import {
 import { Rating } from '@/components/composite/Rating';
 import { ReviewList } from '@/components/composite/Review/ReviewList';
 import { EmbeddedCheckout } from '@/components/composite/Commerce';
+import { BrandLogo } from '@/components/composite/Brand';
 import type { ReviewSortBy } from '@/hooks/useReviews';
 import { findCatalogProductById } from '@/lib/catalog/supplement-catalog';
 import {
@@ -213,8 +214,15 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         {/* Product Info */}
         <Stack gap={6}>
           {/* Brand */}
-          <span className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-            {product.brands?.brand_name || 'Premium Brand'}
+          <span className="flex items-center gap-2">
+            <BrandLogo
+              domain={product.shopify_store_domain}
+              brandName={product.brands?.brand_name || 'Brand'}
+              size="md"
+            />
+            <span className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+              {product.brands?.brand_name || 'Premium Brand'}
+            </span>
           </span>
 
           {/* Product Name */}
@@ -272,16 +280,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Badge variant={purchaseDestination.channel === 'shopify' || purchaseDestination.channel === 'shopify_ucp' ? 'success' : 'primary'}>
-              {purchaseDestination.mode === 'shopify_checkout'
-                ? 'Shopify checkout'
-                : purchaseDestination.mode === 'shopify_cart_permalink'
-                ? 'Shopify cart'
-                : purchaseDestination.mode === 'shopify_ucp_candidate'
-                ? 'Shopify UCP ready'
-                : purchaseDestination.mode === 'shopify_discovery'
-                ? 'Shopify discovery'
-                : inventoryLabel}
+            <Badge variant={purchaseDestination.isDirectCheckout ? 'success' : 'primary'}>
+              {purchaseDestination.isDirectCheckout ? 'Instant checkout' : inventoryLabel}
             </Badge>
             {product.subscriptions_available && <Badge variant="secondary">Subscription available</Badge>}
             {product.quality_badges?.slice(0, 3).map((badge) => (

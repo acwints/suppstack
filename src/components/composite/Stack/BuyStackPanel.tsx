@@ -294,7 +294,7 @@ export function BuyStackPanel({
           {cartGroups.length > 0 && (
             <div className="mb-4 rounded-lg border border-orange-100 bg-orange-50 p-3">
               <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-orange-800">
-                Shopify merchant carts
+                One-click brand carts
               </div>
               <div className="space-y-2">
                 {cartGroups.map(group => (

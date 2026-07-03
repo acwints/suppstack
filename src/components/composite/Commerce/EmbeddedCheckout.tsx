@@ -7,6 +7,7 @@ import type { Product } from '@/types';
 import { Badge, Button, Inline, Modal, Spinner, Stack } from '@/components/ui';
 import { formatPrice } from '@/lib/utils';
 import { useCommerceCheckout } from '@/hooks';
+import { BrandLogo } from '@/components/composite/Brand';
 import {
   getPurchaseDestination,
   getShopifyCartPermalink,
@@ -133,7 +134,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
       isOpen={isOpen}
       onClose={onClose}
       title="Checkout"
-      description={hasVerifiedVariant ? 'Verified Shopify catalog product' : destination.label}
+      description={hasVerifiedVariant ? 'Verified merchant product' : destination.label}
       size="md"
     >
       <Stack gap={6}>
@@ -161,16 +162,20 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
               {product.product_name}
             </h3>
             <Inline gap={2} className="mt-2" wrap>
-              {hasVerifiedVariant && <Badge variant="success">Shopify UCP</Badge>}
+              {hasVerifiedVariant && <Badge variant="success">Verified</Badge>}
               {live.variantTitle && (
                 <span className="rounded border border-gray-200 px-2 py-0.5 text-xs text-gray-600">
                   {live.variantTitle}
                 </span>
               )}
               {domain && (
-                <span className="inline-flex items-center gap-1 rounded border border-gray-200 px-2 py-0.5 text-xs text-gray-600">
-                  <FiLock className="h-3 w-3" />
-                  {domain}
+                <span className="inline-flex items-center gap-1.5 rounded border border-gray-200 px-2 py-0.5 text-xs text-gray-600">
+                  <BrandLogo
+                    domain={domain}
+                    brandName={product.brands?.brand_name || domain}
+                    size="sm"
+                  />
+                  {domain.replace(/^www\./, '')}
                 </span>
               )}
             </Inline>
@@ -249,11 +254,11 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
                 isLoading={live.status === 'loading'}
                 leftIcon={<FiShoppingBag />}
               >
-                {live.status === 'loading' ? 'Confirming availability' : 'Complete secure Shopify checkout'}
+                {live.status === 'loading' ? 'Confirming availability' : 'Complete secure checkout'}
               </Button>
               <p className="text-center text-xs text-gray-500">
                 {hasVerifiedVariant
-                  ? 'Your cart is prefilled with the verified variant. Payment is completed on the merchant Shopify checkout.'
+                  ? 'Your cart is prefilled with the verified item. Payment is completed securely on the merchant checkout.'
                   : 'Payment is completed on the merchant store.'}
               </p>
             </Stack>
@@ -277,7 +282,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
             <FiLock className="mx-auto mb-3 h-5 w-5 text-gray-500" />
             <p className="font-medium text-gray-900">Secure checkout window opened</p>
             <p className="mt-1 text-sm text-gray-600">
-              Finish your payment in the Shopify checkout window
+              Finish your payment in the secure checkout window
               {domain ? ` on ${domain}` : ''}. You can keep browsing here.
             </p>
             <Inline gap={3} justify="center" className="mt-4">
@@ -295,7 +300,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
           <div className="rounded border border-amber-200 bg-amber-50 p-5 text-center">
             <p className="font-medium text-gray-900">Popup was blocked</p>
             <p className="mt-1 text-sm text-gray-600">
-              Use the link below to open the Shopify checkout directly.
+              Use the link below to open the secure checkout directly.
             </p>
             <a
               href={checkoutUrl}
@@ -303,7 +308,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
               rel="noopener noreferrer"
               className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded bg-gray-900 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-gray-800"
             >
-              Open Shopify checkout
+              Open secure checkout
               <FiExternalLink />
             </a>
           </div>
