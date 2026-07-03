@@ -26,6 +26,7 @@ import {
 } from '@/components/ui';
 import { Rating } from '@/components/composite/Rating';
 import { ReviewList } from '@/components/composite/Review/ReviewList';
+import { EmbeddedCheckout } from '@/components/composite/Commerce';
 import type { ReviewSortBy } from '@/hooks/useReviews';
 import { findCatalogProductById } from '@/lib/catalog/supplement-catalog';
 import {
@@ -35,6 +36,7 @@ import {
   getPurchaseLabel,
   isShopifySearchUrl,
 } from '@/lib/commerce/shopify-ucp';
+import { hasShopifyVariant } from '@/lib/commerce/product-source';
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
@@ -42,6 +44,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const toast = useToast();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [sortBy, setSortBy] = useState<ReviewSortBy>('newest');
   const isLocalCatalogProductId = params.id.startsWith('catalog-') || params.id.startsWith('real-');
 
@@ -157,6 +160,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const inventoryLabel = getInventoryLabel(product);
 
   const handleStartCheckout = async () => {
+    if (hasShopifyVariant(product)) {
+      setIsCheckoutOpen(true);
+      return;
+    }
+
     try {
       await startCheckout(product);
     } catch (error) {
@@ -347,6 +355,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           )}
         </Stack>
       </Grid>
+
+      <EmbeddedCheckout
+        product={product}
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+      />
 
       {/* Reviews Section */}
       {!isCatalogProduct && (

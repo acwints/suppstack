@@ -11,7 +11,15 @@ import {
 export function useCommerceCheckout() {
   const [isStartingCheckout, setIsStartingCheckout] = useState(false);
 
-  const startCheckout = async (product: Product, quantity = 1): Promise<PurchaseSession> => {
+  /**
+   * Resolves a purchase session from the commerce API without opening any
+   * window. Used by the embedded checkout panel, which controls its own
+   * checkout window lifecycle.
+   */
+  const resolveCheckoutSession = async (
+    product: Product,
+    quantity = 1
+  ): Promise<PurchaseSession> => {
     setIsStartingCheckout(true);
 
     try {
@@ -32,22 +40,29 @@ export function useCommerceCheckout() {
 
       const payload = await response.json();
       const session = payload.session as PurchaseSession;
-      if (session?.purchaseUrl) {
-        window.open(session.purchaseUrl, '_blank', 'noopener,noreferrer');
+      if (!session?.purchaseUrl) {
+        throw new Error('Purchase session did not include a checkout URL.');
       }
 
       return session;
     } catch (error) {
-      const fallback = createFallbackPurchaseSession(product, quantity);
-      window.open(fallback.purchaseUrl, '_blank', 'noopener,noreferrer');
-      return fallback;
+      return createFallbackPurchaseSession(product, quantity);
     } finally {
       setIsStartingCheckout(false);
     }
   };
 
+  const startCheckout = async (product: Product, quantity = 1): Promise<PurchaseSession> => {
+    const session = await resolveCheckoutSession(product, quantity);
+    if (session.purchaseUrl) {
+      window.open(session.purchaseUrl, '_blank', 'noopener,noreferrer');
+    }
+    return session;
+  };
+
   return {
     isStartingCheckout,
     startCheckout,
+    resolveCheckoutSession,
   };
 }
