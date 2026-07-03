@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getShopifyProductJsonUrl } from '@/lib/catalog/shopify-catalog-verifier';
 import { getShopifyVariantNumericId } from '@/lib/commerce/shopify-ucp';
+import { allCuratedProductSeeds } from '@/lib/catalog/supplement-catalog';
+
+function normalizeHost(host: string) {
+  return host.toLowerCase().replace(/^www\./, '');
+}
+
+/**
+ * Only merchant domains present in the catalog may be fetched; this endpoint
+ * is unauthenticated and must not act as an open proxy (SSRF).
+ */
+const ALLOWED_MERCHANT_HOSTS = new Set(
+  allCuratedProductSeeds
+    .map((seed) => seed.shopify_store_domain)
+    .filter((domain): domain is string => Boolean(domain))
+    .map(normalizeHost)
+);
 
 interface ShopifyVariantJson {
   id: number;
@@ -49,6 +65,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'productUrl and variantGid are required.' }, { status: 400 });
   }
 
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(productUrl);
+  } catch {
+    return NextResponse.json({ error: 'Invalid productUrl.' }, { status: 400 });
+  }
+
+  if (parsedUrl.protocol !== 'https:' || !ALLOWED_MERCHANT_HOSTS.has(normalizeHost(parsedUrl.hostname))) {
+    return NextResponse.json({ error: 'Merchant domain is not allowed.' }, { status: 400 });
+  }
+
   try {
     const jsonUrl = getShopifyProductJsonUrl(productUrl);
     const controller = new AbortController();
@@ -63,7 +90,7 @@ export async function POST(request: NextRequest) {
           accept: 'application/json,text/javascript,*/*;q=0.8',
           'user-agent': 'SuppStackLiveStatus/1.0',
         },
-        next: { revalidate: 300 },
+        next: { revalidate: 60 },
       });
     } finally {
       clearTimeout(timeout);

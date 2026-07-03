@@ -144,6 +144,8 @@ async function fetchJson(url, timeoutMs = 12000) {
 function tokenize(value) {
   return String(value)
     .toLowerCase()
+    .replace(/([a-z])(\d)/g, '$1 $2')
+    .replace(/(\d)([a-z])/g, '$1 $2')
     .replace(/[^a-z0-9]+/g, ' ')
     .split(' ')
     .filter(Boolean);
@@ -176,9 +178,29 @@ const UNIT_PATTERN =
 
 const SERVINGS_PATTERN = /(?:^|[^0-9a-z])(\d{2,4})\s*-?\s*servings\b/i;
 
+const WORD_NUMBERS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
+
 function matchNumber(text, pattern) {
   const match = String(text || '').match(pattern);
   return match ? Number(match[1]) : null;
+}
+
+/**
+ * Units per serving, e.g. "Serving Size: 2 Capsules" or "each serving
+ * consists of three capsules" — needed because many bottles are 2-3 units
+ * per serving, which halves/thirds the serving count.
+ */
+function parsePerServing(description) {
+  const text = description.toLowerCase();
+  const unitWords = '(?:veggie\\s+|veg\\s+)?(?:capsules?|softgels?|soft gels?|tablets?|caplets?|caps|gummies)';
+  const numberWord = '(\\d|one|two|three|four|five|six)';
+  const match =
+    text.match(new RegExp(`serving size[^a-z0-9]{0,5}(?:consists of\\s*)?${numberWord}\\s*${unitWords}`)) ||
+    text.match(new RegExp(`(?:each serving|per serving)[^.]{0,40}?${numberWord}\\s*${unitWords}`)) ||
+    text.match(new RegExp(`${numberWord}\\s*${unitWords}\\s*per serving`));
+  if (!match) return null;
+  const value = WORD_NUMBERS[match[1]] ?? Number(match[1]);
+  return value >= 1 && value <= 6 ? value : null;
 }
 
 function defaultServings(title) {
@@ -189,20 +211,26 @@ function defaultServings(title) {
 }
 
 /**
- * A serving can be multiple units (e.g. 120 capsules at 2 per serving = 60
- * servings), and the description's "N Servings" can describe a different
- * bottle size than the chosen variant — so when both signals exist, the
- * smaller one is the safe estimate (servings never exceed units).
+ * Servings = units / units-per-serving. Unit counts come from the variant
+ * title, product title, or handle ("...-240-softgels"); units-per-serving
+ * from "Serving Size: N capsules" prose. When the merchant states a servings
+ * figure directly, the smaller of the two estimates wins (servings never
+ * exceed the bottle's unit count).
  */
 function parseServings(productJson, variant) {
   const description = String(productJson.description || '').replace(/<[^>]+>/g, ' ');
   const unitCount =
-    matchNumber(variant?.title, UNIT_PATTERN) ?? matchNumber(productJson.title, UNIT_PATTERN);
+    matchNumber(variant?.title, UNIT_PATTERN) ??
+    matchNumber(productJson.title, UNIT_PATTERN) ??
+    matchNumber(String(productJson.handle || '').replace(/-/g, ' '), UNIT_PATTERN) ??
+    matchNumber(description, UNIT_PATTERN);
+  const perServing = parsePerServing(description) ?? 1;
   const statedServings =
     matchNumber(description, SERVINGS_PATTERN) ?? matchNumber(productJson.title, SERVINGS_PATTERN);
+  const derivedServings = unitCount ? Math.max(1, Math.floor(unitCount / perServing)) : null;
 
-  if (unitCount && statedServings) return Math.min(unitCount, statedServings);
-  return statedServings ?? unitCount ?? defaultServings(productJson.title);
+  if (statedServings && derivedServings) return Math.min(statedServings, derivedServings);
+  return statedServings ?? derivedServings ?? defaultServings(productJson.title);
 }
 
 /**
@@ -254,7 +282,10 @@ async function resolveProduct(store, handle) {
   const variant = pickVariant(productJson);
   if (!variant) return null;
 
-  const image = productJson.images?.[0] || productJson.featured_image || '';
+  // Prefer the chosen variant's own image so e.g. a 3mg pick doesn't show
+  // the 12mg bottle.
+  const image =
+    variant.featured_image?.src || productJson.images?.[0] || productJson.featured_image || '';
   const hasVariantTitle = Boolean(variant.title && variant.title !== 'Default Title');
 
   return {

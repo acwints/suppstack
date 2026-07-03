@@ -2142,7 +2142,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
   },
 ];
 
-const allCuratedProductSeeds: CuratedProductSeed[] = [
+export const allCuratedProductSeeds: CuratedProductSeed[] = [
   ...curatedProductSeeds,
   ...sourcedProductSeeds,
 ];

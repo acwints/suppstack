@@ -239,14 +239,17 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
             </div>
 
             <Stack gap={3}>
+              {/* Fail closed while confirming availability; fail open on
+                  'unknown' so a merchant hiccup never blocks checkout. */}
               <Button
                 variant="primary"
                 fullWidth
                 size="lg"
                 onClick={launchCheckout}
+                isLoading={live.status === 'loading'}
                 leftIcon={<FiShoppingBag />}
               >
-                Complete secure Shopify checkout
+                {live.status === 'loading' ? 'Confirming availability' : 'Complete secure Shopify checkout'}
               </Button>
               <p className="text-center text-xs text-gray-500">
                 {hasVerifiedVariant
