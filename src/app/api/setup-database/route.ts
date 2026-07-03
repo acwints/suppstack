@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../supabase';
-import { seedInfluencers } from '../../../scripts/seedInfluencers';
 
 export async function POST() {
   try {
@@ -247,10 +246,6 @@ export async function POST() {
     } else {
       console.log('✅ Schema created successfully');
     }
-
-    // Now seed the influencer data
-    console.log('🌟 Starting influencer seeding...');
-    await seedInfluencers();
 
     return NextResponse.json({ 
       success: true, 

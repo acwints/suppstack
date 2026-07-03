@@ -219,7 +219,8 @@ export async function resolveShopifyPurchaseSession(
       }
     }
 
-    const continueUrl = checkout?.continue_url || cart?.continue_url || getPreferredPurchaseUrl(product);
+    const continueUrl =
+      checkout?.continue_url || cart?.continue_url || getPreferredPurchaseUrl(product, quantity);
 
     return {
       mode: checkout ? 'shopify_checkout' : 'shopify_ucp_candidate',

@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     const shouldAttemptUcp = Boolean(product.shopify_store_domain && product.shopify_variant_gid);
     const session = shouldAttemptUcp
       ? await resolveShopifyPurchaseSession(product, quantity)
-      : createFallbackPurchaseSession(product);
+      : createFallbackPurchaseSession(product, quantity);
 
     recordCheckoutEvent(product, session, quantity).catch(() => undefined);
 

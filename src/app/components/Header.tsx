@@ -38,12 +38,6 @@ export default function Header() {
               Shop
             </Link>
             <Link
-              href="/stacks"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Stacks
-            </Link>
-            <Link
               href="/brands"
               className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >

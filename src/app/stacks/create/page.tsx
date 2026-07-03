@@ -172,11 +172,11 @@ export default function CreateStackPage() {
     <main className="max-w-3xl mx-auto px-4 py-8">
       {/* Back Button */}
       <Link
-        href="/stacks"
+        href="/profile"
         className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
       >
         <FiArrowLeft />
-        <span>Back to Stacks</span>
+        <span>Back to My Collection</span>
       </Link>
 
       <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-8">Create a Stack</h1>
@@ -483,7 +483,7 @@ export default function CreateStackPage() {
 
           {/* Submit */}
           <Inline gap={3}>
-            <Link href="/stacks" className="flex-1">
+            <Link href="/profile" className="flex-1">
               <Button type="button" variant="outline" fullWidth>
                 Cancel
               </Button>

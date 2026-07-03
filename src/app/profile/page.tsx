@@ -595,11 +595,6 @@ export default function Profile() {
                   </div>
                 ))}
 
-                <div className="text-center pt-6">
-                  <Link href="/stacks" className="text-sm text-gray-500 hover:text-gray-900">
-                    Browse all stacks
-                  </Link>
-                </div>
               </div>
             )}
           </section>

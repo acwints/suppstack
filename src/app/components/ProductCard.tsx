@@ -13,6 +13,7 @@ import { useCommerceCheckout } from '@/hooks';
 import { formatPrice } from '@/lib/utils';
 import { Button, Badge, useToast } from '@/components/ui';
 import { Rating } from '@/components/composite/Rating';
+import { EmbeddedCheckout } from '@/components/composite/Commerce';
 import { supabase } from '../supabase';
 import {
   canPurchase,
@@ -20,6 +21,7 @@ import {
   getPurchaseDestination,
   getPurchaseLabel,
 } from '@/lib/commerce/shopify-ucp';
+import { hasShopifyVariant } from '@/lib/commerce/product-source';
 
 interface ProductCardProps {
   product: Product;
@@ -28,6 +30,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, ratingStats: initialStats }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [ratingStats, setRatingStats] = useState<ProductRatingStats | null>(initialStats || null);
   const { user } = useAuth();
   const router = useRouter();
@@ -87,6 +90,11 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
   };
 
   const handleStartCheckout = async () => {
+    if (hasShopifyVariant(product)) {
+      setIsCheckoutOpen(true);
+      return;
+    }
+
     try {
       await startCheckout(product);
     } catch (error) {
@@ -214,6 +222,12 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
           )}
         </div>
       </div>
+
+      <EmbeddedCheckout
+        product={product}
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+      />
     </div>
   );
 }

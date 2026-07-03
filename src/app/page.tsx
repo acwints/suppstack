@@ -10,7 +10,6 @@ import { SkeletonGrid, SkeletonCard, Stack, Inline } from '@/components/ui';
 import { EnhancedSearchBar } from '@/components/composite/Search';
 import { CategoryFilter, SortFilter } from '@/components/composite/Filter';
 import { SupplementGrid, FeaturedCategories } from '@/components/composite/Supplement';
-import FeaturedStacks from './components/FeaturedStacks';
 
 const heroBackgroundStyle = {
   backgroundImage:
@@ -174,14 +173,6 @@ export default function Home() {
                   </Link>
                 ))}
               </div>
-            </section>
-
-            {/* Featured Stacks */}
-            <section>
-              <div className="section-header">
-                <h2>Featured Stacks</h2>
-              </div>
-              <FeaturedStacks />
             </section>
 
             {/* Featured Categories */}

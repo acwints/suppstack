@@ -13,8 +13,8 @@ npm run dev        # Development server (port 3000)
 npm run build      # Production build
 npm run lint       # ESLint with Next.js config
 npm run add-supplements      # Seed supplements data
-npm run seed-influencers     # Seed influencer profiles
 npm run seed-amazon-products # Fetch Amazon products
+npm run verify:shopify-catalog # Verify Shopify catalog variants
 ```
 
 ## Directory Structure
