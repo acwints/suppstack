@@ -8,7 +8,7 @@ export default function Footer() {
           <div className="text-center md:text-left">
             <p className="text-sm">
               &copy; {new Date().getFullYear()} <span className="font-semibold text-gray-900">SuppStack</span>. 
-              Gym stacks, refill math, and sports nutrition discovery.
+              Health and wellness supplement marketplace.
             </p>
           </div>
           
@@ -21,7 +21,7 @@ export default function Footer() {
         
         <div className="mt-4 pt-4 border-t border-gray-200 text-center">
           <p className="text-xs text-gray-500">
-            Built for lifters comparing whey, creatine, pre-workout, recovery, and repeat orders.
+            Compare vitamins, minerals, herbs, protein, and everyday wellness products with verified checkout.
           </p>
         </div>
       </div>

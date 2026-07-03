@@ -281,7 +281,7 @@ export function SupplementSettingsModal({
           label="Timing Notes"
           value={timingNotes}
           onChange={(e) => setTimingNotes(e.target.value)}
-          placeholder="e.g., Take 30 min before workout"
+          placeholder="e.g., Take 30 min before breakfast"
         />
 
         {/* Goal */}

@@ -44,7 +44,7 @@ export default function Login() {
               SuppStack
             </h1>
             <p className="text-gray-600 mt-2">
-              Build gym stacks, compare restock cost, and save protein, creatine, and recovery picks.
+              Build your supplement routine, compare costs, and save your favorite products.
             </p>
           </div>
 

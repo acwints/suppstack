@@ -12,16 +12,6 @@ export interface CategoryFilterProps {
 }
 
 export function CategoryFilter({ supplements, value, onChange }: CategoryFilterProps) {
-  const preferredCategoryIds = [
-    'all',
-    'protein',
-    'performance',
-    'recovery',
-    'amino',
-    'vitamins',
-    'minerals',
-  ];
-
   const countForCategory = (categoryId: string) => {
     if (categoryId === 'all') return supplements.length;
 
@@ -39,18 +29,12 @@ export function CategoryFilter({ supplements, value, onChange }: CategoryFilterP
     }).length;
   };
 
-  const categories = preferredCategoryIds
-    .map((categoryId) => {
-      const category = SUPPLEMENT_CATEGORIES.find((item) => item.id === categoryId);
-      if (!category) return null;
-
-      return {
-        id: category.id,
-        name: category.name,
-        count: countForCategory(category.id),
-      };
-    })
-    .filter((category): category is { id: string; name: string; count: number } => Boolean(category));
+  // Full health & wellness range in the dropdown, hiding empty categories.
+  const categories = SUPPLEMENT_CATEGORIES.map((category) => ({
+    id: category.id,
+    name: category.name,
+    count: countForCategory(category.id),
+  })).filter((category) => category.id === 'all' || category.count > 0);
 
   const options = categories.map(cat => ({
     value: cat.id,

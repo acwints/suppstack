@@ -7,8 +7,8 @@ import { Providers } from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SuppStack - Gym Supplement Stack Builder",
-  description: "Compare whey, creatine, pre-workout, recovery, and refill-ready gym stacks with Shopify purchase paths.",
+  title: "SuppStack - Supplement Marketplace",
+  description: "Shop vitamins, minerals, herbs, protein, and everyday wellness supplements with verified merchant checkout.",
 };
 
 export default function RootLayout({
