@@ -157,7 +157,7 @@ export function getPurchaseDestination(
   if (hasDirectShopifyCheckout(product)) {
     return {
       url: product.shopify_checkout_url as string,
-      label: 'Shop with Shopify',
+      label: 'Buy Now',
       channel: 'shopify',
       mode: 'shopify_checkout',
       isDirectCheckout: true,
@@ -168,7 +168,7 @@ export function getPurchaseDestination(
   if (cartPermalink) {
     return {
       url: cartPermalink,
-      label: 'Add to Shopify cart',
+      label: 'Buy Now',
       channel: 'shopify',
       mode: 'shopify_cart_permalink',
       isDirectCheckout: true,
@@ -198,7 +198,7 @@ export function getPurchaseDestination(
   if (product.ucp_enabled || product.commerce_channel === 'shopify' || isShopifySearchUrl(product.product_url)) {
     return {
       url: product.product_url || getShopifySearchUrl(product),
-      label: 'Find on Shopify',
+      label: 'Find Retailers',
       channel: 'shopify',
       mode: 'shopify_discovery',
       isDirectCheckout: false,

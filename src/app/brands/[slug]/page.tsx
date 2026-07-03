@@ -7,6 +7,7 @@ import { formatCurrency } from '@/lib/utils';
 import { buildShopifyCartGroups, getPreferredPurchaseUrl } from '@/lib/commerce/shopify-ucp';
 import { compareProductsByCommerceSource } from '@/lib/commerce/product-source';
 import { findCatalogBrandBySlug } from '@/lib/catalog/brand-discovery';
+import { BrandLogo } from '@/components/composite/Brand';
 
 export default function BrandDetailPage({ params }: { params: { slug: string } }) {
   const brand = findCatalogBrandBySlug(params.slug);
@@ -25,8 +26,8 @@ export default function BrandDetailPage({ params }: { params: { slug: string } }
           <div className="max-w-xl border-t border-gray-900 pt-8">
             <h1 className="text-4xl font-serif text-gray-900">Brand not found</h1>
             <p className="mt-4 text-gray-600">
-              This brand shelf is not in the real merchant catalog yet. Browse the current
-              performance brands and Shopify-ready product paths.
+              This brand is not in the verified merchant catalog yet. Browse the current
+              brands and their product ranges.
             </p>
             <Link
               href="/brands"
@@ -61,12 +62,15 @@ export default function BrandDetailPage({ params }: { params: { slug: string } }
               <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
                 Brand Shelf
               </p>
-              <h1 className="mt-3 text-4xl lg:text-5xl font-serif text-gray-900">
-                {brand.brandName}
-              </h1>
+              <div className="mt-3 flex items-center gap-4">
+                <BrandLogo domain={brand.storeDomains[0]} brandName={brand.brandName} size="lg" />
+                <h1 className="text-4xl lg:text-5xl font-serif text-gray-900">
+                  {brand.brandName}
+                </h1>
+              </div>
               <p className="mt-5 text-lg text-gray-600">
                 Shop {brand.brandName} products across {brand.categories.join(', ')} with
-                serving-cost context, refill fit, and Shopify purchase paths in one place.
+                serving-cost context and verified checkout in one place.
               </p>
             </div>
 
@@ -116,10 +120,10 @@ export default function BrandDetailPage({ params }: { params: { slug: string } }
               <div>
                 <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
                   <FiShoppingBag className="text-orange-600" />
-                  Shopify merchant cart
+                  One-click brand cart
                 </div>
                 <p className="mt-1 text-sm text-gray-700">
-                  Add in-stock {brand.brandName} picks to the merchant cart for a faster restock.
+                  Add in-stock {brand.brandName} picks to the brand store cart in one step.
                 </p>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
@@ -144,7 +148,7 @@ export default function BrandDetailPage({ params }: { params: { slug: string } }
               <div>
                 <p className="text-sm font-semibold text-gray-900">Official product path</p>
                 <p className="mt-1 text-sm text-gray-600">
-                  This brand has product URLs ready, but not a variant-level Shopify cart yet.
+                  This brand has product pages ready, but not one-click cart checkout yet.
                 </p>
               </div>
               <a

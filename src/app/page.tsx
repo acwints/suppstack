@@ -8,6 +8,7 @@ import { SkeletonGrid, SkeletonCard, Inline, Stack } from '@/components/ui';
 import { EnhancedSearchBar } from '@/components/composite/Search';
 import { CategoryFilter, SortFilter } from '@/components/composite/Filter';
 import { SupplementGrid, FeaturedCategories } from '@/components/composite/Supplement';
+import { BrandLogo } from '@/components/composite/Brand';
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -81,9 +82,15 @@ export default function Home() {
                   <Link
                     key={brand.brandName}
                     href={`/brands/${brandSlug(brand.brandName)}`}
-                    className="rounded border border-gray-200 p-3 text-center transition-colors hover:border-gray-300 hover:bg-gray-50"
+                    className="flex flex-col items-center rounded border border-gray-200 p-3 text-center transition-colors hover:border-gray-300 hover:bg-gray-50"
                   >
-                    <p className="truncate text-sm font-medium text-gray-900">{brand.brandName}</p>
+                    <BrandLogo
+                      domain={brand.storeDomains[0]}
+                      brandName={brand.brandName}
+                      size="lg"
+                      className="mb-2"
+                    />
+                    <p className="w-full truncate text-sm font-medium text-gray-900">{brand.brandName}</p>
                     <p className="mt-0.5 text-xs text-gray-500">{brand.productCount} products</p>
                   </Link>
                 ))}

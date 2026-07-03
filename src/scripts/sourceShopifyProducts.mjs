@@ -346,7 +346,7 @@ function badgeFor(title) {
 function emitSeed(entry) {
   const slug = slugify(entry.supplementName);
   const cleanName = entry.displayName.replace(/\s+\|.*$/, '').trim();
-  const description = `${entry.brandName} ${entry.supplementName.toLowerCase()} pick with a verified Shopify variant, so shoppers can move straight from the supplement page into merchant cart checkout.`;
+  const description = `${entry.brandName} ${entry.supplementName.toLowerCase()} pick with a verified merchant listing, so shoppers can move straight from the supplement page into secure cart checkout.`;
   const servings = Math.max(1, Number(entry.servings) || 30);
 
   return `  {
@@ -369,7 +369,7 @@ function emitSeed(entry) {
     commerce_channel: 'shopify',
     ucp_enabled: true,
     inventory_status: 'in_stock',
-    quality_badges: ['Shopify UCP', 'Verified variant', '${badgeFor(entry.title)}'],
+    quality_badges: ['Verified merchant', 'Verified variant', '${badgeFor(entry.title)}'],
     subscriptions_available: false,
     data_source: 'shopify_ucp',
   },`;

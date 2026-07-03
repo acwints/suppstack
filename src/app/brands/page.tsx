@@ -9,6 +9,7 @@ import { brandSlug, buildBrandDiscovery } from '@/lib/catalog/brand-discovery';
 import { getPreferredPurchaseUrl } from '@/lib/commerce/shopify-ucp';
 import { formatCurrency } from '@/lib/utils';
 import { Spinner } from '@/components/ui';
+import { BrandLogo } from '@/components/composite/Brand';
 
 export default function BrandsPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,7 +43,7 @@ export default function BrandsPage() {
             </h1>
             <p className="text-lg text-gray-600 mt-5">
               Browse vitamins, protein, herbs, and everyday wellness brands by category, price,
-              and Shopify purchase path.
+              and checkout options.
             </p>
           </div>
 
@@ -83,14 +84,21 @@ export default function BrandsPage() {
                 </div>
                 <div className="p-5">
                   <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h2 className="text-xl font-serif text-gray-900">{brand.brandName}</h2>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {brand.productCount} products from {formatCurrency(brand.averagePrice)}
-                      </p>
-                      <p className="text-xs font-medium text-orange-700 mt-2">
-                        {brand.commerceReadyCount} purchase-ready picks
-                      </p>
+                    <div className="flex items-start gap-3">
+                      <BrandLogo
+                        domain={brand.storeDomains[0]}
+                        brandName={brand.brandName}
+                        size="lg"
+                      />
+                      <div>
+                        <h2 className="text-xl font-serif text-gray-900">{brand.brandName}</h2>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {brand.productCount} products from {formatCurrency(brand.averagePrice)}
+                        </p>
+                        <p className="text-xs font-medium text-orange-700 mt-2">
+                          {brand.commerceReadyCount} purchase-ready picks
+                        </p>
+                      </div>
                     </div>
                     <FiShoppingBag className="text-gray-400 shrink-0" />
                   </div>
