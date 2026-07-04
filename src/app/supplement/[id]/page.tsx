@@ -207,7 +207,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
 
         {/* Filter Panel */}
         <ProductFilterPanel
-          supplementId={supplementId}
+          products={products}
           filters={filters}
           sortBy={sortBy}
           onFiltersChange={setFilters}

@@ -37,7 +37,7 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
   const productId = String(product.product_id);
 
   // Use custom hook for stack management
-  const { isInStack, isUpdating, addToStack } = useProductInStack(productId);
+  const { isInStack, isUpdating, addToStack } = useProductInStack(product);
   const { isStartingCheckout, startCheckout } = useCommerceCheckout();
 
   // Use custom hook for price calculations
@@ -65,10 +65,6 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
 
   const rating = ratingStats?.average_rating || 0;
   const reviewCount = ratingStats?.total_reviews || 0;
-  const isCatalogProduct =
-    product.data_source === 'catalog_fallback' ||
-    productId.startsWith('catalog-') ||
-    productId.startsWith('real-');
   const purchaseLabel = getPurchaseLabel(product);
   const purchaseDestination = getPurchaseDestination(product);
   const inventoryLabel = getInventoryLabel(product);
@@ -113,6 +109,7 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
               alt={product.product_name}
               fill
               className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.04]"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           ) : (
             <div className="flex items-center justify-center h-full">
@@ -138,19 +135,19 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
               size="sm"
             />
             <span className="truncate text-xs text-gray-500">
-              {product.brands?.brand_name || 'Premium Brand'}
+              {product.brands?.brand_name || product.shopify_store_domain || ''}
             </span>
           </span>
           <h3 className="mt-0.5 text-sm font-medium leading-5 text-gray-900 line-clamp-2 group-hover:underline">
             {product.product_name}
           </h3>
 
-          <div className="mt-1 flex items-center gap-1.5">
-            <Rating value={rating} size="sm" />
-            {reviewCount > 0 && (
+          {reviewCount > 0 && (
+            <div className="mt-1 flex items-center gap-1.5">
+              <Rating value={rating} size="sm" />
               <span className="text-xs text-gray-500">({reviewCount.toLocaleString()})</span>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="mt-1.5 flex items-baseline gap-2">
             <span className="text-lg font-semibold text-gray-900">
@@ -176,20 +173,18 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
           {purchaseLabel}
         </Button>
 
-        {!isCatalogProduct && (
-          <Button
-            onClick={handleAddToStack}
-            disabled={isInStack || isUpdating}
-            variant={isInStack ? 'outline' : 'ghost'}
-            size="sm"
-            fullWidth
-            leftIcon={isInStack ? <FaCheck className="w-3.5 h-3.5" /> : <FaShoppingCart className="w-3.5 h-3.5" />}
-            isLoading={isUpdating}
-            className={isInStack ? 'bg-success-50 text-success-700 border-success-200 hover:bg-success-100' : ''}
-          >
-            {isInStack ? 'In Stack' : 'Add to Stack'}
-          </Button>
-        )}
+        <Button
+          onClick={handleAddToStack}
+          disabled={isInStack || isUpdating}
+          variant={isInStack ? 'outline' : 'ghost'}
+          size="sm"
+          fullWidth
+          leftIcon={isInStack ? <FaCheck className="w-3.5 h-3.5" /> : <FaShoppingCart className="w-3.5 h-3.5" />}
+          isLoading={isUpdating}
+          className={isInStack ? 'bg-success-50 text-success-700 border-success-200 hover:bg-success-100' : ''}
+        >
+          {isInStack ? 'In Stack' : 'Add to Stack'}
+        </Button>
       </div>
 
       <EmbeddedCheckout

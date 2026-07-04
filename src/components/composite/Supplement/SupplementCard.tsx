@@ -41,12 +41,16 @@ export function SupplementCard({ supplement }: SupplementCardProps) {
             {supplement.supplement_name}
           </h3>
           <div className="mt-auto pt-2">
-            <span className="text-lg font-semibold text-gray-900">
-              ${formatPrice(supplement.average_price ?? 24)}
-            </span>
+            {typeof supplement.average_price === 'number' && (
+              <span className="text-lg font-semibold text-gray-900">
+                ${formatPrice(supplement.average_price)}
+              </span>
+            )}
             <p className="text-xs text-gray-500">
-              {supplement.product_count ?? 1} option{(supplement.product_count ?? 1) === 1 ? '' : 's'}
-              {supplement.category ? ` · ${supplement.category}` : ''}
+              {typeof supplement.product_count === 'number' &&
+                `${supplement.product_count} option${supplement.product_count === 1 ? '' : 's'}`}
+              {typeof supplement.product_count === 'number' && supplement.category ? ' · ' : ''}
+              {supplement.category ?? ''}
             </p>
           </div>
         </div>

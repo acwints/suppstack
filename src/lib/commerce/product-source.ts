@@ -23,6 +23,11 @@ export function isCatalogFallbackProduct(product: Product) {
   return product.data_source === 'catalog_fallback' || String(product.product_id).startsWith('catalog-');
 }
 
+/** Curated catalog products live in static code with `real-*` string IDs. */
+export function isCuratedCatalogProductId(productId: string | number) {
+  return String(productId).startsWith('real-') || String(productId).startsWith('catalog-');
+}
+
 export function hasOfficialProductUrl(product: Product) {
   return Boolean(product.product_url && !isShopifySearchUrl(product.product_url));
 }

@@ -68,7 +68,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   });
 
   // Stack management
-  const { isInStack, isUpdating, addToStack } = useProductInStack(params.id);
+  const { isInStack, isUpdating, addToStack } = useProductInStack(product);
   const { isStartingCheckout, startCheckout } = useCommerceCheckout();
 
   // Price calculations
@@ -199,6 +199,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               alt={product.product_name}
               fill
               className="object-contain p-8"
+              sizes="(max-width: 1024px) 100vw, 50vw"
             />
           ) : (
             <div className="flex items-center justify-center h-full">
@@ -221,7 +222,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               size="md"
             />
             <span className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-              {product.brands?.brand_name || 'Premium Brand'}
+              {product.brands?.brand_name || product.shopify_store_domain || ''}
             </span>
           </span>
 
@@ -306,20 +307,18 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               {purchaseLabel}
             </Button>
 
-            {!isCatalogProduct && (
-              <Button
-                onClick={handleAddToStack}
-                disabled={isInStack || isUpdating}
-                variant={isInStack ? 'outline' : 'secondary'}
-                fullWidth
-                size="lg"
-                leftIcon={isInStack ? <FaCheck /> : <FaShoppingCart />}
-                isLoading={isUpdating}
-                className={isInStack ? 'bg-green-50 text-green-700 border-green-200' : ''}
-              >
-                {isInStack ? 'Added to My Stack' : 'Add to My Stack'}
-              </Button>
-            )}
+            <Button
+              onClick={handleAddToStack}
+              disabled={isInStack || isUpdating}
+              variant={isInStack ? 'outline' : 'secondary'}
+              fullWidth
+              size="lg"
+              leftIcon={isInStack ? <FaCheck /> : <FaShoppingCart />}
+              isLoading={isUpdating}
+              className={isInStack ? 'bg-green-50 text-green-700 border-green-200' : ''}
+            >
+              {isInStack ? 'Added to My Stack' : 'Add to My Stack'}
+            </Button>
 
             <Inline gap={3}>
               {product.product_url && !isShopifySearchUrl(product.product_url) && (

@@ -4,9 +4,9 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { FaSearch, FaTimes, FaHistory, FaArrowRight } from 'react-icons/fa';
 import { FiPackage, FiHash } from 'react-icons/fi';
 import Link from 'next/link';
-import { supabase } from '@/app/supabase';
 import { useDebounce } from '@/hooks';
 import { cn } from '@/lib/design-system/utils';
+import { allCuratedProductSeeds, supplementCatalog } from '@/lib/catalog/supplement-catalog';
 
 export interface EnhancedSearchBarProps {
   value: string;
@@ -80,71 +80,50 @@ export function EnhancedSearchBar({
     setRecentSearches(getRecentSearches());
   }, []);
 
-  // Fetch suggestions when search term changes
+  // Compute suggestions from the verified catalog when the term changes.
+  // Everything suggested here is guaranteed to resolve to a browsable page
+  // with real product data — no stale database rows.
   useEffect(() => {
     if (!debouncedValue || debouncedValue.length < 2) {
       setSuggestions([]);
+      setIsSearching(false);
       return;
     }
 
-    let cancelled = false;
-    setIsSearching(true);
+    const term = debouncedValue.toLowerCase();
 
-    async function fetchSuggestions() {
-      try {
-        const term = debouncedValue.toLowerCase();
+    const supplementSuggestions: SearchSuggestion[] = supplementCatalog
+      .filter(
+        (s) =>
+          s.supplement_name.toLowerCase().includes(term) ||
+          (s.aliases ?? []).some((alias) => alias.toLowerCase().includes(term))
+      )
+      .slice(0, 5)
+      .map((s) => ({
+        type: 'supplement' as const,
+        id: s.supplement_id,
+        name: s.supplement_name,
+        subtitle: s.category || 'Supplement',
+        href: `/supplement/${s.supplement_id}`,
+      }));
 
-        // Fetch supplements and products in parallel
-        const [supplementsResult, productsResult] = await Promise.all([
-          supabase
-            .from('supplements')
-            .select('supplement_id, supplement_name, category')
-            .or(`supplement_name.ilike.%${term}%,supplement_description.ilike.%${term}%`)
-            .limit(5),
-          supabase
-            .from('products')
-            .select('product_id, product_name, brands(brand_name), supplements(supplement_name)')
-            .or(`product_name.ilike.%${term}%,product_description.ilike.%${term}%`)
-            .limit(5),
-        ]);
+    const productSuggestions: SearchSuggestion[] = allCuratedProductSeeds
+      .filter(
+        (p) =>
+          p.product_name.toLowerCase().includes(term) ||
+          (p.brands?.brand_name ?? '').toLowerCase().includes(term)
+      )
+      .slice(0, 5)
+      .map((p) => ({
+        type: 'product' as const,
+        id: p.product_id,
+        name: p.product_name,
+        subtitle: p.brands?.brand_name || p.supplement_name,
+        href: `/product/${p.product_id}`,
+      }));
 
-        if (cancelled) return;
-
-        const supplementSuggestions: SearchSuggestion[] = (supplementsResult.data || []).map(
-          (s) => ({
-            type: 'supplement' as const,
-            id: s.supplement_id,
-            name: s.supplement_name,
-            subtitle: s.category || 'Supplement',
-            href: `/supplement/${s.supplement_id}`,
-          })
-        );
-
-        const productSuggestions: SearchSuggestion[] = (productsResult.data || []).map(
-          (p: any) => ({
-            type: 'product' as const,
-            id: p.product_id,
-            name: p.product_name,
-            subtitle: p.brands?.brand_name || p.supplements?.supplement_name || 'Product',
-            href: `/product/${p.product_id}`,
-          })
-        );
-
-        setSuggestions([...supplementSuggestions, ...productSuggestions]);
-      } catch (err) {
-        console.error('Search suggestion error:', err);
-      } finally {
-        if (!cancelled) {
-          setIsSearching(false);
-        }
-      }
-    }
-
-    fetchSuggestions();
-
-    return () => {
-      cancelled = true;
-    };
+    setSuggestions([...supplementSuggestions, ...productSuggestions]);
+    setIsSearching(false);
   }, [debouncedValue]);
 
   // Close dropdown on outside click

@@ -1,6 +1,7 @@
 import type { Product, Supplement } from '@/types';
 import {
-  isVerifiedMerchantProduct,
+  hasDirectShopifyCheckout,
+  hasShopifyVariant,
   mergeProductSources,
 } from '@/lib/commerce/product-source';
 import { sourcedProductSeeds } from './shopify-sourced-products';
@@ -209,10 +210,6 @@ const seeds: CatalogSeed[] = [
   { name: 'Cordyceps', category: 'Performance', description: 'Functional mushroom used for endurance, oxygen utilization, and energy support routines.', goals: ['Endurance', 'Energy'], forms: ['Capsule', 'Powder'], dosage: '1000-3000 mg daily', evidence: 'emerging', price: 31 },
   { name: 'Chaga Mushroom', category: 'Immune Support', description: 'Functional mushroom used for antioxidant and immune wellness routines.', goals: ['Antioxidant support', 'Immune support'], forms: ['Powder', 'Capsule'], dosage: '500-1500 mg daily', evidence: 'emerging', price: 28 },
 ];
-
-function slugify(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-}
 
 function normalizeSupplementLookupTerm(value: string) {
   return value
@@ -2196,7 +2193,7 @@ function productImageForSupplementName(supplementName: string) {
   return withImage?.product_image ?? '';
 }
 
-export const supplementCatalog: Supplement[] = seeds.map((seed, index) => {
+export const supplementCatalog: Supplement[] = seeds.map((seed) => {
   const curatedStats = curatedStatsForSupplementName(seed.name);
 
   return {
@@ -2210,8 +2207,11 @@ export const supplementCatalog: Supplement[] = seeds.map((seed, index) => {
     primary_goals: seed.goals,
     typical_forms: seed.forms,
     common_dosage: seed.dosage,
-    product_count: curatedStats?.productCount ?? 12 + (index % 11) * 3,
-    average_price: curatedStats?.averagePrice ?? seed.price,
+    // Honest numbers only: these come from real curated products. Every
+    // catalog entry has at least one verified product, so no invented
+    // fallbacks are needed.
+    product_count: curatedStats?.productCount,
+    average_price: curatedStats?.averagePrice,
   };
 });
 
@@ -2225,33 +2225,6 @@ export function getCuratedCatalogProducts() {
   });
 }
 
-export function mergeSupplementCatalog(databaseSupplements: Supplement[]) {
-  const byName = new Map<string, Supplement>();
-
-  supplementCatalog.forEach((supplement) => {
-    byName.set(supplement.supplement_name.toLowerCase(), supplement);
-  });
-
-  databaseSupplements.forEach((supplement) => {
-    const catalogMatch = byName.get(supplement.supplement_name.toLowerCase());
-    byName.set(supplement.supplement_name.toLowerCase(), {
-      ...catalogMatch,
-      ...supplement,
-      supplement_id: catalogMatch?.supplement_id ?? supplement.supplement_id,
-      category: catalogMatch?.category ?? supplement.category,
-      image_url: catalogMatch?.image_url ?? supplement.image_url,
-      aliases: supplement.aliases ?? catalogMatch?.aliases,
-      evidence_rating: supplement.evidence_rating ?? catalogMatch?.evidence_rating,
-      primary_goals: supplement.primary_goals ?? catalogMatch?.primary_goals,
-      typical_forms: supplement.typical_forms ?? catalogMatch?.typical_forms,
-      common_dosage: supplement.common_dosage ?? catalogMatch?.common_dosage,
-      product_count: catalogMatch?.product_count ?? supplement.product_count,
-      average_price: catalogMatch?.average_price ?? supplement.average_price,
-    });
-  });
-
-  return Array.from(byName.values());
-}
 
 export function getCanonicalSupplementCategory(supplementName?: string | null) {
   if (!supplementName) return null;
@@ -2302,103 +2275,37 @@ export function createCanonicalCatalogProductsForSupplement(supplement: Suppleme
   });
 }
 
+/**
+ * Database products are only listed when they carry a verified commerce path
+ * (a Shopify variant or direct checkout). Legacy seeded rows with stock
+ * photography and unverified prices are excluded from all product surfaces.
+ */
+function isListableDatabaseProduct(product: Product) {
+  return hasShopifyVariant(product) || hasDirectShopifyCheckout(product);
+}
+
 export function resolveProductsForSupplement(
   supplement: Supplement,
   databaseProducts: Product[] = []
 ) {
   const catalogProducts = createCanonicalCatalogProductsForSupplement(supplement);
-  const mergedProducts = mergeProductSources(catalogProducts, databaseProducts);
-  const hasCuratedCatalogProducts = catalogProducts.some(isVerifiedMerchantProduct);
-
-  if (hasCuratedCatalogProducts || databaseProducts.length > 0) return mergedProducts;
-  return catalogProducts;
+  return mergeProductSources(catalogProducts, databaseProducts.filter(isListableDatabaseProduct));
 }
 
 export function findCatalogSupplementByProductId(productId: string) {
   const curatedSeed = findCuratedSeedByProductId(productId);
-  if (curatedSeed) {
-    return supplementCatalog.find((supplement) => supplement.supplement_name === curatedSeed.supplement_name) ?? null;
-  }
+  if (!curatedSeed) return null;
 
-  const [, supplementSlug] = productId.match(/^catalog-(.+)-(essential|premium|subscription)$/) ?? [];
-  if (!supplementSlug) return null;
-
-  return supplementCatalog.find((supplement) => slugify(supplement.supplement_name) === supplementSlug) ?? null;
+  return supplementCatalog.find((supplement) => supplement.supplement_name === curatedSeed.supplement_name) ?? null;
 }
 
+/**
+ * Only real, verified merchant products are ever listed. There is no
+ * generated/fallback product data — if a supplement has no curated products,
+ * callers render an honest empty state instead.
+ */
 export function createCatalogProductsForSupplement(supplement: Supplement): Product[] {
-  const curatedProducts = createCuratedProductsForSupplement(supplement);
-  if (curatedProducts.length > 0) return curatedProducts;
-
-  const slug = slugify(supplement.supplement_name);
-  const brandBase = supplement.category?.split(' ')[0] || 'SuppStack';
-  const price = supplement.average_price ?? 24;
-
-  return [
-    {
-      product_id: `catalog-${slug}-essential`,
-      product_name: `${supplement.supplement_name} Daily Essential`,
-      product_description: `A straightforward ${supplement.supplement_name} option for shoppers comparing verified merchants.`,
-      product_price: Math.max(9, price - 5),
-      product_url: `https://www.shopify.com/search?q=${encodeURIComponent(supplement.supplement_name)}`,
-      amazon_url: '',
-      product_image: supplement.image_url || '',
-      servings_per_container: 60,
-      servings_per_day: 1,
-      supplement_id: supplement.supplement_id,
-      brand_id: 'catalog',
-      brands: { brand_name: `${brandBase} Labs` },
-      supplements: { supplement_id: supplement.supplement_id, supplement_name: supplement.supplement_name },
-      commerce_channel: 'shopify',
-      ucp_enabled: false,
-      inventory_status: 'in_stock',
-      quality_badges: ['Third-party tested', 'Clear label'],
-      subscriptions_available: true,
-      data_source: 'catalog_fallback',
-    },
-    {
-      product_id: `catalog-${slug}-premium`,
-      product_name: `${supplement.supplement_name} Premium Formula`,
-      product_description: `A higher-spec ${supplement.supplement_name} product profile for users who prioritize testing, form, and serving transparency.`,
-      product_price: price + 8,
-      product_url: `https://www.shopify.com/search?q=${encodeURIComponent(`${supplement.supplement_name} premium formula`)}`,
-      amazon_url: '',
-      product_image: supplement.image_url || '',
-      servings_per_container: 90,
-      servings_per_day: 1,
-      supplement_id: supplement.supplement_id,
-      brand_id: 'catalog',
-      brands: { brand_name: `${brandBase} Research` },
-      supplements: { supplement_id: supplement.supplement_id, supplement_name: supplement.supplement_name },
-      commerce_channel: 'shopify',
-      ucp_enabled: false,
-      inventory_status: 'in_stock',
-      quality_badges: ['GMP facility', 'Batch tested'],
-      subscriptions_available: true,
-      data_source: 'catalog_fallback',
-    },
-    {
-      product_id: `catalog-${slug}-subscription`,
-      product_name: `${supplement.supplement_name} Refill Plan`,
-      product_description: `A subscription-friendly ${supplement.supplement_name} listing designed around repeat ordering and monthly adherence.`,
-      product_price: Math.max(8, price - 2),
-      product_url: `https://www.shopify.com/search?q=${encodeURIComponent(`${supplement.supplement_name} subscription`)}`,
-      amazon_url: '',
-      product_image: supplement.image_url || '',
-      servings_per_container: 30,
-      servings_per_day: 1,
-      supplement_id: supplement.supplement_id,
-      brand_id: 'catalog',
-      brands: { brand_name: `${brandBase} Supply` },
-      supplements: { supplement_id: supplement.supplement_id, supplement_name: supplement.supplement_name },
-      commerce_channel: 'shopify',
-      ucp_enabled: false,
-      inventory_status: 'in_stock',
-      quality_badges: ['Subscribe and save', 'Easy reorder'],
-      subscriptions_available: true,
-      data_source: 'catalog_fallback',
-    },
-  ];
+  return createCuratedProductsForSupplement(supplement);
 }
 
 export function findCatalogProductById(productId: string) {

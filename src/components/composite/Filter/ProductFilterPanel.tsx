@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { FiFilter, FiX, FiChevronDown, FiChevronUp, FiStar } from 'react-icons/fi';
-import { supabase } from '@/app/supabase';
-import { Button, Card } from '@/components/ui';
+import { useMemo, useState } from 'react';
+import { FiFilter, FiX, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { Card } from '@/components/ui';
 import { cn } from '@/lib/design-system/utils';
-import type { ProductFilters, ProductSortBy } from '@/types';
+import type { Product, ProductFilters, ProductSortBy } from '@/types';
 
 export interface ProductFilterPanelProps {
-  supplementId?: number;
+  products: Product[];
   filters: ProductFilters;
   sortBy: ProductSortBy;
   onFiltersChange: (filters: ProductFilters) => void;
@@ -35,18 +34,10 @@ const SORT_OPTIONS: { value: ProductSortBy; label: string }[] = [
   { value: 'name', label: 'Name (A-Z)' },
   { value: 'price_asc', label: 'Price: Low to High' },
   { value: 'price_desc', label: 'Price: High to Low' },
-  { value: 'rating', label: 'Top Rated' },
-  { value: 'newest', label: 'Newest' },
-];
-
-const RATING_OPTIONS = [
-  { label: '4+', value: 4 },
-  { label: '3+', value: 3 },
-  { label: '2+', value: 2 },
 ];
 
 export function ProductFilterPanel({
-  supplementId,
+  products,
   filters,
   sortBy,
   onFiltersChange,
@@ -55,56 +46,35 @@ export function ProductFilterPanel({
   className,
 }: ProductFilterPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [brands, setBrands] = useState<BrandOption[]>([]);
   const [selectedPriceRange, setSelectedPriceRange] = useState<number | null>(null);
-  const [selectedRating, setSelectedRating] = useState<number | null>(null);
 
-  // Fetch available brands
-  useEffect(() => {
-    async function fetchBrands() {
-      let query = supabase
-        .from('products')
-        .select('brand_id, brands(brand_name)');
+  // Brand options come from the products actually listed on this page, so
+  // every filter option is guaranteed to match at least one product.
+  const brands = useMemo((): BrandOption[] => {
+    const brandCounts = new Map<string, { name: string; count: number }>();
 
-      if (supplementId) {
-        query = query.eq('supplement_id', supplementId);
+    products.forEach((product) => {
+      const brandId = String(product.brand_id ?? '');
+      const brandName = product.brands?.brand_name;
+      if (!brandId || !brandName) return;
+
+      const existing = brandCounts.get(brandId);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        brandCounts.set(brandId, { name: brandName, count: 1 });
       }
+    });
 
-      const { data } = await query;
-
-      if (data) {
-        const brandCounts = new Map<string, { name: string; count: number }>();
-        data.forEach((p: any) => {
-          if (p.brand_id && p.brands?.brand_name) {
-            const existing = brandCounts.get(p.brand_id);
-            if (existing) {
-              existing.count++;
-            } else {
-              brandCounts.set(p.brand_id, { name: p.brands.brand_name, count: 1 });
-            }
-          }
-        });
-
-        const brandOptions: BrandOption[] = Array.from(brandCounts.entries())
-          .map(([id, info]) => ({
-            brand_id: id,
-            brand_name: info.name,
-            count: info.count,
-          }))
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 10);
-
-        setBrands(brandOptions);
-      }
-    }
-
-    fetchBrands();
-  }, [supplementId]);
+    return Array.from(brandCounts.entries())
+      .map(([id, info]) => ({ brand_id: id, brand_name: info.name, count: info.count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+  }, [products]);
 
   const activeFilterCount = [
     filters.brandId,
     filters.minPrice !== undefined || filters.maxPrice !== undefined,
-    filters.minRating,
   ].filter(Boolean).length;
 
   const handlePriceRange = (index: number) => {
@@ -118,16 +88,6 @@ export function ProductFilterPanel({
     }
   };
 
-  const handleRating = (rating: number) => {
-    if (selectedRating === rating) {
-      setSelectedRating(null);
-      onFiltersChange({ ...filters, minRating: undefined });
-    } else {
-      setSelectedRating(rating);
-      onFiltersChange({ ...filters, minRating: rating });
-    }
-  };
-
   const handleBrand = (brandId: string) => {
     if (filters.brandId === brandId) {
       onFiltersChange({ ...filters, brandId: undefined });
@@ -138,7 +98,6 @@ export function ProductFilterPanel({
 
   const handleClearAll = () => {
     setSelectedPriceRange(null);
-    setSelectedRating(null);
     onFiltersChange({
       supplementId: filters.supplementId,
       searchTerm: filters.searchTerm,
@@ -184,7 +143,7 @@ export function ProductFilterPanel({
       {/* Expanded Filter Panel */}
       {isExpanded && (
         <Card variant="outlined" padding="md" className="mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Price Range */}
             <div>
               <h4 className="text-sm font-medium text-gray-900 mb-3">Price Range</h4>
@@ -201,31 +160,6 @@ export function ProductFilterPanel({
                     )}
                   >
                     {range.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Rating */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Minimum Rating</h4>
-              <div className="space-y-1.5">
-                {RATING_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => handleRating(opt.value)}
-                    className={cn(
-                      'flex items-center gap-2 w-full text-left px-3 py-1.5 text-sm rounded-md transition-colors',
-                      selectedRating === opt.value
-                        ? 'bg-gray-900 text-white'
-                        : 'text-gray-600 hover:bg-gray-100'
-                    )}
-                  >
-                    <FiStar
-                      size={14}
-                      className={selectedRating === opt.value ? 'text-white' : 'text-amber-400'}
-                    />
-                    {opt.label} stars
                   </button>
                 ))}
               </div>

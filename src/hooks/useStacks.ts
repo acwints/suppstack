@@ -5,6 +5,26 @@ import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
 import type { Stack, StackInput, StackSupplementInput } from '@/types';
 import { getOrCreateUserProfile } from '@/lib/account/profile';
+import { resolveDatabaseSupplementId } from '@/lib/catalog/supplement-sync';
+
+/**
+ * Stack inputs may reference static catalog supplements (IDs 9000+), which
+ * must be mapped to real `supplements` rows before hitting foreign keys.
+ */
+async function buildStackSupplementRows(stackId: string, supplements: StackSupplementInput[]) {
+  return Promise.all(
+    supplements.map(async (supp) => ({
+      stack_id: stackId,
+      supplement_id: await resolveDatabaseSupplementId(supp.supplement_id),
+      dosage: supp.dosage || null,
+      frequency: supp.frequency || null,
+      timing: supp.timing || null,
+      notes: supp.notes || null,
+      is_core: supp.is_core ?? true,
+      order_index: supp.order_index,
+    }))
+  );
+}
 
 export type StackSortBy = 'newest' | 'popular' | 'most_liked' | 'most_copied';
 export type StackFilter = 'all' | 'featured' | 'verified' | 'my_stacks';
@@ -209,16 +229,7 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
 
     // Add supplements to stack
     if (input.supplements.length > 0) {
-      const supplementsData = input.supplements.map((supp: StackSupplementInput) => ({
-        stack_id: stack.stack_id,
-        supplement_id: supp.supplement_id,
-        dosage: supp.dosage || null,
-        frequency: supp.frequency || null,
-        timing: supp.timing || null,
-        notes: supp.notes || null,
-        is_core: supp.is_core ?? true,
-        order_index: supp.order_index,
-      }));
+      const supplementsData = await buildStackSupplementRows(stack.stack_id, input.supplements);
 
       const { error: suppError } = await supabase
         .from('stack_supplements')
@@ -267,16 +278,7 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
 
       // Add new supplements
       if (input.supplements.length > 0) {
-        const supplementsData = input.supplements.map((supp: StackSupplementInput) => ({
-          stack_id: stackId,
-          supplement_id: supp.supplement_id,
-          dosage: supp.dosage || null,
-          frequency: supp.frequency || null,
-          timing: supp.timing || null,
-          notes: supp.notes || null,
-          is_core: supp.is_core ?? true,
-          order_index: supp.order_index,
-        }));
+        const supplementsData = await buildStackSupplementRows(stackId, input.supplements);
 
         const { error: suppError } = await supabase
           .from('stack_supplements')

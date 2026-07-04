@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
 import { getOrCreateUserProfile } from '@/lib/account/profile';
+import type { Product } from '@/types';
+import { findDatabaseProductId, resolveDatabaseProductId } from '@/lib/catalog/supplement-sync';
 
 export interface UseProductInStackResult {
   isInStack: boolean;
@@ -15,18 +17,21 @@ export interface UseProductInStackResult {
   toggleInStack: () => Promise<void>;
 }
 
-export function useProductInStack(productId: string): UseProductInStackResult {
+/**
+ * Tracks whether a product is in the user's collection (`users_products`).
+ * Works for both database products and curated catalog products — catalog
+ * products are synced into the `products` table on first add.
+ */
+export function useProductInStack(product: Product | null): UseProductInStackResult {
   const { user } = useAuth();
-  const normalizedProductId = String(productId);
-  const isCatalogProduct = normalizedProductId.startsWith('catalog-') || normalizedProductId.startsWith('real-');
   const [isInStack, setIsInStack] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // Check if product is in user's stack
+  // Check if product is in user's collection
   const checkIfInStack = useCallback(async () => {
-    if (!user || !normalizedProductId || isCatalogProduct) {
+    if (!user || !product) {
       setIsInStack(false);
       setIsLoading(false);
       return;
@@ -36,12 +41,18 @@ export function useProductInStack(productId: string): UseProductInStackResult {
     setError(null);
 
     try {
+      const databaseProductId = await findDatabaseProductId(product);
+      if (databaseProductId === null) {
+        setIsInStack(false);
+        return;
+      }
+
       const profile = await getOrCreateUserProfile(user);
       const { data, error: queryError } = await supabase
         .from('users_products')
         .select('product_id')
         .eq('profile_id', profile.profile_id)
-        .eq('product_id', normalizedProductId)
+        .eq('product_id', databaseProductId)
         .single();
 
       if (queryError && queryError.code !== 'PGRST116') {
@@ -55,7 +66,8 @@ export function useProductInStack(productId: string): UseProductInStackResult {
     } finally {
       setIsLoading(false);
     }
-  }, [user, normalizedProductId, isCatalogProduct]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, product?.product_id]);
 
   useEffect(() => {
     checkIfInStack();
@@ -66,8 +78,8 @@ export function useProductInStack(productId: string): UseProductInStackResult {
       throw new Error('Please log in to add products to your stack');
     }
 
-    if (isCatalogProduct) {
-      throw new Error('Catalog products need to be synced before adding to your stack');
+    if (!product) {
+      throw new Error('Product is still loading');
     }
 
     if (isInStack) {
@@ -78,12 +90,16 @@ export function useProductInStack(productId: string): UseProductInStackResult {
     setError(null);
 
     try {
-      const profile = await getOrCreateUserProfile(user);
+      const [profile, databaseProductId] = await Promise.all([
+        getOrCreateUserProfile(user),
+        resolveDatabaseProductId(product),
+      ]);
+
       const { error: insertError } = await supabase
         .from('users_products')
         .insert({
           profile_id: profile.profile_id,
-          product_id: normalizedProductId,
+          product_id: databaseProductId,
         });
 
       if (insertError) {
@@ -97,15 +113,12 @@ export function useProductInStack(productId: string): UseProductInStackResult {
     } finally {
       setIsUpdating(false);
     }
-  }, [user, normalizedProductId, isInStack, isCatalogProduct]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, product?.product_id, isInStack]);
 
   const removeFromStack = useCallback(async () => {
-    if (!user) {
+    if (!user || !product) {
       throw new Error('Please log in to manage your stack');
-    }
-
-    if (isCatalogProduct) {
-      throw new Error('Catalog products need to be synced before managing your stack');
     }
 
     if (!isInStack) {
@@ -116,12 +129,18 @@ export function useProductInStack(productId: string): UseProductInStackResult {
     setError(null);
 
     try {
+      const databaseProductId = await findDatabaseProductId(product);
+      if (databaseProductId === null) {
+        setIsInStack(false);
+        return;
+      }
+
       const profile = await getOrCreateUserProfile(user);
       const { error: deleteError } = await supabase
         .from('users_products')
         .delete()
         .eq('profile_id', profile.profile_id)
-        .eq('product_id', normalizedProductId);
+        .eq('product_id', databaseProductId);
 
       if (deleteError) {
         throw deleteError;
@@ -134,7 +153,8 @@ export function useProductInStack(productId: string): UseProductInStackResult {
     } finally {
       setIsUpdating(false);
     }
-  }, [user, normalizedProductId, isInStack, isCatalogProduct]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, product?.product_id, isInStack]);
 
   const toggleInStack = useCallback(async () => {
     if (isInStack) {
