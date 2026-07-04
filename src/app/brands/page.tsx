@@ -93,7 +93,10 @@ export default function BrandsPage() {
                       <div>
                         <h2 className="text-xl font-serif text-gray-900">{brand.brandName}</h2>
                         <p className="text-sm text-gray-500 mt-1">
-                          {brand.productCount} products from {formatCurrency(brand.averagePrice)}
+                          {brand.productCount} products from{' '}
+                          {formatCurrency(
+                            Math.min(...brand.products.map((product) => product.product_price))
+                          )}
                         </p>
                         <p className="text-xs font-medium text-orange-700 mt-2">
                           {brand.commerceReadyCount} purchase-ready picks

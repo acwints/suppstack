@@ -41,6 +41,21 @@ function profileDefaults(user: User) {
   };
 }
 
+// profile_id never changes for a user, so it is safe to memoize per session.
+// This keeps product grids (15+ cards each checking collection membership)
+// from re-querying user_profiles once per card.
+const profileIdCache = new Map<string, Promise<string>>();
+
+export function getUserProfileId(user: User): Promise<string> {
+  const cached = profileIdCache.get(user.id);
+  if (cached) return cached;
+
+  const promise = getOrCreateUserProfile(user).then((profile) => profile.profile_id);
+  profileIdCache.set(user.id, promise);
+  promise.catch(() => profileIdCache.delete(user.id));
+  return promise;
+}
+
 export async function getOrCreateUserProfile(user: User): Promise<AccountProfile> {
   const { data: existing, error: fetchError } = await supabase
     .from('user_profiles')

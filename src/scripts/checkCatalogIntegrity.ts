@@ -21,6 +21,9 @@ for (const s of supplementCatalog) {
   if (prods.length === 0) issues.push('no curated products');
   if (prods.length !== s.product_count) issues.push(`count mismatch ${prods.length} vs ${s.product_count}`);
   if (prods.some((p: Product) => !p.product_image)) issues.push('product missing image');
+  // product_url is the natural key used to sync catalog products into the
+  // database for user tracking — it must never be empty.
+  if (prods.some((p: Product) => !p.product_url)) issues.push('product missing product_url');
   if (issues.length) {
     failures++;
     console.log(`FAIL ${s.supplement_name} (#${s.supplement_id}): ${issues.join('; ')}`);

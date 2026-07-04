@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
-import { getOrCreateUserProfile } from '@/lib/account/profile';
+import { getUserProfileId } from '@/lib/account/profile';
 import type { Product } from '@/types';
 import { findDatabaseProductId, resolveDatabaseProductId } from '@/lib/catalog/supplement-sync';
 
@@ -47,11 +47,11 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
         return;
       }
 
-      const profile = await getOrCreateUserProfile(user);
+      const profileId = await getUserProfileId(user);
       const { data, error: queryError } = await supabase
         .from('users_products')
         .select('product_id')
-        .eq('profile_id', profile.profile_id)
+        .eq('profile_id', profileId)
         .eq('product_id', databaseProductId)
         .single();
 
@@ -90,15 +90,15 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
     setError(null);
 
     try {
-      const [profile, databaseProductId] = await Promise.all([
-        getOrCreateUserProfile(user),
+      const [profileId, databaseProductId] = await Promise.all([
+        getUserProfileId(user),
         resolveDatabaseProductId(product),
       ]);
 
       const { error: insertError } = await supabase
         .from('users_products')
         .insert({
-          profile_id: profile.profile_id,
+          profile_id: profileId,
           product_id: databaseProductId,
         });
 
@@ -135,11 +135,11 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
         return;
       }
 
-      const profile = await getOrCreateUserProfile(user);
+      const profileId = await getUserProfileId(user);
       const { error: deleteError } = await supabase
         .from('users_products')
         .delete()
-        .eq('profile_id', profile.profile_id)
+        .eq('profile_id', profileId)
         .eq('product_id', databaseProductId);
 
       if (deleteError) {

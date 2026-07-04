@@ -1,26 +1,54 @@
 import { supabase } from '@/app/supabase';
-import type { Product } from '@/types';
-import { findCatalogSupplementById } from '@/lib/catalog/supplement-catalog';
+import type { Product, Supplement } from '@/types';
+import {
+  findCatalogSupplementById,
+  findCatalogSupplementByName,
+} from '@/lib/catalog/supplement-catalog';
 import { isCuratedCatalogProductId } from '@/lib/commerce/product-source';
+
+const UNIQUE_VIOLATION = '23505';
+
+/**
+ * Finds the database row that refers to the same supplement as the catalog
+ * entry, tolerating legacy naming ("NAC (N-Acetyl Cysteine)" vs "NAC",
+ * "Turmeric/Curcumin" vs "Turmeric Curcumin"). Matching reuses the catalog's
+ * alias-aware name normalization: a database row matches when its name
+ * resolves back to the same catalog supplement.
+ */
+async function findDatabaseSupplementRow(catalogSupplement: Supplement) {
+  const { data: rows } = await supabase
+    .from('supplements')
+    .select('supplement_id, supplement_name');
+
+  for (const row of rows ?? []) {
+    if (row.supplement_name.toLowerCase() === catalogSupplement.supplement_name.toLowerCase()) {
+      return row;
+    }
+  }
+
+  for (const row of rows ?? []) {
+    const match = findCatalogSupplementByName(row.supplement_name);
+    if (match?.supplement_id === catalogSupplement.supplement_id) {
+      return row;
+    }
+  }
+
+  return null;
+}
 
 /**
  * Catalog supplements live in static code with IDs in the 9000+ range, but
  * user data (stacks, tracking) references rows in the `supplements` table via
  * foreign keys. Before persisting user data, catalog IDs are resolved to a
- * database row — reusing an existing row by name or creating one on demand.
+ * database row — reusing an existing row by name/alias or creating one on
+ * demand.
  */
 export async function resolveDatabaseSupplementId(supplementId: number): Promise<number> {
   const catalogSupplement = findCatalogSupplementById(supplementId);
   if (!catalogSupplement) return supplementId;
 
-  const { data: existing } = await supabase
-    .from('supplements')
-    .select('supplement_id')
-    .ilike('supplement_name', catalogSupplement.supplement_name)
-    .limit(1)
-    .maybeSingle();
-
-  if (existing?.supplement_id) return existing.supplement_id;
+  const existing = await findDatabaseSupplementRow(catalogSupplement);
+  if (existing) return existing.supplement_id;
 
   const { data: inserted, error } = await supabase
     .from('supplements')
@@ -33,32 +61,42 @@ export async function resolveDatabaseSupplementId(supplementId: number): Promise
     .select('supplement_id')
     .single();
 
-  if (error || !inserted) {
-    throw error ?? new Error(`Failed to sync supplement "${catalogSupplement.supplement_name}"`);
+  if (inserted) return inserted.supplement_id;
+
+  // Concurrent insert of the same name: re-read the winner's row.
+  if (error?.code === UNIQUE_VIOLATION) {
+    const raced = await findDatabaseSupplementRow(catalogSupplement);
+    if (raced) return raced.supplement_id;
   }
 
-  return inserted.supplement_id;
+  throw error ?? new Error(`Failed to sync supplement "${catalogSupplement.supplement_name}"`);
 }
 
 async function resolveDatabaseBrandId(brandName?: string | null): Promise<number | null> {
   if (!brandName) return null;
 
-  const { data: existing } = await supabase
-    .from('brands')
-    .select('brand_id')
-    .ilike('brand_name', brandName)
-    .limit(1)
-    .maybeSingle();
+  const findExisting = async () => {
+    const { data } = await supabase
+      .from('brands')
+      .select('brand_id')
+      .ilike('brand_name', brandName)
+      .limit(1)
+      .maybeSingle();
+    return data?.brand_id ?? null;
+  };
 
-  if (existing?.brand_id) return existing.brand_id;
+  const existingId = await findExisting();
+  if (existingId) return existingId;
 
-  const { data: inserted } = await supabase
+  const { data: inserted, error } = await supabase
     .from('brands')
     .insert({ brand_name: brandName })
     .select('brand_id')
     .single();
 
-  return inserted?.brand_id ?? null;
+  if (inserted?.brand_id) return inserted.brand_id;
+  if (error?.code === UNIQUE_VIOLATION) return findExisting();
+  return null;
 }
 
 /**

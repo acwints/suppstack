@@ -249,7 +249,9 @@ export function BuyStackPanel({
                       <select
                         value={item.selectedProduct?.product_id || ''}
                         onChange={(e) => {
-                          const prod = item.products.find(p => p.product_id === e.target.value);
+                          // product_id is an integer for database rows;
+                          // <option value> is always a string.
+                          const prod = item.products.find(p => String(p.product_id) === e.target.value);
                           if (prod) selectProduct(index, prod);
                         }}
                         disabled={!checkedItems.has(index)}

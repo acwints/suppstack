@@ -10,11 +10,12 @@ import { resolveDatabaseSupplementId } from '@/lib/catalog/supplement-sync';
 /**
  * Stack inputs may reference static catalog supplements (IDs 9000+), which
  * must be mapped to real `supplements` rows before hitting foreign keys.
+ * Resolution happens before any stack row is written so a failed sync never
+ * leaves an orphaned, empty stack behind.
  */
-async function buildStackSupplementRows(stackId: string, supplements: StackSupplementInput[]) {
+async function resolveStackSupplementRows(supplements: StackSupplementInput[]) {
   return Promise.all(
     supplements.map(async (supp) => ({
-      stack_id: stackId,
       supplement_id: await resolveDatabaseSupplementId(supp.supplement_id),
       dosage: supp.dosage || null,
       frequency: supp.frequency || null,
@@ -206,7 +207,12 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
   const createStack = useCallback(async (input: StackInput): Promise<Stack> => {
     if (!user) throw new Error('Must be logged in to create a stack');
 
-    const profile = await getOrCreateUserProfile(user);
+    // Resolve supplements to database rows first so a failed sync never
+    // leaves an orphaned, empty stack behind.
+    const [profile, supplementRows] = await Promise.all([
+      getOrCreateUserProfile(user),
+      resolveStackSupplementRows(input.supplements),
+    ]);
 
     // Create the stack
     const { data: stack, error: stackError } = await supabase
@@ -228,12 +234,10 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
     if (stackError) throw stackError;
 
     // Add supplements to stack
-    if (input.supplements.length > 0) {
-      const supplementsData = await buildStackSupplementRows(stack.stack_id, input.supplements);
-
+    if (supplementRows.length > 0) {
       const { error: suppError } = await supabase
         .from('stack_supplements')
-        .insert(supplementsData);
+        .insert(supplementRows.map((row) => ({ ...row, stack_id: stack.stack_id })));
 
       if (suppError) throw suppError;
     }
@@ -270,6 +274,9 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
 
     // Update supplements if provided
     if (input.supplements) {
+      // Resolve before deleting so a failed sync leaves the stack intact.
+      const supplementRows = await resolveStackSupplementRows(input.supplements);
+
       // Delete existing supplements
       await supabase
         .from('stack_supplements')
@@ -277,12 +284,10 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
         .eq('stack_id', stackId);
 
       // Add new supplements
-      if (input.supplements.length > 0) {
-        const supplementsData = await buildStackSupplementRows(stackId, input.supplements);
-
+      if (supplementRows.length > 0) {
         const { error: suppError } = await supabase
           .from('stack_supplements')
-          .insert(supplementsData);
+          .insert(supplementRows.map((row) => ({ ...row, stack_id: stackId })));
 
         if (suppError) throw suppError;
       }
