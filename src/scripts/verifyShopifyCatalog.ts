@@ -87,11 +87,16 @@ function sleep(ms: number) {
   return new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
 }
 
-async function fetchWithRetry(url: string, attempts = 3) {
+/** Storefronts throttle bursts with 429s and transient 503s; retry both. */
+async function fetchWithRetry(url: string, attempts = 4) {
   let response = await fetchWithTimeout(url);
 
-  for (let attempt = 1; attempt < attempts && response.status === 429; attempt += 1) {
-    await sleep(2000 * attempt);
+  for (
+    let attempt = 1;
+    attempt < attempts && (response.status === 429 || response.status === 503);
+    attempt += 1
+  ) {
+    await sleep(4000 * attempt);
     response = await fetchWithTimeout(url);
   }
 
@@ -139,6 +144,7 @@ async function main() {
   const failures: string[] = [];
 
   for (const entry of entries) {
+    await sleep(150);
     try {
       const result = await verifyEntry(entry);
       console.log(`${result.ok ? 'OK' : 'FAIL'} ${result.message}`);

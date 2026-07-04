@@ -9,6 +9,8 @@
  * - Candidates are collected across ALL stores and ranked globally, penalizing
  *   combo products ("+", "with", "&") and bulk powders (unless the search term
  *   asks for a powder).
+ * - A per-brand reuse penalty spreads picks across merchants so the storefront
+ *   never over-indexes on a single house brand.
  * - The variant is chosen by token overlap between variant title and the
  *   product handle/title, so a "50 Billion CFU / 60 Capsules" listing does not
  *   silently resolve to the 1-Billion variant.
@@ -26,6 +28,11 @@ import { writeFile } from 'node:fs/promises';
 
 const OUTPUT_PATH = new URL('../lib/catalog/shopify-sourced-products.ts', import.meta.url);
 
+/**
+ * Each store was verified live before inclusion: /search/suggest.json returns
+ * product JSON, /products/{handle}.js resolves, and /cart/{variant}:1
+ * permalinks redirect into a working checkout.
+ */
 const STORES = [
   { domain: 'nutricost.com', brandId: 'nutricost', brandName: 'Nutricost' },
   { domain: 'doublewoodsupplements.com', brandId: 'double-wood', brandName: 'Double Wood Supplements' },
@@ -33,7 +40,28 @@ const STORES = [
   { domain: 'bulksupplements.com', brandId: 'bulksupplements', brandName: 'BulkSupplements' },
   { domain: 'horbaach.com', brandId: 'horbaach', brandName: 'Horbaach' },
   { domain: 'www.pipingrock.com', brandId: 'piping-rock', brandName: 'Piping Rock' },
+  { domain: 'carlsonlabs.com', brandId: 'carlson-labs', brandName: 'Carlson Labs' },
+  { domain: 'jarrow.com', brandId: 'jarrow-formulas', brandName: 'Jarrow Formulas' },
+  { domain: 'solaray.com', brandId: 'solaray', brandName: 'Solaray' },
+  { domain: 'naturemade.com', brandId: 'nature-made', brandName: 'Nature Made' },
+  { domain: 'naturesbounty.com', brandId: 'natures-bounty', brandName: "Nature's Bounty" },
+  { domain: 'zhounutrition.com', brandId: 'zhou-nutrition', brandName: 'Zhou Nutrition' },
+  { domain: 'naturewise.com', brandId: 'naturewise', brandName: 'NatureWise' },
+  { domain: 'maryruthorganics.com', brandId: 'maryruth-organics', brandName: 'MaryRuth Organics' },
+  { domain: 'codeage.com', brandId: 'codeage', brandName: 'Codeage' },
+  { domain: 'globalhealing.com', brandId: 'global-healing', brandName: 'Global Healing' },
+  { domain: 'toniiq.com', brandId: 'toniiq', brandName: 'Toniiq' },
+  { domain: 'bronsonvitamins.com', brandId: 'bronson', brandName: 'Bronson' },
+  { domain: 'nusapure.com', brandId: 'nusapure', brandName: 'NusaPure' },
+  { domain: 'purebulk.com', brandId: 'purebulk', brandName: 'PureBulk' },
 ];
+
+/**
+ * Score penalty per prior pick from the same brand. Keeps the storefront from
+ * over-indexing on any single house brand while still letting the cleanest
+ * title match win when the alternatives are poor.
+ */
+const BRAND_REUSE_PENALTY = 1.5;
 
 /** Catalog supplements without hand-curated seeds in supplement-catalog.ts. */
 const SUPPLEMENTS = [
@@ -160,12 +188,48 @@ function comboPenalty(title, searchTerm) {
   let penalty = 0;
   if (/[+]/.test(title)) penalty += 4;
   if (/\bwith\b/i.test(title)) penalty += 2;
+  if (/\bplus\b/i.test(title) && !/plus/i.test(searchTerm)) penalty += 2;
   if (/&/.test(title)) penalty += 2;
   if (/\bcomplex\b/i.test(title) && !/complex/i.test(searchTerm)) penalty += 1;
+  if (/\bsoothe\b|\bcalm\b|\bblend\b|\bformula\b/i.test(title) && !/soothe|calm|blend|formula/i.test(searchTerm)) penalty += 3;
   if (/\bgumm/i.test(title)) penalty += 1;
   if (/\bpowder\b/i.test(title) && !/powder/i.test(searchTerm)) penalty += 3;
   if (/\bfor dogs?\b|\bfor cats?\b|\bpets?\b/i.test(title)) penalty += 20;
+  // Chemically different compounds that share a search token (e.g. inositol
+  // hexanicotinate is a niacin form, not myo-inositol).
+  if (/\bhexanicotinate\b|\bnicotinate\b/i.test(title)) penalty += 20;
   penalty += Math.max(0, tokenize(title).length - 6) * 0.25;
+  return penalty;
+}
+
+const GENERIC_INGREDIENT_TOKENS = new Set([
+  'oil', 'root', 'extract', 'seed', 'fiber', 'husk', 'acid', 'complex', 'mushroom',
+  'peptides', 'fish', 'tea', 'balm', 'leaf', 'green', 'apple', 'cider', 'vinegar',
+  'liver', 'monohydrate', 'glycinate', 'citrate', 'malate', 'vitamin',
+]);
+
+/** Tokens that identify a specific catalog ingredient (e.g. "ashwagandha"). */
+const INGREDIENT_TOKENS = new Set([
+  ...SUPPLEMENTS.flatMap((entry) => tokenize(entry.name.replace(/vitamin/gi, 'vitamin ')))
+    .filter((token) => token.length > 2 && !GENERIC_INGREDIENT_TOKENS.has(token)),
+  // Common pairing ingredients that signal a blend even though they are not
+  // catalog supplements themselves.
+  'goldenseal', 'bioperine', 'ashwaghanda', 'chamomile', 'lavender', 'lutein',
+]);
+
+/**
+ * Penalizes listings whose title or handle names OTHER catalog ingredients
+ * than the one being searched — those are multi-ingredient blends (e.g.
+ * "Melatonin + Magnesium", handle "amen-magnesium-citrate-vitaminb6"), which
+ * would misrepresent the supplement page they'd be attached to.
+ */
+function crossIngredientPenalty(text, searchTerm) {
+  const searchTokens = new Set(tokenize(searchTerm));
+  let penalty = 0;
+  for (const token of new Set(tokenize(String(text).replace(/vitamin/gi, 'vitamin ')))) {
+    if (INGREDIENT_TOKENS.has(token) && !searchTokens.has(token)) penalty += 3;
+  }
+  if (/vitamin\s*[a-k]?\d*/i.test(text) && !/vitamin/i.test(searchTerm)) penalty += 2;
   return penalty;
 }
 
@@ -271,7 +335,10 @@ async function searchStore(store, searchTerm) {
       store,
       handle: product.handle,
       title: product.title,
-      score: comboPenalty(product.title, searchTerm) + index * 0.05,
+      score:
+        comboPenalty(product.title, searchTerm) +
+        crossIngredientPenalty(`${product.title} ${product.handle}`, searchTerm) +
+        index * 0.05,
     }));
 }
 
@@ -302,24 +369,34 @@ async function resolveProduct(store, handle) {
   };
 }
 
-async function sourceSupplement(entry) {
-  for (const searchTerm of entry.searchTerms) {
-    const candidateGroups = await Promise.all(STORES.map((store) => searchStore(store, searchTerm)));
-    const candidates = candidateGroups
-      .flatMap((group, storeIndex) => group.map((candidate) => ({ ...candidate, score: candidate.score + storeIndex * 0.1 })))
-      .sort((a, b) => a.score - b.score);
+async function sourceSupplement(entry, brandUsage) {
+  // First pass applies the brand-diversity penalty; if no candidate resolves,
+  // retry on match quality alone so diversity never costs catalog coverage.
+  for (const reusePenalty of [BRAND_REUSE_PENALTY, 0]) {
+    for (const searchTerm of entry.searchTerms) {
+      const candidateGroups = await Promise.all(STORES.map((store) => searchStore(store, searchTerm)));
+      const candidates = candidateGroups
+        .flat()
+        .map((candidate) => ({
+          ...candidate,
+          score: candidate.score + (brandUsage.get(candidate.store.brandId) ?? 0) * reusePenalty,
+        }))
+        .sort((a, b) => a.score - b.score);
 
-    for (const candidate of candidates.slice(0, 4)) {
-      const resolved = await resolveProduct(candidate.store, candidate.handle);
-      if (!resolved || !resolved.variantId || !resolved.price) continue;
+      for (const candidate of candidates.slice(0, 8)) {
+        const resolved = await resolveProduct(candidate.store, candidate.handle);
+        if (!resolved || !resolved.variantId || !resolved.price) continue;
 
-      return {
-        supplementName: entry.name,
-        store: candidate.store.domain,
-        brandId: candidate.store.brandId,
-        brandName: candidate.store.brandName,
-        ...resolved,
-      };
+        brandUsage.set(candidate.store.brandId, (brandUsage.get(candidate.store.brandId) ?? 0) + 1);
+
+        return {
+          supplementName: entry.name,
+          store: candidate.store.domain,
+          brandId: candidate.store.brandId,
+          brandName: candidate.store.brandName,
+          ...resolved,
+        };
+      }
     }
   }
 
@@ -377,9 +454,10 @@ function emitSeed(entry) {
 
 async function main() {
   const results = [];
+  const brandUsage = new Map();
 
   for (const entry of SUPPLEMENTS) {
-    const result = await sourceSupplement(entry);
+    const result = await sourceSupplement(entry, brandUsage);
     results.push(result);
     console.log(
       result.error
@@ -387,6 +465,9 @@ async function main() {
         : `OK    ${entry.name} -> [${result.store}] ${result.displayName} ($${result.price}, ${result.servings} servings, variant ${result.variantId})`
     );
   }
+
+  const distribution = [...brandUsage.entries()].sort((a, b) => b[1] - a[1]);
+  console.log(`\nBrand distribution: ${distribution.map(([brand, count]) => `${brand}=${count}`).join(', ')}`);
 
   const misses = results.filter((result) => result.error);
   if (misses.length) {

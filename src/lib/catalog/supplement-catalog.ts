@@ -5,6 +5,7 @@ import {
   mergeProductSources,
 } from '@/lib/commerce/product-source';
 import { sourcedProductSeeds } from './shopify-sourced-products';
+import { standardizeProductImage } from './product-image';
 
 type EvidenceRating = NonNullable<Supplement['evidence_rating']>;
 
@@ -226,7 +227,7 @@ function shopifyGid(type: 'Product' | 'ProductVariant', id: string) {
 }
 
 function shopifyImage(path: string) {
-  return path.startsWith('//') ? `https:${path}` : path;
+  return standardizeProductImage(path);
 }
 
 function fallbackCatalogId(name: string) {
@@ -1425,14 +1426,14 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     product_price: 64.95,
     product_url: 'https://animalpak.com/products/animal-100-whey-protein',
     amazon_url: '',
-    product_image: shopifyImage('https://cdn.shopify.com/s/files/1/0675/6882/8736/files/100Whey_60Serv_Strawberry_1200x1200_f3eda4e2-f453-4a0c-88ff-4762906a81aa.jpg?v=1761931479'),
+    product_image: shopifyImage('https://cdn.shopify.com/s/files/1/0675/6882/8736/files/100Whey_60Serv_CookiesCream_1200x1200_09117540-2f54-4fa0-b294-13b7c4ed7a6a.jpg?v=1762191738'),
     servings_per_container: 25,
     servings_per_day: 1,
     brand_id: 'animal',
     brands: { brand_name: 'Animal' },
     supplement_name: 'Whey Protein',
     shopify_product_gid: shopifyGid('Product', '8086204186944'),
-    shopify_variant_gid: shopifyGid('ProductVariant', '50551423402304'),
+    shopify_variant_gid: shopifyGid('ProductVariant', '50041510035776'),
     shopify_store_domain: 'animalpak.com',
     commerce_channel: 'shopify',
     ucp_enabled: true,
@@ -2167,6 +2168,7 @@ function findCuratedSeedByProductId(productId: string) {
 function createCuratedProduct(seed: CuratedProductSeed, supplement: Supplement): Product {
   return {
     ...seed,
+    product_image: standardizeProductImage(seed.product_image),
     supplement_id: supplement.supplement_id,
     supplements: {
       supplement_id: supplement.supplement_id,
@@ -2190,7 +2192,7 @@ function productImageForSupplementName(supplementName: string) {
   const withImage = curatedSeedsForSupplementName(supplementName).find(
     (product) => product.product_image
   );
-  return withImage?.product_image ?? '';
+  return standardizeProductImage(withImage?.product_image);
 }
 
 export const supplementCatalog: Supplement[] = seeds.map((seed) => {
@@ -2289,7 +2291,13 @@ export function resolveProductsForSupplement(
   databaseProducts: Product[] = []
 ) {
   const catalogProducts = createCanonicalCatalogProductsForSupplement(supplement);
-  return mergeProductSources(catalogProducts, databaseProducts.filter(isListableDatabaseProduct));
+  const listableDatabaseProducts = databaseProducts
+    .filter(isListableDatabaseProduct)
+    .map((product) => ({
+      ...product,
+      product_image: standardizeProductImage(product.product_image),
+    }));
+  return mergeProductSources(catalogProducts, listableDatabaseProducts);
 }
 
 export function findCatalogSupplementByProductId(productId: string) {
