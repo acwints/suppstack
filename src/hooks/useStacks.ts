@@ -5,6 +5,27 @@ import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
 import type { Stack, StackInput, StackSupplementInput } from '@/types';
 import { getOrCreateUserProfile } from '@/lib/account/profile';
+import { resolveDatabaseSupplementId } from '@/lib/catalog/supplement-sync';
+
+/**
+ * Stack inputs may reference static catalog supplements (IDs 9000+), which
+ * must be mapped to real `supplements` rows before hitting foreign keys.
+ * Resolution happens before any stack row is written so a failed sync never
+ * leaves an orphaned, empty stack behind.
+ */
+async function resolveStackSupplementRows(supplements: StackSupplementInput[]) {
+  return Promise.all(
+    supplements.map(async (supp) => ({
+      supplement_id: await resolveDatabaseSupplementId(supp.supplement_id),
+      dosage: supp.dosage || null,
+      frequency: supp.frequency || null,
+      timing: supp.timing || null,
+      notes: supp.notes || null,
+      is_core: supp.is_core ?? true,
+      order_index: supp.order_index,
+    }))
+  );
+}
 
 export type StackSortBy = 'newest' | 'popular' | 'most_liked' | 'most_copied';
 export type StackFilter = 'all' | 'featured' | 'verified' | 'my_stacks';
@@ -186,7 +207,12 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
   const createStack = useCallback(async (input: StackInput): Promise<Stack> => {
     if (!user) throw new Error('Must be logged in to create a stack');
 
-    const profile = await getOrCreateUserProfile(user);
+    // Resolve supplements to database rows first so a failed sync never
+    // leaves an orphaned, empty stack behind.
+    const [profile, supplementRows] = await Promise.all([
+      getOrCreateUserProfile(user),
+      resolveStackSupplementRows(input.supplements),
+    ]);
 
     // Create the stack
     const { data: stack, error: stackError } = await supabase
@@ -208,21 +234,10 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
     if (stackError) throw stackError;
 
     // Add supplements to stack
-    if (input.supplements.length > 0) {
-      const supplementsData = input.supplements.map((supp: StackSupplementInput) => ({
-        stack_id: stack.stack_id,
-        supplement_id: supp.supplement_id,
-        dosage: supp.dosage || null,
-        frequency: supp.frequency || null,
-        timing: supp.timing || null,
-        notes: supp.notes || null,
-        is_core: supp.is_core ?? true,
-        order_index: supp.order_index,
-      }));
-
+    if (supplementRows.length > 0) {
       const { error: suppError } = await supabase
         .from('stack_supplements')
-        .insert(supplementsData);
+        .insert(supplementRows.map((row) => ({ ...row, stack_id: stack.stack_id })));
 
       if (suppError) throw suppError;
     }
@@ -259,6 +274,9 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
 
     // Update supplements if provided
     if (input.supplements) {
+      // Resolve before deleting so a failed sync leaves the stack intact.
+      const supplementRows = await resolveStackSupplementRows(input.supplements);
+
       // Delete existing supplements
       await supabase
         .from('stack_supplements')
@@ -266,21 +284,10 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
         .eq('stack_id', stackId);
 
       // Add new supplements
-      if (input.supplements.length > 0) {
-        const supplementsData = input.supplements.map((supp: StackSupplementInput) => ({
-          stack_id: stackId,
-          supplement_id: supp.supplement_id,
-          dosage: supp.dosage || null,
-          frequency: supp.frequency || null,
-          timing: supp.timing || null,
-          notes: supp.notes || null,
-          is_core: supp.is_core ?? true,
-          order_index: supp.order_index,
-        }));
-
+      if (supplementRows.length > 0) {
         const { error: suppError } = await supabase
           .from('stack_supplements')
-          .insert(supplementsData);
+          .insert(supplementRows.map((row) => ({ ...row, stack_id: stackId })));
 
         if (suppError) throw suppError;
       }

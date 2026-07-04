@@ -88,7 +88,7 @@ export default function Header() {
                       onClick={handleAuth}
                       className="btn-editorial text-sm"
                     >
-                    Build Stack
+                    Sign In
                   </button>
                 )}
               </>

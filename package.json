@@ -7,9 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "add-supplements": "ts-node src/scripts/addPopularSupplements.ts",
-    "seed-amazon-products": "ts-node src/scripts/seedAmazonProducts.ts",
-    "verify:shopify-catalog": "ts-node src/scripts/verifyShopifyCatalog.ts"
+    "verify:shopify-catalog": "ts-node src/scripts/verifyShopifyCatalog.ts",
+    "check:catalog": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\",\"esModuleInterop\":true}' ts-node -r tsconfig-paths/register src/scripts/checkCatalogIntegrity.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.3",

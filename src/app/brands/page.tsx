@@ -71,13 +71,13 @@ export default function BrandsPage() {
                 key={brand.brandName}
                 className="border border-gray-200 rounded bg-white overflow-hidden hover:border-gray-300 transition-colors"
               >
-                <div className="relative aspect-[4/3] bg-gray-100">
+                <div className="relative aspect-[4/3] border-b border-gray-100 bg-white">
                   {brand.heroProduct.product_image && (
                     <Image
                       src={brand.heroProduct.product_image}
                       alt={brand.heroProduct.product_name}
                       fill
-                      className="object-cover"
+                      className="object-contain p-6"
                       sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     />
                   )}
@@ -93,7 +93,10 @@ export default function BrandsPage() {
                       <div>
                         <h2 className="text-xl font-serif text-gray-900">{brand.brandName}</h2>
                         <p className="text-sm text-gray-500 mt-1">
-                          {brand.productCount} products from {formatCurrency(brand.averagePrice)}
+                          {brand.productCount} products from{' '}
+                          {formatCurrency(
+                            Math.min(...brand.products.map((product) => product.product_price))
+                          )}
                         </p>
                         <p className="text-xs font-medium text-orange-700 mt-2">
                           {brand.commerceReadyCount} purchase-ready picks

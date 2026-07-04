@@ -65,9 +65,11 @@ export function FeaturedCategories({ supplements }: FeaturedCategoriesProps) {
                 <p className="mt-1 truncate text-xs text-gray-700 group-hover:underline">
                   {supplement.supplement_name}
                 </p>
-                <p className="text-xs font-semibold text-gray-900">
-                  ${formatPrice(supplement.average_price ?? 24)}
-                </p>
+                {typeof supplement.average_price === 'number' && (
+                  <p className="text-xs font-semibold text-gray-900">
+                    ${formatPrice(supplement.average_price)}
+                  </p>
+                )}
               </Link>
             ))}
           </div>

@@ -3,9 +3,6 @@ export { useDebounce, useDebouncedCallback } from './useDebounce';
 export { useSupabaseQuery, useSupabaseRecord } from './useSupabaseQuery';
 export type { UseSupabaseQueryOptions, UseSupabaseQueryResult } from './useSupabaseQuery';
 
-export { useProducts } from './useProducts';
-export type { UseProductsOptions, UseProductsResult } from './useProducts';
-
 export { useSupplements } from './useSupplements';
 export type { UseSupplementsOptions, UseSupplementsResult } from './useSupplements';
 

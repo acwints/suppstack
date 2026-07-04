@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { supabase } from '@/app/supabase';
+import { useMemo } from 'react';
 import type { Supplement } from '@/types';
 import { SUPPLEMENT_CATEGORIES } from '@/types';
-import { mergeSupplementCatalog, supplementCatalog } from '@/lib/catalog/supplement-catalog';
+import { supplementCatalog } from '@/lib/catalog/supplement-catalog';
 
 export interface UseSupplementsOptions {
   searchTerm?: string;
@@ -29,48 +28,19 @@ interface CategoryWithCount {
   count: number;
 }
 
+/**
+ * The storefront browses the verified static catalog only. Every entry has a
+ * real merchant product image, a real price derived from curated products,
+ * and a working checkout path. Legacy database supplements (old seed data
+ * with stock photography and no purchasable products) are intentionally not
+ * surfaced here — they remain reachable for existing stacks and tracking.
+ */
 export function useSupplements({
   searchTerm = '',
   categoryId = 'all',
   sortBy = 'name',
-  enabled = true,
 }: UseSupplementsOptions = {}): UseSupplementsResult {
-  const [supplements, setSupplements] = useState<Supplement[]>(() => supplementCatalog);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchSupplements = useCallback(async () => {
-    if (!enabled) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const { data, error: queryError } = await supabase
-        .from('supplements')
-        .select('*')
-        .order('supplement_name');
-
-      if (queryError) {
-        throw queryError;
-      }
-
-      setSupplements(mergeSupplementCatalog(data || []));
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch supplements'));
-      console.error('Error fetching supplements:', err);
-      setSupplements(mergeSupplementCatalog([]));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [enabled]);
-
-  useEffect(() => {
-    fetchSupplements();
-  }, [fetchSupplements]);
+  const supplements = supplementCatalog;
 
   // Calculate categories with counts
   const categories = useMemo((): CategoryWithCount[] => {
@@ -96,11 +66,12 @@ export function useSupplements({
   const filteredSupplements = useMemo(() => {
     let result = [...supplements];
 
-    // Apply search filter
+    // Apply search filter (name, aliases, and description)
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(s =>
         s.supplement_name.toLowerCase().includes(term) ||
+        (s.aliases ?? []).some(alias => alias.toLowerCase().includes(term)) ||
         s.supplement_description.toLowerCase().includes(term)
       );
     }
@@ -137,9 +108,9 @@ export function useSupplements({
 
   return {
     supplements,
-    isLoading,
-    error,
-    refetch: fetchSupplements,
+    isLoading: false,
+    error: null,
+    refetch: async () => {},
     categories,
     filteredSupplements,
   };

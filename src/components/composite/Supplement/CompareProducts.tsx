@@ -8,6 +8,7 @@ import { supabase } from '@/app/supabase';
 import { Card, Button, Spinner, Badge } from '@/components/ui';
 import { cn } from '@/lib/design-system/utils';
 import { formatPrice } from '@/lib/utils';
+import { isListableDatabaseProduct } from '@/lib/catalog/supplement-catalog';
 import type { Product } from '@/types';
 
 export interface CompareProductsProps {
@@ -54,10 +55,12 @@ export function CompareProducts({
         .order('product_name');
 
       if (!error && data) {
-        const mapped = data.map((p: any) => ({
-          ...p,
-          rating_stats: p.product_rating_stats?.[0] || null,
-        }));
+        const mapped = data
+          .filter((p: any) => isListableDatabaseProduct(p))
+          .map((p: any) => ({
+            ...p,
+            rating_stats: p.product_rating_stats?.[0] || null,
+          }));
         setAllProducts(mapped);
       }
 

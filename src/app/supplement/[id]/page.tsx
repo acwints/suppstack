@@ -95,7 +95,9 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
     let result = [...products];
 
     if (filters.brandId) {
-      result = result.filter(p => p.brand_id === filters.brandId);
+      // brand_id is a string for catalog products and an integer for database
+      // rows; compare as strings so the filter works for both.
+      result = result.filter(p => String(p.brand_id) === String(filters.brandId));
     }
     if (filters.minPrice !== undefined) {
       result = result.filter(p => p.product_price >= filters.minPrice!);
@@ -207,7 +209,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
 
         {/* Filter Panel */}
         <ProductFilterPanel
-          supplementId={supplementId}
+          products={products}
           filters={filters}
           sortBy={sortBy}
           onFiltersChange={setFilters}
