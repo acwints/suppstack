@@ -248,6 +248,12 @@ const SERVINGS_PATTERN = /(?:^|[^0-9a-z])(\d{2,4})\s*-?\s*servings\b/i;
 /** "a 150-day supply" — labels equate a day's dose with a serving. */
 const DAY_SUPPLY_PATTERN = /(?:^|[^0-9a-z])(\d{2,4})\s*-?\s*day supply\b/i;
 
+/** Supplement-facts line: "Servings Per Container: 45" (page HTML). */
+const SERVINGS_PER_CONTAINER_PATTERN = /servings? per container[^0-9]{0,12}(\d{1,4})/i;
+
+/** "2-Pack" / "2 Bottles" bundles multiply the per-bottle unit count. */
+const PACK_PATTERN = /(\d{1,2})\s*-?\s*(?:pack|bottles)\b/i;
+
 const WORD_NUMBERS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
 
 function matchNumber(text, pattern) {
@@ -262,8 +268,12 @@ function matchNumber(text, pattern) {
  */
 function parsePerServing(description) {
   const text = description.toLowerCase();
-  const unitWords = '(?:veggie\\s+|veg\\s+)?(?:capsules?|softgels?|soft gels?|tablets?|caplets?|caps|gummies)';
-  const numberWord = '(\\d|one|two|three|four|five|six)';
+  // Up to two adjectives may sit between the number and the unit ("2 quick
+  // release capsules", "3 veggie caps").
+  const unitWords =
+    '(?:[a-z]+\\s+){0,2}(?:capsules?|softgels?|soft gels?|tablets?|caplets?|caps|vegcaps?|vcaps?|gummies)';
+  // Digit boundaries so the "5" inside "135 Capsules" can never match.
+  const numberWord = '((?<![0-9])\\d(?![0-9])|one|two|three|four|five|six)';
   const match =
     text.match(new RegExp(`serving size(?:\\s+(?:is|of))?[^a-z0-9]{0,5}(?:consists of\\s*)?${numberWord}\\s*${unitWords}`)) ||
     text.match(new RegExp(`(?:each serving|per serving)[^.]{0,40}?${numberWord}\\s*${unitWords}`)) ||
@@ -274,35 +284,92 @@ function parsePerServing(description) {
   return value >= 1 && value <= 6 ? value : null;
 }
 
+/** Fetches the rendered product page as tag-stripped text (for
+ * supplement-facts prose that never appears in the .js description). */
+async function fetchPageText(store, handle) {
+  const url = `https://${store.domain}/products/${handle}`;
+  const init = {
+    headers: {
+      accept: 'text/html,application/xhtml+xml',
+      'user-agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125 Safari/537.36',
+    },
+    redirect: 'follow',
+  };
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+    try {
+      const response = await fetch(url, { ...init, signal: controller.signal });
+      if (response.status === 429 || response.status === 503) {
+        await new Promise((resolvePromise) => setTimeout(resolvePromise, 5000 * (attempt + 1)));
+        continue;
+      }
+      if (!response.ok) return '';
+      const html = await response.text();
+      return html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ');
+    } catch {
+      return '';
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  return '';
+}
+
 /**
  * Servings = units / units-per-serving. Unit counts come from the variant
  * title (including bare-number variants like "40"), product title, or handle
- * ("...-240-softgels"); units-per-serving from "Serving Size: N capsules" /
- * "take 2 daily" prose; stated servings from "N servings" or "N-day supply".
- * When both a stated figure and a derived figure exist, the smaller wins
- * (servings never exceed the bottle's unit count). Returns null — never a
- * made-up default — when nothing on the listing supports a number.
+ * ("...-240-softgels"), multiplied for "2-Pack"/"2 Bottles" bundles.
+ *
+ * A unit count alone is NOT serving evidence — serving sizes of 2-3 units
+ * are common and usually printed only in the page's supplement facts, so an
+ * uncorroborated unit count would overstate servings (and understate
+ * $/serving) by 2-3x. When the .js description carries no per-serving or
+ * stated-servings signal, the rendered product page is fetched and scanned
+ * for "Servings Per Container: N" / "Serving Size: N". Returns null — never
+ * a made-up number — when no listing surface supports a figure.
  */
-function parseServings(productJson, variant) {
+async function parseServings(productJson, variant, store) {
   const description = String(productJson.description || '').replace(/<[^>]+>/g, ' ');
+  const titleAndVariant = `${variant?.title ?? ''} ${productJson.title}`;
+  const packCount = matchNumber(titleAndVariant, PACK_PATTERN) ?? 1;
   const bareVariantCount = /^\d{1,4}$/.test(String(variant?.title ?? '').trim())
     ? Number(String(variant.title).trim())
     : null;
-  const unitCount =
+  const unitsPerBottle =
     matchNumber(variant?.title, UNIT_PATTERN) ??
     bareVariantCount ??
     matchNumber(productJson.title, UNIT_PATTERN) ??
     matchNumber(String(productJson.handle || '').replace(/-/g, ' '), UNIT_PATTERN) ??
     matchNumber(description, UNIT_PATTERN);
-  const perServing = parsePerServing(description) ?? 1;
-  const statedServings =
+  const totalUnits = unitsPerBottle ? unitsPerBottle * packCount : null;
+
+  let perServing = parsePerServing(description);
+  let statedServings =
     matchNumber(description, SERVINGS_PATTERN) ??
     matchNumber(productJson.title, SERVINGS_PATTERN) ??
     matchNumber(description, DAY_SUPPLY_PATTERN);
-  const derivedServings = unitCount ? Math.max(1, Math.floor(unitCount / perServing)) : null;
+
+  if (perServing == null && statedServings == null && totalUnits) {
+    const pageText = await fetchPageText(store, productJson.handle);
+    // Only the specific supplement-facts phrasing is trusted from page HTML;
+    // a generic "N servings" match could come from cross-sell modules.
+    const perContainer = matchNumber(pageText, SERVINGS_PER_CONTAINER_PATTERN);
+    if (perContainer) {
+      statedServings = perContainer * packCount;
+    } else {
+      perServing = parsePerServing(pageText);
+    }
+  }
+
+  const derivedServings =
+    totalUnits && perServing != null ? Math.max(1, Math.floor(totalUnits / perServing)) : null;
 
   if (statedServings && derivedServings) return Math.min(statedServings, derivedServings);
-  return statedServings ?? derivedServings ?? null;
+  if (statedServings) return Math.min(statedServings, totalUnits ?? statedServings);
+  return derivedServings ?? null;
 }
 
 /**
@@ -392,7 +459,7 @@ async function resolveProduct(store, handle, searchTerm) {
     variantId: String(variant.id),
     price: Math.round(Number(variant.price)) / 100,
     image: image.startsWith('//') ? `https:${image}` : image,
-    servings: parseServings(productJson, variant),
+    servings: await parseServings(productJson, variant, store),
     url: `https://${store.domain}/products/${handle}`,
   };
 }
@@ -440,7 +507,8 @@ function esc(value) {
 }
 
 /** Form badge from the full listing (variant + title), since e.g. "Bags /
- * 500 grams" or "2 fl oz" only appear in the variant title. */
+ * 500 grams" or "2 fl oz" only appear in the variant title. Returns null
+ * when the form isn't stated rather than guessing. */
 function badgeFor(text) {
   if (/powder|\bbags?\b|\bgrams?\b(?![a-z])/i.test(text)) return 'Bulk powder';
   if (/gumm/i.test(text)) return 'Gummies';
@@ -449,7 +517,7 @@ function badgeFor(text) {
   if (/tablet|caplet/i.test(text)) return 'Tablets';
   if (/liquid|drops|\boil\b|fl oz|\boz\b/i.test(text)) return 'Liquid';
   if (/capsule|\bcaps\b|vcap/i.test(text)) return 'Capsules';
-  return 'Single-ingredient';
+  return null;
 }
 
 function emitSeed(entry) {
@@ -459,6 +527,8 @@ function emitSeed(entry) {
   // 0 = servings unverifiable from the listing; the UI hides per-serving
   // math for these rather than displaying an invented number.
   const servings = Number(entry.servings) > 0 ? Number(entry.servings) : 0;
+  const formBadge = badgeFor(`${entry.variantTitle ?? ''} ${entry.title}`);
+  const badges = ['Verified merchant', 'Verified variant', ...(formBadge ? [formBadge] : [])];
 
   return `  {
     product_id: 'real-${entry.brandId}-${slug}',
@@ -480,7 +550,7 @@ function emitSeed(entry) {
     commerce_channel: 'shopify',
     ucp_enabled: true,
     inventory_status: 'in_stock',
-    quality_badges: ['Verified merchant', 'Verified variant', '${badgeFor(`${entry.variantTitle ?? ''} ${entry.title}`)}'],
+    quality_badges: [${badges.map((badge) => `'${esc(badge)}'`).join(', ')}],
     subscriptions_available: false,
     data_source: 'shopify_ucp',
   },`;
