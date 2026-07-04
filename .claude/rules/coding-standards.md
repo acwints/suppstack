@@ -59,7 +59,6 @@ If a component uses hooks, event handlers, or browser APIs, it must have `'use c
 Before creating custom data fetching logic, check `src/hooks/` for existing hooks:
 - `useSupplements` - Supplement data
 - `useStacks` - Stack data
-- `useProducts` - Product data
 - `useSupplementLogs` - Daily tracking
 - `useReviews` - Product reviews
 

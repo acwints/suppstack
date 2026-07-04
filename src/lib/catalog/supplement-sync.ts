@@ -16,9 +16,13 @@ const UNIQUE_VIOLATION = '23505';
  * resolves back to the same catalog supplement.
  */
 async function findDatabaseSupplementRow(catalogSupplement: Supplement) {
+  // Deterministic order (oldest row wins) and an explicit limit so behavior
+  // does not silently depend on PostgREST's default row cap.
   const { data: rows } = await supabase
     .from('supplements')
-    .select('supplement_id, supplement_name');
+    .select('supplement_id, supplement_name')
+    .order('supplement_id', { ascending: true })
+    .limit(10000);
 
   for (const row of rows ?? []) {
     if (row.supplement_name.toLowerCase() === catalogSupplement.supplement_name.toLowerCase()) {
