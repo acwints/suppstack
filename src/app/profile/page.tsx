@@ -384,7 +384,9 @@ export default function Profile() {
               <div className="space-y-4">
                 {regimen.map((item) => {
                   const pricePerServing =
-                    item.products.product_price / item.products.servings_per_container;
+                    item.products.servings_per_container > 0
+                      ? item.products.product_price / item.products.servings_per_container
+                      : 0;
                   const costPerMonth = pricePerServing * item.products.servings_per_day * 30.437;
                   const productSettings = getSettings(item.product_id);
 
@@ -400,7 +402,7 @@ export default function Profile() {
                           {item.products.brands.brand_name}
                         </p>
                         <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                          <span>{formatCurrency(costPerMonth)}/mo</span>
+                          {costPerMonth > 0 && <span>{formatCurrency(costPerMonth)}/mo</span>}
                           {productSettings?.custom_dosage && (
                             <span>&middot; {productSettings.custom_dosage}</span>
                           )}

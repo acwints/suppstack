@@ -213,8 +213,11 @@ const INGREDIENT_TOKENS = new Set([
   ...SUPPLEMENTS.flatMap((entry) => tokenize(entry.name.replace(/vitamin/gi, 'vitamin ')))
     .filter((token) => token.length > 2 && !GENERIC_INGREDIENT_TOKENS.has(token)),
   // Common pairing ingredients that signal a blend even though they are not
-  // catalog supplements themselves.
+  // catalog supplements themselves (including frequent label misspellings
+  // like "gingko"), plus trend-marketing terms that misrepresent a single
+  // ingredient ("GLP-1 ...").
   'goldenseal', 'bioperine', 'ashwaghanda', 'chamomile', 'lavender', 'lutein',
+  'gotu', 'kola', 'dmae', 'gingko', 'rosemary', 'serine', 'glp',
 ]);
 
 /**
@@ -242,6 +245,9 @@ const UNIT_PATTERN =
 
 const SERVINGS_PATTERN = /(?:^|[^0-9a-z])(\d{2,4})\s*-?\s*servings\b/i;
 
+/** "a 150-day supply" — labels equate a day's dose with a serving. */
+const DAY_SUPPLY_PATTERN = /(?:^|[^0-9a-z])(\d{2,4})\s*-?\s*day supply\b/i;
+
 const WORD_NUMBERS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
 
 function matchNumber(text, pattern) {
@@ -259,42 +265,44 @@ function parsePerServing(description) {
   const unitWords = '(?:veggie\\s+|veg\\s+)?(?:capsules?|softgels?|soft gels?|tablets?|caplets?|caps|gummies)';
   const numberWord = '(\\d|one|two|three|four|five|six)';
   const match =
-    text.match(new RegExp(`serving size[^a-z0-9]{0,5}(?:consists of\\s*)?${numberWord}\\s*${unitWords}`)) ||
+    text.match(new RegExp(`serving size(?:\\s+(?:is|of))?[^a-z0-9]{0,5}(?:consists of\\s*)?${numberWord}\\s*${unitWords}`)) ||
     text.match(new RegExp(`(?:each serving|per serving)[^.]{0,40}?${numberWord}\\s*${unitWords}`)) ||
-    text.match(new RegExp(`${numberWord}\\s*${unitWords}\\s*per serving`));
+    text.match(new RegExp(`${numberWord}\\s*${unitWords}\\s*per serving`)) ||
+    text.match(new RegExp(`(?:take\\s+)?${numberWord}\\s*${unitWords}\\s*(?:daily|per day|a day|each day)`));
   if (!match) return null;
   const value = WORD_NUMBERS[match[1]] ?? Number(match[1]);
   return value >= 1 && value <= 6 ? value : null;
 }
 
-function defaultServings(title) {
-  if (/\bsoftgels?\b|\bcapsules?\b|\btablets?\b|\bcaps\b|\bcaplets?\b/i.test(title)) return 60;
-  if (/\bpowder\b/i.test(title)) return 30;
-  if (/\bliquid\b|\bfl oz\b|\boil\b/i.test(title)) return 32;
-  return 60;
-}
-
 /**
  * Servings = units / units-per-serving. Unit counts come from the variant
- * title, product title, or handle ("...-240-softgels"); units-per-serving
- * from "Serving Size: N capsules" prose. When the merchant states a servings
- * figure directly, the smaller of the two estimates wins (servings never
- * exceed the bottle's unit count).
+ * title (including bare-number variants like "40"), product title, or handle
+ * ("...-240-softgels"); units-per-serving from "Serving Size: N capsules" /
+ * "take 2 daily" prose; stated servings from "N servings" or "N-day supply".
+ * When both a stated figure and a derived figure exist, the smaller wins
+ * (servings never exceed the bottle's unit count). Returns null — never a
+ * made-up default — when nothing on the listing supports a number.
  */
 function parseServings(productJson, variant) {
   const description = String(productJson.description || '').replace(/<[^>]+>/g, ' ');
+  const bareVariantCount = /^\d{1,4}$/.test(String(variant?.title ?? '').trim())
+    ? Number(String(variant.title).trim())
+    : null;
   const unitCount =
     matchNumber(variant?.title, UNIT_PATTERN) ??
+    bareVariantCount ??
     matchNumber(productJson.title, UNIT_PATTERN) ??
     matchNumber(String(productJson.handle || '').replace(/-/g, ' '), UNIT_PATTERN) ??
     matchNumber(description, UNIT_PATTERN);
   const perServing = parsePerServing(description) ?? 1;
   const statedServings =
-    matchNumber(description, SERVINGS_PATTERN) ?? matchNumber(productJson.title, SERVINGS_PATTERN);
+    matchNumber(description, SERVINGS_PATTERN) ??
+    matchNumber(productJson.title, SERVINGS_PATTERN) ??
+    matchNumber(description, DAY_SUPPLY_PATTERN);
   const derivedServings = unitCount ? Math.max(1, Math.floor(unitCount / perServing)) : null;
 
   if (statedServings && derivedServings) return Math.min(statedServings, derivedServings);
-  return statedServings ?? derivedServings ?? defaultServings(productJson.title);
+  return statedServings ?? derivedServings ?? null;
 }
 
 /**
@@ -342,9 +350,29 @@ async function searchStore(store, searchTerm) {
     }));
 }
 
-async function resolveProduct(store, handle) {
+/**
+ * Some stores (e.g. Piping Rock) are marketplaces carrying third-party
+ * brands. A pick whose live vendor is not the store's house brand would be
+ * misattributed in brand filters, logos, and discovery — skip it.
+ */
+function vendorMatchesStore(vendor, store) {
+  if (!vendor) return true;
+  const vendorTokens = new Set(tokenize(vendor));
+  return tokenize(store.brandName).some((token) => vendorTokens.has(token));
+}
+
+async function resolveProduct(store, handle, searchTerm) {
   const productJson = await fetchJson(`https://${store.domain}/products/${handle}.js`);
   if (!productJson) return null;
+
+  if (!vendorMatchesStore(productJson.vendor, store)) return null;
+
+  // Blends often keep their title clean and bury the other ingredients in
+  // the description ("Our complex contains ... Ginkgo Biloba, Gotu Kola").
+  const descriptionText = String(productJson.description || '')
+    .replace(/<[^>]+>/g, ' ')
+    .slice(0, 600);
+  if (searchTerm && crossIngredientPenalty(descriptionText, searchTerm) >= 6) return null;
 
   const variant = pickVariant(productJson);
   if (!variant) return null;
@@ -384,7 +412,7 @@ async function sourceSupplement(entry, brandUsage) {
         .sort((a, b) => a.score - b.score);
 
       for (const candidate of candidates.slice(0, 8)) {
-        const resolved = await resolveProduct(candidate.store, candidate.handle);
+        const resolved = await resolveProduct(candidate.store, candidate.handle, searchTerm);
         if (!resolved || !resolved.variantId || !resolved.price) continue;
 
         brandUsage.set(candidate.store.brandId, (brandUsage.get(candidate.store.brandId) ?? 0) + 1);
@@ -411,20 +439,26 @@ function esc(value) {
   return String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
-function badgeFor(title) {
-  if (/powder/i.test(title)) return 'Bulk powder';
-  if (/gumm/i.test(title)) return 'Gummies';
-  if (/softgel/i.test(title)) return 'Softgels';
-  if (/tablet/i.test(title)) return 'Tablets';
-  if (/liquid|drops|oil\b|fl oz/i.test(title)) return 'Liquid';
-  return 'Capsules';
+/** Form badge from the full listing (variant + title), since e.g. "Bags /
+ * 500 grams" or "2 fl oz" only appear in the variant title. */
+function badgeFor(text) {
+  if (/powder|\bbags?\b|\bgrams?\b(?![a-z])/i.test(text)) return 'Bulk powder';
+  if (/gumm/i.test(text)) return 'Gummies';
+  if (/chewable/i.test(text)) return 'Chewables';
+  if (/softgel|soft gel/i.test(text)) return 'Softgels';
+  if (/tablet|caplet/i.test(text)) return 'Tablets';
+  if (/liquid|drops|\boil\b|fl oz|\boz\b/i.test(text)) return 'Liquid';
+  if (/capsule|\bcaps\b|vcap/i.test(text)) return 'Capsules';
+  return 'Single-ingredient';
 }
 
 function emitSeed(entry) {
   const slug = slugify(entry.supplementName);
   const cleanName = entry.displayName.replace(/\s+\|.*$/, '').trim();
   const description = `${entry.brandName} ${entry.supplementName.toLowerCase()} pick with a verified merchant listing, so shoppers can move straight from the supplement page into secure cart checkout.`;
-  const servings = Math.max(1, Number(entry.servings) || 30);
+  // 0 = servings unverifiable from the listing; the UI hides per-serving
+  // math for these rather than displaying an invented number.
+  const servings = Number(entry.servings) > 0 ? Number(entry.servings) : 0;
 
   return `  {
     product_id: 'real-${entry.brandId}-${slug}',
@@ -446,7 +480,7 @@ function emitSeed(entry) {
     commerce_channel: 'shopify',
     ucp_enabled: true,
     inventory_status: 'in_stock',
-    quality_badges: ['Verified merchant', 'Verified variant', '${badgeFor(entry.title)}'],
+    quality_badges: ['Verified merchant', 'Verified variant', '${badgeFor(`${entry.variantTitle ?? ''} ${entry.title}`)}'],
     subscriptions_available: false,
     data_source: 'shopify_ucp',
   },`;

@@ -116,6 +116,11 @@ export function RestockReminders({ className }: RestockRemindersProps) {
           // Skip stopped supplements
           if (setting?.status === 'stopped') return null;
 
+          // Days-supply math needs a verified container size; skip products
+          // whose merchant listing doesn't state one rather than firing
+          // false "restock now" alerts.
+          if (!(p.servings_per_container > 0)) return null;
+
           const logData = dailyLogMap.get(item.product_id);
           const avgDailyLogs = logData && logData.uniqueDays.size > 0
             ? logData.totalServings / logData.uniqueDays.size
