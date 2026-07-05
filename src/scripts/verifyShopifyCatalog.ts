@@ -20,6 +20,10 @@ interface ShopifyProductJson {
   variants?: ShopifyVariant[];
 }
 
+interface ShopifyCollectionProduct extends ShopifyProductJson {
+  handle?: string;
+}
+
 function extractString(block: string, key: string) {
   const match = block.match(new RegExp(`${key}: '([^']+)'`));
   return match?.[1] ?? null;
@@ -75,7 +79,10 @@ async function fetchWithTimeout(url: string, timeoutMs = 10000) {
       signal: controller.signal,
       headers: {
         accept: 'application/json,text/javascript,*/*;q=0.8',
-        'user-agent': 'SuppStackCatalogVerifier/1.0',
+        // Some storefront bot filters (e.g. nutricost.com) 503 non-browser
+        // user agents on product endpoints; match the sourcing script's UA.
+        'user-agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
       },
     });
   } finally {
@@ -103,16 +110,41 @@ async function fetchWithRetry(url: string, attempts = 4) {
   return response;
 }
 
+/**
+ * Headless storefronts (e.g. davidprotein.com) disable the per-product
+ * `{handle}.js` endpoint; fall back to the store-wide `/products.json`
+ * collection endpoint and match on handle.
+ */
+async function fetchProductViaCollection(entry: CatalogShopifyEntry) {
+  const productUrl = new URL(entry.productUrl);
+  const handleMatch = productUrl.pathname.replace(/\/$/, '').match(/\/products\/([^/]+)$/);
+  if (!handleMatch) return null;
+
+  const collectionUrl = `${productUrl.origin}/products.json?limit=250`;
+  const response = await fetchWithRetry(collectionUrl);
+  const body = await response.text();
+  if (!response.ok || body.trim().startsWith('<')) return null;
+
+  const collection = JSON.parse(body) as { products?: ShopifyCollectionProduct[] };
+  return collection.products?.find((item) => item.handle === handleMatch[1]) ?? null;
+}
+
 async function verifyEntry(entry: CatalogShopifyEntry) {
   const url = productJsonUrl(entry.productUrl);
   const response = await fetchWithRetry(url);
   const body = await response.text();
 
-  if (!response.ok || body.trim().startsWith('<')) {
-    return { ok: false, message: `${entry.productId}: ${response.status} from ${url}` };
+  let product: ShopifyProductJson | null = null;
+
+  if (response.ok && !body.trim().startsWith('<')) {
+    product = JSON.parse(body) as ShopifyProductJson;
+  } else {
+    product = await fetchProductViaCollection(entry);
+    if (!product) {
+      return { ok: false, message: `${entry.productId}: ${response.status} from ${url}` };
+    }
   }
 
-  const product = JSON.parse(body) as ShopifyProductJson;
   const variant = product.variants?.find((item) => String(item.id) === entry.shopifyVariantId);
 
   if (String(product.id) !== entry.shopifyProductId) {

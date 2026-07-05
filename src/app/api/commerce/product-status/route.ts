@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getShopifyProductJsonUrl } from '@/lib/catalog/shopify-catalog-verifier';
+import { fetchShopifyProductJson } from '@/lib/catalog/shopify-catalog-verifier';
 import { getShopifyVariantNumericId } from '@/lib/commerce/shopify-ucp';
 import { allCuratedProductSeeds } from '@/lib/catalog/supplement-catalog';
 
@@ -18,13 +18,6 @@ const ALLOWED_MERCHANT_HOSTS = new Set(
     .map(normalizeHost)
 );
 
-interface ShopifyVariantJson {
-  id: number;
-  title?: string;
-  price?: number | string;
-  available?: boolean;
-}
-
 /** product.js variant prices are integer cents on most stores, but some themes return dollar strings. */
 function normalizePrice(value: number | string | undefined) {
   if (typeof value === 'number') return Math.round(value) / 100;
@@ -33,13 +26,6 @@ function normalizePrice(value: number | string | undefined) {
     return Number.isNaN(parsed) ? null : parsed;
   }
   return null;
-}
-
-interface ShopifyProductJson {
-  id: number;
-  title?: string;
-  available?: boolean;
-  variants?: ShopifyVariantJson[];
 }
 
 /**
@@ -77,31 +63,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const jsonUrl = getShopifyProductJsonUrl(productUrl);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
+    const { product } = await fetchShopifyProductJson(productUrl, 6000);
 
-    let response: Response;
-    try {
-      response = await fetch(jsonUrl, {
-        redirect: 'follow',
-        signal: controller.signal,
-        headers: {
-          accept: 'application/json,text/javascript,*/*;q=0.8',
-          'user-agent': 'SuppStackLiveStatus/1.0',
-        },
-        next: { revalidate: 60 },
-      });
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    const body = await response.text();
-    if (!response.ok || body.trim().startsWith('<')) {
+    if (!product) {
       return NextResponse.json({ status: 'unknown' });
     }
 
-    const product = JSON.parse(body) as ShopifyProductJson;
     const variant = product.variants?.find((item) => String(item.id) === variantId);
 
     if (!variant) {

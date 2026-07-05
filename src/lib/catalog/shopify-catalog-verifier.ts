@@ -18,15 +18,22 @@ export interface ShopifyCatalogVerificationResult {
   productJsonUrl?: string;
 }
 
-interface ShopifyVariant {
+export interface ShopifyVariantJson {
   id: number;
+  title?: string;
+  price?: number | string;
   available?: boolean;
 }
 
-interface ShopifyProductJson {
+export interface ShopifyProductJson {
   id: number;
+  title?: string;
   available?: boolean;
-  variants?: ShopifyVariant[];
+  variants?: ShopifyVariantJson[];
+}
+
+interface ShopifyCollectionProduct extends ShopifyProductJson {
+  handle?: string;
 }
 
 function productGidNumericId(value?: string | null) {
@@ -73,6 +80,17 @@ export function getShopifyProductJsonUrl(productUrl: string) {
   return url.toString();
 }
 
+function getShopifyCollectionJsonUrl(productUrl: string) {
+  const url = new URL(productUrl);
+  return `${url.origin}/products.json?limit=250`;
+}
+
+function getShopifyProductHandle(productUrl: string) {
+  const pathname = new URL(productUrl).pathname.replace(/\/$/, '');
+  const match = pathname.match(/\/products\/([^/]+)$/);
+  return match?.[1] ?? null;
+}
+
 async function fetchWithTimeout(url: string, timeoutMs = 10000) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -83,33 +101,90 @@ async function fetchWithTimeout(url: string, timeoutMs = 10000) {
       signal: controller.signal,
       headers: {
         accept: 'application/json,text/javascript,*/*;q=0.8',
-        'user-agent': 'SuppStackCatalogVerifier/1.0',
+        // Some storefront bot filters (e.g. nutricost.com) 503 non-browser
+        // user agents on product endpoints.
+        'user-agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
       },
+      // Cached for 60s when running inside the Next.js server runtime;
+      // ignored by plain Node fetch in CLI scripts.
+      next: { revalidate: 60 },
     });
   } finally {
     clearTimeout(timeout);
   }
 }
 
+export interface ShopifyProductJsonFetchResult {
+  product: ShopifyProductJson | null;
+  sourceUrl: string;
+  status: number;
+}
+
+/**
+ * Fetches the public product JSON for a Shopify product URL. Tries the
+ * per-product `{handle}.js` endpoint first; headless storefronts (e.g.
+ * davidprotein.com) disable it, so we fall back to the store-wide
+ * `/products.json` collection endpoint and match on handle.
+ */
+export async function fetchShopifyProductJson(
+  productUrl: string,
+  timeoutMs = 10000
+): Promise<ShopifyProductJsonFetchResult> {
+  const productJsonUrl = getShopifyProductJsonUrl(productUrl);
+  const response = await fetchWithTimeout(productJsonUrl, timeoutMs);
+  const body = await response.text();
+
+  if (response.ok && !body.trim().startsWith('<')) {
+    return {
+      product: JSON.parse(body) as ShopifyProductJson,
+      sourceUrl: productJsonUrl,
+      status: response.status,
+    };
+  }
+
+  const handle = getShopifyProductHandle(productUrl);
+  if (!handle) {
+    return { product: null, sourceUrl: productJsonUrl, status: response.status };
+  }
+
+  const collectionUrl = getShopifyCollectionJsonUrl(productUrl);
+  const collectionResponse = await fetchWithTimeout(collectionUrl, timeoutMs);
+  const collectionBody = await collectionResponse.text();
+
+  if (!collectionResponse.ok || collectionBody.trim().startsWith('<')) {
+    return { product: null, sourceUrl: collectionUrl, status: collectionResponse.status };
+  }
+
+  const collection = JSON.parse(collectionBody) as { products?: ShopifyCollectionProduct[] };
+  const match = collection.products?.find((item) => item.handle === handle);
+
+  if (!match) {
+    return { product: null, sourceUrl: collectionUrl, status: 404 };
+  }
+
+  return { product: match, sourceUrl: collectionUrl, status: collectionResponse.status };
+}
+
 export async function verifyCatalogShopifyEntry(
   entry: CatalogShopifyEntry,
   timeoutMs = 10000
 ): Promise<ShopifyCatalogVerificationResult> {
-  const productJsonUrl = getShopifyProductJsonUrl(entry.productUrl);
-  const response = await fetchWithTimeout(productJsonUrl, timeoutMs);
-  const body = await response.text();
+  const { product, sourceUrl: productJsonUrl, status } = await fetchShopifyProductJson(
+    entry.productUrl,
+    timeoutMs
+  );
 
-  if (!response.ok || body.trim().startsWith('<')) {
+  if (!product) {
     return {
       ok: false,
       productId: entry.productId,
       productName: entry.productName,
       productJsonUrl,
-      message: `${entry.productId}: ${response.status} from ${productJsonUrl}`,
+      message: `${entry.productId}: ${status} from ${productJsonUrl}`,
     };
   }
 
-  const product = JSON.parse(body) as ShopifyProductJson;
   const variant = product.variants?.find((item) => String(item.id) === entry.shopifyVariantId);
 
   if (String(product.id) !== entry.shopifyProductId) {
