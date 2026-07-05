@@ -7,7 +7,7 @@ import { FiX, FiPlus, FiCheck, FiStar, FiExternalLink } from 'react-icons/fi';
 import { supabase } from '@/app/supabase';
 import { Card, Button, Spinner, Badge } from '@/components/ui';
 import { cn } from '@/lib/design-system/utils';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, calculatePrices } from '@/lib/utils';
 import { isListableDatabaseProduct } from '@/lib/catalog/supplement-catalog';
 import type { Product } from '@/types';
 
@@ -101,10 +101,12 @@ export function CompareProducts({
   }
 
   const costPerServing = (p: Product) =>
-    p.servings_per_container > 0 ? p.product_price / p.servings_per_container : 0;
+    calculatePrices(p.product_price, p.servings_per_container, p.servings_per_day || 1)
+      .costPerServing;
 
   const monthlyCost = (p: Product) =>
-    costPerServing(p) * (p.servings_per_day || 1) * 30.437;
+    calculatePrices(p.product_price, p.servings_per_container, p.servings_per_day || 1)
+      .monthlyCost;
 
   const availableProducts = allProducts.filter(p => !selectedIds.includes(p.product_id));
 
