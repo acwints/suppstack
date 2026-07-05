@@ -1,7 +1,9 @@
 /**
  * Design System
- * Centralized exports for all design tokens and utilities
+ *
+ * `cn` is the single styling utility every component uses. Design tokens
+ * (colors, spacing, typography, shadows, animations) are defined once in
+ * `tailwind.config.ts` and consumed as Tailwind classes.
  */
 
-export * from './tokens';
 export * from './utils';

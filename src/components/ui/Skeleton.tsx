@@ -1,11 +1,13 @@
 'use client';
 
+import { Card, CardBody } from './Card';
+
 export interface SkeletonProps {
   className?: string;
   variant?: 'text' | 'circular' | 'rectangular' | 'rounded';
   width?: string | number;
   height?: string | number;
-  animation?: 'pulse' | 'wave' | 'none';
+  animation?: 'pulse' | 'none';
 }
 
 const variantClasses = {
@@ -22,7 +24,7 @@ export function Skeleton({
   height,
   animation = 'pulse',
 }: SkeletonProps) {
-  const animationClass = animation === 'pulse' ? 'animate-pulse' : animation === 'wave' ? 'animate-shimmer' : '';
+  const animationClass = animation === 'pulse' ? 'animate-pulse' : '';
 
   return (
     <div
@@ -43,9 +45,9 @@ export function Skeleton({
 // Pre-built skeleton patterns
 export function SkeletonCard() {
   return (
-    <div className="modern-card animate-pulse">
+    <Card className="animate-pulse">
       <Skeleton variant="rounded" className="h-48 rounded-t-xl rounded-b-none" />
-      <div className="card-body">
+      <CardBody>
         <Skeleton height={16} className="mb-3" />
         <Skeleton height={12} className="mb-2" />
         <Skeleton height={12} className="mb-4 w-3/4" />
@@ -53,16 +55,16 @@ export function SkeletonCard() {
           <Skeleton height={12} width={80} />
           <Skeleton height={12} width={64} />
         </div>
-      </div>
-    </div>
+      </CardBody>
+    </Card>
   );
 }
 
 export function SkeletonProductCard() {
   return (
-    <div className="card animate-pulse">
+    <Card className="animate-pulse">
       <Skeleton variant="rounded" className="h-64 rounded-t-xl rounded-b-none" />
-      <div className="card-body">
+      <CardBody>
         <Skeleton height={12} width={100} className="mb-2" />
         <Skeleton height={20} className="mb-3" />
         <div className="flex items-center gap-2 mb-4">
@@ -83,14 +85,14 @@ export function SkeletonProductCard() {
           <Skeleton variant="rounded" height={36} className="flex-1" />
           <Skeleton variant="rounded" height={36} className="flex-1" />
         </div>
-      </div>
-    </div>
+      </CardBody>
+    </Card>
   );
 }
 
 export function SkeletonStackCard() {
   return (
-    <div className="modern-card animate-pulse">
+    <Card className="animate-pulse">
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-start gap-4">
           <Skeleton variant="circular" width={60} height={60} />
@@ -104,7 +106,7 @@ export function SkeletonStackCard() {
           </div>
         </div>
       </div>
-      <div className="card-body">
+      <CardBody>
         <Skeleton height={20} className="mb-2" />
         <Skeleton height={12} className="mb-4" />
         <Skeleton height={12} className="mb-1" />
@@ -116,8 +118,8 @@ export function SkeletonStackCard() {
           <Skeleton height={12} width={50} />
           <Skeleton height={12} width={50} />
         </div>
-      </div>
-    </div>
+      </CardBody>
+    </Card>
   );
 }
 

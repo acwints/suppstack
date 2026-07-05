@@ -86,7 +86,7 @@ export default function Header() {
                 ) : (
                     <button
                       onClick={handleAuth}
-                      className="btn-editorial text-sm"
+                      className="rounded bg-gray-900 px-6 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
                     >
                     Sign In
                   </button>
