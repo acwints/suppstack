@@ -13,6 +13,7 @@ import {
   getShopifyCartPermalink,
   getShopifyVariantNumericId,
 } from '@/lib/commerce/shopify-ucp';
+import { isNativeApp, openInNativeBrowser } from '@/lib/native/capacitor';
 
 export interface EmbeddedCheckoutProps {
   product: Product;
@@ -117,13 +118,21 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
    * background and never gates the checkout.
    */
   const launchCheckout = () => {
-    const checkoutWindow = openCheckoutWindow(checkoutUrl);
-
-    if (checkoutWindow) {
-      checkoutWindow.focus();
-      setStage('opened');
+    if (isNativeApp()) {
+      // Inside the iOS shell there are no popup blockers; merchant checkout
+      // opens in SFSafariViewController so the user stays in the app.
+      openInNativeBrowser(checkoutUrl)
+        .then((opened) => setStage(opened ? 'opened' : 'blocked'))
+        .catch(() => setStage('blocked'));
     } else {
-      setStage('blocked');
+      const checkoutWindow = openCheckoutWindow(checkoutUrl);
+
+      if (checkoutWindow) {
+        checkoutWindow.focus();
+        setStage('opened');
+      } else {
+        setStage('blocked');
+      }
     }
 
     resolveCheckoutSession(product, quantity).catch(() => undefined);

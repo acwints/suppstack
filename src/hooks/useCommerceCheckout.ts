@@ -7,6 +7,7 @@ import {
   productPurchasePayload,
   type PurchaseSession,
 } from '@/lib/commerce/purchase-session';
+import { openInNativeBrowser } from '@/lib/native/capacitor';
 
 export function useCommerceCheckout() {
   const [isStartingCheckout, setIsStartingCheckout] = useState(false);
@@ -55,6 +56,12 @@ export function useCommerceCheckout() {
   const startCheckout = async (product: Product, quantity = 1): Promise<PurchaseSession> => {
     const session = await resolveCheckoutSession(product, quantity);
     if (session.purchaseUrl) {
+      // Inside the iOS shell, checkout opens in SFSafariViewController so
+      // the user stays in the app.
+      if (await openInNativeBrowser(session.purchaseUrl)) {
+        return session;
+      }
+
       const opened = window.open(session.purchaseUrl, '_blank', 'noopener,noreferrer');
       // The await above can expire the user-activation window and get the
       // popup blocked; fall back to same-tab navigation so the click never

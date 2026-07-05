@@ -4,6 +4,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Keep content clear of the iPhone home indicator in the native shell and
+   installed web app (env() resolves to 0 in regular browsers). */
+body {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 :root {
   /* Professional editorial theme */
   --color-primary: #171717;

@@ -98,6 +98,15 @@ Import from: `import { supabase } from '@/app/supabase'`
 - `reviews` - Product reviews
 - `profiles` - User profiles
 
+## iOS App (Capacitor)
+- `ios/` is a Capacitor shell that loads the production site via `server.url`
+  in `capacitor.config.ts`; web deploys update the app instantly.
+- Native bridges live in `src/lib/native/capacitor.ts` (injected
+  `window.Capacitor` global — do NOT import `@capacitor/*` in app code).
+- Checkout and Google OAuth open in SFSafariViewController in the shell;
+  OAuth returns via the `com.suppstack.app://auth-callback` deep link (PKCE).
+- Submission steps: see `APP_STORE_SUBMISSION.md`.
+
 ## Critical Rules
 1. Never hardcode colors/spacing - use design tokens
 2. Always handle loading/error states in data components

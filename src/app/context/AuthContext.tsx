@@ -5,6 +5,18 @@ import { supabase } from '../supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { getOrCreateUserProfile } from '@/lib/account/profile';
+import {
+  closeNativeBrowser,
+  isNativeApp,
+  onAppUrlOpen,
+  openInNativeBrowser,
+} from '@/lib/native/capacitor';
+
+/**
+ * Deep link the iOS shell registers for OAuth returns. Must be listed in the
+ * Supabase Auth redirect allowlist (see APP_STORE_SUBMISSION.md).
+ */
+const NATIVE_AUTH_CALLBACK = 'com.suppstack.app://auth-callback';
 
 interface AuthContextType {
   user: User | null;
@@ -57,21 +69,54 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // In the native iOS shell, OAuth completes in SFSafariViewController and
+    // returns through a deep link carrying the PKCE code. Exchange it here,
+    // then dismiss the in-app browser.
+    const unsubscribeAppUrl = onAppUrlOpen((url) => {
+      const code = (() => {
+        try {
+          return new URL(url).searchParams.get('code');
+        } catch {
+          return null;
+        }
+      })();
+      if (!code) return;
+
+      supabase.auth
+        .exchangeCodeForSession(code)
+        .catch((error) => console.error('Failed to complete native sign-in:', error))
+        .finally(() => {
+          closeNativeBrowser().catch(() => undefined);
+        });
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      unsubscribeAppUrl();
+    };
   }, [router]);
 
   const loginWithGoogle = async () => {
-    const redirectUrl =
-      typeof window !== 'undefined'
+    const native = isNativeApp();
+    const redirectUrl = native
+      ? NATIVE_AUTH_CALLBACK
+      : typeof window !== 'undefined'
         ? `${window.location.origin}/profile`
         : 'https://www.suppstack.app/profile';
 
-    await supabase.auth.signInWithOAuth({
+    const { data } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: redirectUrl,
+        // The native shell opens the provider URL itself (SFSafariViewController)
+        // instead of navigating the webview away from the app.
+        skipBrowserRedirect: native,
       },
     });
+
+    if (native && data?.url) {
+      await openInNativeBrowser(data.url);
+    }
   };
 
   const logout = async () => {

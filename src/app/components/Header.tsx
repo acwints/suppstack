@@ -19,7 +19,7 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 pt-[env(safe-area-inset-top)]">
       <div className="container-custom">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}

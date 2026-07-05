@@ -14,6 +14,7 @@ import {
   isShopifySearchUrl,
 } from '@/lib/commerce/shopify-ucp';
 import { mergeProductSources } from '@/lib/commerce/product-source';
+import { isNativeApp, openInNativeBrowser } from '@/lib/native/capacitor';
 import {
   findCatalogSupplementById,
   findCatalogSupplementByName,
@@ -152,11 +153,20 @@ export function BuyStackPanel({
   );
 
   const handleBuySelected = () => {
-    cartGroups.forEach(group => {
-      window.open(group.url, '_blank', 'noopener,noreferrer');
-    });
-    individualFallbackProducts.forEach(product => {
-      window.open(getPreferredPurchaseUrl(product), '_blank', 'noopener,noreferrer');
+    const urls = [
+      ...cartGroups.map(group => group.url),
+      ...individualFallbackProducts.map(product => getPreferredPurchaseUrl(product)),
+    ];
+
+    // The iOS shell shows one in-app checkout at a time; open the first cart
+    // and let the per-merchant links above handle the rest.
+    if (isNativeApp()) {
+      if (urls[0]) openInNativeBrowser(urls[0]).catch(() => undefined);
+      return;
+    }
+
+    urls.forEach(url => {
+      window.open(url, '_blank', 'noopener,noreferrer');
     });
   };
 
@@ -305,6 +315,14 @@ export function BuyStackPanel({
                     href={group.url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={(event) => {
+                      // Keep merchant carts inside the iOS shell (SFSafariViewController)
+                      // instead of bouncing out to Safari.
+                      if (isNativeApp()) {
+                        event.preventDefault();
+                        openInNativeBrowser(group.url).catch(() => undefined);
+                      }
+                    }}
                     className="flex items-center justify-between gap-3 rounded border border-orange-100 bg-white px-3 py-2 text-sm text-gray-800 hover:border-orange-200 hover:bg-orange-50"
                   >
                     <span className="min-w-0">
