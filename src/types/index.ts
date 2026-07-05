@@ -22,6 +22,8 @@ export interface Supplement {
   common_dosage?: string;
   product_count?: number;
   average_price?: number;
+  /** Cheapest curated product price; drives "From $X" on family tiles. */
+  lowest_price?: number;
 }
 
 export interface Product {

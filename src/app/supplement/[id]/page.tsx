@@ -14,7 +14,9 @@ import {
   findCatalogSupplementById,
   findCatalogSupplementForSupplement,
   resolveProductsForSupplement,
+  supplementCatalog,
 } from '@/lib/catalog/supplement-catalog';
+import { familyForSupplement, familyFormLabel } from '@/lib/catalog/supplement-families';
 
 export default function SupplementPage({ params }: { params: { id: string } }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -130,6 +132,13 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
     return result;
   }, [products, filters, sortBy]);
 
+  // Sibling forms of the same ingredient (e.g. Monohydrate | HCl) for the
+  // form switcher; null when this supplement is not part of a family.
+  const family = useMemo(
+    () => (supplement ? familyForSupplement(supplement, supplementCatalog) : null),
+    [supplement]
+  );
+
   const displayedProducts = filteredProducts.slice(0, currentPage * productsPerPage);
   const hasMore = filteredProducts.length > displayedProducts.length;
 
@@ -201,6 +210,35 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
         </p>
         {supplement.common_dosage && (
           <p className="text-xs text-gray-500">Typical dose: {supplement.common_dosage}</p>
+        )}
+        {family && (
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
+              {family.familyName} forms
+            </span>
+            {family.members.map((member) => {
+              const isCurrent = member.supplement_id === supplement.supplement_id;
+              return (
+                <Link
+                  key={member.supplement_id}
+                  href={`/supplement/${member.supplement_id}`}
+                  aria-current={isCurrent ? 'page' : undefined}
+                  className={
+                    isCurrent
+                      ? 'rounded border border-gray-900 bg-gray-900 px-2.5 py-1 text-xs font-medium text-white'
+                      : 'rounded border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900'
+                  }
+                >
+                  {familyFormLabel(member.supplement_name, family.familyName)}
+                  {typeof member.product_count === 'number' && (
+                    <span className={isCurrent ? 'text-gray-300' : 'text-gray-400'}>
+                      {' '}({member.product_count})
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
         )}
       </Stack>
 

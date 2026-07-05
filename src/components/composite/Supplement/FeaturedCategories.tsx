@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Supplement } from '@/types';
 import { formatPrice } from '@/lib/utils';
+import { collapseToFamilyFlagships } from '@/lib/catalog/supplement-families';
 
 export interface FeaturedCategoriesProps {
   supplements: Supplement[];
@@ -11,25 +12,29 @@ export interface FeaturedCategoriesProps {
 
 /**
  * Amazon-style category shelves: each goal is a 2x2 grid of real product
- * photos that link straight into supplement pages.
+ * photos that link straight into supplement pages. Ingredient families are
+ * collapsed to their flagship form so no shelf shows the same ingredient
+ * twice.
  */
 export function FeaturedCategories({ supplements }: FeaturedCategoriesProps) {
+  const shelfSupplements = collapseToFamilyFlagships(supplements);
+
   const featuredCategories = [
     {
       name: 'Daily Essentials',
-      supplements: supplements
+      supplements: shelfSupplements
         .filter((s) => ['Vitamins', 'Minerals'].includes(s.category || ''))
         .slice(0, 4),
     },
     {
       name: 'Mind & Mood',
-      supplements: supplements
+      supplements: shelfSupplements
         .filter((s) => ['Brain & Focus', 'Sleep & Relaxation', 'Herbs & Adaptogens'].includes(s.category || ''))
         .slice(0, 4),
     },
     {
       name: 'Active Lifestyle',
-      supplements: supplements
+      supplements: shelfSupplements
         .filter((s) => ['Protein', 'Performance', 'Omega & Fish Oil'].includes(s.category || ''))
         .slice(0, 4),
     },
