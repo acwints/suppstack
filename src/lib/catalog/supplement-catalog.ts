@@ -18,7 +18,13 @@ interface CatalogSeed {
   forms: string[];
   dosage: string;
   evidence: EvidenceRating;
-  price: number;
+  price?: number;
+  /**
+   * Knowledge-only entry (e.g. research peptides): browsable and richly
+   * documented, but with no curated products, price, or checkout. These power
+   * the wiki side of the marketplace + wiki experience.
+   */
+  researchOnly?: boolean;
 }
 
 const CATALOG_START_ID = 9000;
@@ -120,6 +126,15 @@ const stableCatalogIds: Record<string, number> = {
   'Ketone Shots': 9092,
   'Nootropic Shots': 9093,
   'Testosterone Support': 9094,
+  // Research peptides (knowledge-only, no purchasable products).
+  'BPC-157': 9200,
+  'TB-500': 9201,
+  Retatrutide: 9202,
+  Tirzepatide: 9203,
+  Semaglutide: 9204,
+  Ipamorelin: 9205,
+  'CJC-1295': 9206,
+  'GHK-Cu': 9207,
 };
 
 const seeds: CatalogSeed[] = [
@@ -218,6 +233,20 @@ const seeds: CatalogSeed[] = [
   { name: 'Ketone Shots', category: 'Metabolic', description: 'Ready-to-drink exogenous ketones used for caffeine-free energy, focus, and endurance routines without sugar.', aliases: ['exogenous ketones', 'ketone ester', 'ketone diol'], goals: ['Energy', 'Focus', 'Endurance'], forms: ['Shot'], dosage: '1 shot as needed', evidence: 'emerging', price: 60 },
   { name: 'Nootropic Shots', category: 'Brain & Focus', description: 'Ready-to-drink mental performance shots combining nootropics, adaptogens, and functional mushrooms for focus routines.', aliases: ['mental performance shot', 'focus shot', 'nootropic drink'], goals: ['Focus', 'Calm energy', 'Productivity'], forms: ['Shot'], dosage: '1 shot daily', evidence: 'emerging', price: 74 },
   { name: 'Testosterone Support', category: 'Herbs & Adaptogens', description: 'Herbal formulas built around ingredients like tongkat ali, fenugreek, shilajit, and zinc used in men\u2019s vitality and energy routines.', aliases: ['t support', 'natural testosterone booster', 'tongkat ali blend'], goals: ['Vitality', 'Energy', 'Strength'], forms: ['Capsule'], dosage: '1 serving daily as directed', evidence: 'emerging', price: 59 },
+
+  // ── Research peptides ──────────────────────────────────────────────
+  // Knowledge-only reference entries. These are research chemicals, not
+  // dietary supplements, and are not sold on the platform — every entry is
+  // flagged researchOnly so the UI renders a wiki page with a research-use
+  // disclaimer instead of a shopping surface.
+  { name: 'BPC-157', category: 'Peptides', description: 'A synthetic peptide derived from a protein found in gastric juice, studied in animals for tissue repair, tendon and gut healing, and angiogenesis.', aliases: ['body protection compound 157', 'pentadecapeptide bpc 157', 'bpc157'], goals: ['Tissue repair research', 'Gut health research'], forms: ['Research compound'], dosage: 'No established human dose; not approved for human use', evidence: 'emerging', researchOnly: true },
+  { name: 'TB-500', category: 'Peptides', description: 'A synthetic fragment of thymosin beta-4 studied in animal and cell models for tissue repair, angiogenesis, and cell migration.', aliases: ['thymosin beta-4', 'thymosin beta 4', 'tb500'], goals: ['Tissue repair research', 'Recovery research'], forms: ['Research compound'], dosage: 'No established human dose; not approved for human use', evidence: 'emerging', researchOnly: true },
+  { name: 'Retatrutide', category: 'Peptides', description: 'An investigational triple agonist (GIP, GLP-1, and glucagon receptors) in clinical trials for obesity and type 2 diabetes. Not FDA-approved.', aliases: ['ly3437943', 'triple g', 'gip glp-1 glucagon agonist'], goals: ['Metabolic research', 'Weight management research'], forms: ['Investigational drug'], dosage: 'Investigational; doses studied only under clinical trial protocols', evidence: 'emerging', researchOnly: true },
+  { name: 'Tirzepatide', category: 'Peptides', description: 'A dual GIP and GLP-1 receptor agonist prescription medication for type 2 diabetes and chronic weight management. Prescription-only; not a supplement.', aliases: ['mounjaro', 'zepbound', 'gip glp-1 agonist'], goals: ['Metabolic health', 'Weight management'], forms: ['Prescription medication'], dosage: 'Prescription-only; dosed by a licensed clinician', evidence: 'strong', researchOnly: true },
+  { name: 'Semaglutide', category: 'Peptides', description: 'A GLP-1 receptor agonist prescription medication for type 2 diabetes and chronic weight management. Prescription-only; not a supplement.', aliases: ['ozempic', 'wegovy', 'rybelsus', 'glp-1 agonist'], goals: ['Metabolic health', 'Weight management'], forms: ['Prescription medication'], dosage: 'Prescription-only; dosed by a licensed clinician', evidence: 'strong', researchOnly: true },
+  { name: 'Ipamorelin', category: 'Peptides', description: 'A selective growth-hormone secretagogue (ghrelin receptor agonist) studied for stimulating endogenous growth hormone release. Not approved for human use.', aliases: ['growth hormone secretagogue', 'ghrp'], goals: ['Growth hormone research', 'Recovery research'], forms: ['Research compound'], dosage: 'No established human dose; not approved for human use', evidence: 'emerging', researchOnly: true },
+  { name: 'CJC-1295', category: 'Peptides', description: 'A synthetic growth-hormone-releasing hormone (GHRH) analog studied for extending growth hormone release, often discussed alongside ipamorelin. Not approved for human use.', aliases: ['ghrh analog', 'mod grf 1-29', 'cjc1295'], goals: ['Growth hormone research', 'Recovery research'], forms: ['Research compound'], dosage: 'No established human dose; not approved for human use', evidence: 'emerging', researchOnly: true },
+  { name: 'GHK-Cu', category: 'Peptides', description: 'A naturally occurring copper-binding tripeptide studied for skin remodeling, wound healing, and collagen synthesis, primarily in topical cosmetic research.', aliases: ['copper peptide', 'ghk copper', 'glycyl-l-histidyl-l-lysine'], goals: ['Skin health research', 'Wound healing research'], forms: ['Topical cosmetic', 'Research compound'], dosage: 'No established oral dose; studied mainly in topical formulations', evidence: 'emerging', researchOnly: true },
 ];
 
 function normalizeSupplementLookupTerm(value: string) {
@@ -2344,6 +2373,7 @@ export const supplementCatalog: Supplement[] = seeds.map((seed) => {
     product_count: curatedStats?.productCount,
     average_price: curatedStats?.averagePrice,
     lowest_price: curatedStats?.lowestPrice,
+    research_only: seed.researchOnly,
   };
 });
 

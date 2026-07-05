@@ -20,11 +20,17 @@ export interface SupplementCardProps {
  */
 export function SupplementCard({ group }: SupplementCardProps) {
   const { flagship } = group;
+  const isResearch = flagship.research_only ?? false;
 
   return (
     <Link href={`/supplement/${flagship.supplement_id}`} className="block h-full">
       <div className="group flex h-full flex-col overflow-hidden rounded border border-gray-200 bg-white transition-all duration-150 hover:border-gray-300 hover:shadow-md">
         <div className="relative aspect-square w-full bg-white">
+          {isResearch && (
+            <span className="absolute left-2 top-2 z-10 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">
+              Research
+            </span>
+          )}
           {flagship.image_url ? (
             <Image
               src={flagship.image_url}
@@ -34,7 +40,7 @@ export function SupplementCard({ group }: SupplementCardProps) {
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
             />
           ) : (
-            <div className="flex h-full items-center justify-center">
+            <div className="flex h-full items-center justify-center bg-gray-50">
               <span className="text-3xl font-semibold text-gray-300">
                 {group.name.charAt(0)}
               </span>
@@ -47,23 +53,32 @@ export function SupplementCard({ group }: SupplementCardProps) {
             {group.name}
           </h3>
           <div className="mt-auto pt-2">
-            {typeof group.priceFrom === 'number' && (
-              <span className="text-lg font-semibold text-gray-900">
-                {(group.productCount ?? 0) > 1 && (
-                  <span className="text-xs font-normal text-gray-500">From </span>
+            {isResearch ? (
+              <>
+                <span className="text-sm font-semibold text-gray-900">Research profile</span>
+                <p className="text-xs text-gray-500">Reference only · {flagship.category}</p>
+              </>
+            ) : (
+              <>
+                {typeof group.priceFrom === 'number' && (
+                  <span className="text-lg font-semibold text-gray-900">
+                    {(group.productCount ?? 0) > 1 && (
+                      <span className="text-xs font-normal text-gray-500">From </span>
+                    )}
+                    ${formatPrice(group.priceFrom)}
+                  </span>
                 )}
-                ${formatPrice(group.priceFrom)}
-              </span>
+                <p className="text-xs text-gray-500">
+                  {typeof group.productCount === 'number' &&
+                    `${group.productCount} option${group.productCount === 1 ? '' : 's'}`}
+                  {group.isFamily
+                    ? ` · ${group.members.length} forms`
+                    : typeof group.productCount === 'number' && flagship.category
+                      ? ` · ${flagship.category}`
+                      : flagship.category ?? ''}
+                </p>
+              </>
             )}
-            <p className="text-xs text-gray-500">
-              {typeof group.productCount === 'number' &&
-                `${group.productCount} option${group.productCount === 1 ? '' : 's'}`}
-              {group.isFamily
-                ? ` · ${group.members.length} forms`
-                : typeof group.productCount === 'number' && flagship.category
-                  ? ` · ${flagship.category}`
-                  : flagship.category ?? ''}
-            </p>
           </div>
         </div>
       </div>

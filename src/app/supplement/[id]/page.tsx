@@ -8,7 +8,7 @@ import ProductCard from '../../components/ProductCard';
 import type { Supplement, Product, ProductFilters, ProductSortBy } from '@/types';
 import { Spinner, Button, EmptyState, Stack, Inline, Grid } from '@/components/ui';
 import { ProductFilterPanel } from '@/components/composite/Filter';
-import { CompareProducts } from '@/components/composite/Supplement';
+import { CompareProducts, SupplementKnowledge } from '@/components/composite/Supplement';
 import {
   createCanonicalCatalogProductsForSupplement,
   findCatalogSupplementById,
@@ -17,6 +17,7 @@ import {
   supplementCatalog,
 } from '@/lib/catalog/supplement-catalog';
 import { familyForSupplement, familyFormLabel } from '@/lib/catalog/supplement-families';
+import { getSupplementKnowledge } from '@/lib/catalog/supplement-knowledge';
 
 export default function SupplementPage({ params }: { params: { id: string } }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -139,6 +140,16 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
     [supplement]
   );
 
+  const knowledge = useMemo(
+    () =>
+      supplement
+        ? getSupplementKnowledge(supplement.supplement_name, supplement.aliases)
+        : null,
+    [supplement]
+  );
+
+  const isResearchOnly = supplement?.research_only ?? false;
+
   const displayedProducts = filteredProducts.slice(0, currentPage * productsPerPage);
   const hasMore = filteredProducts.length > displayedProducts.length;
 
@@ -202,9 +213,16 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
             </span>
           )}
         </div>
-        <h1 className="text-3xl font-serif text-gray-900">
-          {supplement.supplement_name}
-        </h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-3xl font-serif text-gray-900">
+            {supplement.supplement_name}
+          </h1>
+          {isResearchOnly && (
+            <span className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800">
+              Research reference
+            </span>
+          )}
+        </div>
         <p className="text-sm text-gray-600 line-clamp-2 max-w-3xl">
           {supplement.supplement_description}
         </p>
@@ -242,69 +260,90 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
         )}
       </Stack>
 
-      {/* Products Section */}
       <Stack gap={6}>
-
-        {/* Filter Panel */}
-        <ProductFilterPanel
-          products={products}
-          filters={filters}
-          sortBy={sortBy}
-          onFiltersChange={setFilters}
-          onSortChange={setSortBy}
-          totalResults={filteredProducts.length}
-        />
-
-        {filteredProducts.length === 0 ? (
-          <EmptyState
-            icon="📦"
-            title={products.length === 0 ? "No products found" : "No products match your filters"}
-            description={
-              products.length === 0
-                ? "We do not have stack-ready products for this category yet."
-                : "Try adjusting your filters to see more results."
-            }
-            variant="card"
-            action={
-              products.length > 0 ? (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setFilters({});
-                    setSortBy('name');
-                  }}
-                >
-                  Clear Filters
-                </Button>
-              ) : undefined
-            }
-          />
+        {isResearchOnly ? (
+          /* Research-only compounds are documented, not sold. No shopping
+             surface — just a prominent safety disclaimer and the wiki. */
+          <div className="rounded-lg border border-amber-300 bg-amber-50 p-5">
+            <h2 className="text-base font-semibold text-amber-900">
+              Reference information only — not for sale
+            </h2>
+            <p className="mt-1.5 text-sm leading-6 text-amber-800">
+              {supplement.supplement_name} is a research compound or prescription
+              medication, not a dietary supplement. SuppStack does not sell it and does
+              not facilitate its purchase. This page exists for education only and is not
+              medical advice. Talk to a licensed healthcare professional before
+              considering anything described here.
+            </p>
+          </div>
         ) : (
           <>
-            <Grid cols={{ sm: 2, md: 3, lg: 4 }} gap={4}>
-              {displayedProducts.map((product) => (
-                <ProductCard key={product.product_id} product={product} />
-              ))}
-            </Grid>
+            {/* Filter Panel */}
+            <ProductFilterPanel
+              products={products}
+              filters={filters}
+              sortBy={sortBy}
+              onFiltersChange={setFilters}
+              onSortChange={setSortBy}
+              totalResults={filteredProducts.length}
+            />
 
-            {hasMore && (
-              <div className="text-center pt-6">
-                <Button variant="outline" onClick={loadMoreProducts}>
-                  Load More Products ({filteredProducts.length - displayedProducts.length} remaining)
-                </Button>
-              </div>
+            {filteredProducts.length === 0 ? (
+              <EmptyState
+                icon="📦"
+                title={products.length === 0 ? "No products found" : "No products match your filters"}
+                description={
+                  products.length === 0
+                    ? "We do not have stack-ready products for this category yet."
+                    : "Try adjusting your filters to see more results."
+                }
+                variant="card"
+                action={
+                  products.length > 0 ? (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setFilters({});
+                        setSortBy('name');
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  ) : undefined
+                }
+              />
+            ) : (
+              <>
+                <Grid cols={{ sm: 2, md: 3, lg: 4 }} gap={4}>
+                  {displayedProducts.map((product) => (
+                    <ProductCard key={product.product_id} product={product} />
+                  ))}
+                </Grid>
+
+                {hasMore && (
+                  <div className="text-center pt-6">
+                    <Button variant="outline" onClick={loadMoreProducts}>
+                      Load More Products ({filteredProducts.length - displayedProducts.length} remaining)
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
+
+            {/* Compare Products — only for database-backed products, since the
+                compare picker queries Supabase and local catalog products have no
+                rows there. */}
+            {products.filter(
+              (product) =>
+                !String(product.product_id).startsWith('real-') &&
+                !String(product.product_id).startsWith('catalog-')
+            ).length >= 2 && <CompareProducts supplementId={supplementId} />}
           </>
         )}
 
-        {/* Compare Products — only for database-backed products, since the
-            compare picker queries Supabase and local catalog products have no
-            rows there. */}
-        {products.filter(
-          (product) =>
-            !String(product.product_id).startsWith('real-') &&
-            !String(product.product_id).startsWith('catalog-')
-        ).length >= 2 && <CompareProducts supplementId={supplementId} />}
+        {/* Knowledge / wiki surface — shown for every supplement so the
+            platform reads as a marketplace + wiki, not just a store. */}
+        <SupplementKnowledge supplement={supplement} knowledge={knowledge} />
       </Stack>
     </main>
   );
