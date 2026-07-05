@@ -32,10 +32,15 @@ const MANUAL_OVERRIDES = {
 };
 
 const HEADERS = {
-  accept: 'text/html,application/xhtml+xml',
+  accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'accept-language': 'en-US,en;q=0.9',
   'user-agent':
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125 Safari/537.36 SuppStackLogoSourcer/1.0',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125 Safari/537.36',
 };
+
+function sleep(ms) {
+  return new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
+}
 
 async function fetchWithTimeout(url, init = {}, timeoutMs = 12000) {
   const controller = new AbortController();
@@ -45,6 +50,16 @@ async function fetchWithTimeout(url, init = {}, timeoutMs = 12000) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+/** Storefronts rate-limit bursts aggressively; back off through 429s. */
+async function fetchWithRetry(url, init = {}, attempts = 4) {
+  let response = await fetchWithTimeout(url, init);
+  for (let attempt = 1; attempt < attempts && response.status === 429; attempt += 1) {
+    await sleep(8000 * attempt);
+    response = await fetchWithTimeout(url, init);
+  }
+  return response;
 }
 
 function parseIconLinks(html, baseUrl) {
@@ -86,6 +101,22 @@ function parseIconLinks(html, baseUrl) {
   return icons.sort((a, b) => b.score - a.score);
 }
 
+/**
+ * Icon links usually request a 32px rendition; ask the Shopify CDN for 180px
+ * instead (it never upscales past the source asset, so this is safe).
+ */
+function upsizeShopifyIcon(url) {
+  try {
+    const parsed = new URL(url);
+    if (!/\/cdn\/shop\//.test(parsed.pathname)) return url;
+    if (parsed.searchParams.has('width')) parsed.searchParams.set('width', '180');
+    if (parsed.searchParams.has('height')) parsed.searchParams.set('height', '180');
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 async function verifyImage(url) {
   try {
     const response = await fetchWithTimeout(url, { headers: { ...HEADERS, accept: 'image/*' } });
@@ -105,11 +136,13 @@ async function resolveLogo(domain) {
   const base = `https://${domain}/`;
 
   try {
-    const response = await fetchWithTimeout(base, { headers: HEADERS });
+    const response = await fetchWithRetry(base, { headers: HEADERS });
     if (response.ok) {
       const html = await response.text();
       for (const icon of parseIconLinks(html, response.url || base).slice(0, 4)) {
-        if (await verifyImage(icon.url)) return icon.url;
+        const upsized = upsizeShopifyIcon(icon.url);
+        if (await verifyImage(upsized)) return upsized;
+        if (upsized !== icon.url && (await verifyImage(icon.url))) return icon.url;
       }
     }
   } catch {
@@ -135,6 +168,7 @@ async function main() {
     const logo = await resolveLogo(domain);
     console.log(logo ? `OK    ${domain} -> ${logo}` : `MISS  ${domain}`);
     if (logo) entries.push([domain, logo]);
+    await sleep(1500);
   }
 
   const file = `/**

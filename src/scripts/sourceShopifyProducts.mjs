@@ -9,6 +9,8 @@
  * - Candidates are collected across ALL stores and ranked globally, penalizing
  *   combo products ("+", "with", "&") and bulk powders (unless the search term
  *   asks for a powder).
+ * - A per-brand reuse penalty spreads picks across merchants so the storefront
+ *   never over-indexes on a single house brand.
  * - The variant is chosen by token overlap between variant title and the
  *   product handle/title, so a "50 Billion CFU / 60 Capsules" listing does not
  *   silently resolve to the 1-Billion variant.
@@ -26,6 +28,11 @@ import { writeFile } from 'node:fs/promises';
 
 const OUTPUT_PATH = new URL('../lib/catalog/shopify-sourced-products.ts', import.meta.url);
 
+/**
+ * Each store was verified live before inclusion: /search/suggest.json returns
+ * product JSON, /products/{handle}.js resolves, and /cart/{variant}:1
+ * permalinks redirect into a working checkout.
+ */
 const STORES = [
   { domain: 'nutricost.com', brandId: 'nutricost', brandName: 'Nutricost' },
   { domain: 'doublewoodsupplements.com', brandId: 'double-wood', brandName: 'Double Wood Supplements' },
@@ -33,7 +40,28 @@ const STORES = [
   { domain: 'bulksupplements.com', brandId: 'bulksupplements', brandName: 'BulkSupplements' },
   { domain: 'horbaach.com', brandId: 'horbaach', brandName: 'Horbaach' },
   { domain: 'www.pipingrock.com', brandId: 'piping-rock', brandName: 'Piping Rock' },
+  { domain: 'carlsonlabs.com', brandId: 'carlson-labs', brandName: 'Carlson Labs' },
+  { domain: 'jarrow.com', brandId: 'jarrow-formulas', brandName: 'Jarrow Formulas' },
+  { domain: 'solaray.com', brandId: 'solaray', brandName: 'Solaray' },
+  { domain: 'naturemade.com', brandId: 'nature-made', brandName: 'Nature Made' },
+  { domain: 'naturesbounty.com', brandId: 'natures-bounty', brandName: "Nature's Bounty" },
+  { domain: 'zhounutrition.com', brandId: 'zhou-nutrition', brandName: 'Zhou Nutrition' },
+  { domain: 'naturewise.com', brandId: 'naturewise', brandName: 'NatureWise' },
+  { domain: 'maryruthorganics.com', brandId: 'maryruth-organics', brandName: 'MaryRuth Organics' },
+  { domain: 'codeage.com', brandId: 'codeage', brandName: 'Codeage' },
+  { domain: 'globalhealing.com', brandId: 'global-healing', brandName: 'Global Healing' },
+  { domain: 'toniiq.com', brandId: 'toniiq', brandName: 'Toniiq' },
+  { domain: 'bronsonvitamins.com', brandId: 'bronson', brandName: 'Bronson' },
+  { domain: 'nusapure.com', brandId: 'nusapure', brandName: 'NusaPure' },
+  { domain: 'purebulk.com', brandId: 'purebulk', brandName: 'PureBulk' },
 ];
+
+/**
+ * Score penalty per prior pick from the same brand. Keeps the storefront from
+ * over-indexing on any single house brand while still letting the cleanest
+ * title match win when the alternatives are poor.
+ */
+const BRAND_REUSE_PENALTY = 1.5;
 
 /** Catalog supplements without hand-curated seeds in supplement-catalog.ts. */
 const SUPPLEMENTS = [
@@ -160,12 +188,51 @@ function comboPenalty(title, searchTerm) {
   let penalty = 0;
   if (/[+]/.test(title)) penalty += 4;
   if (/\bwith\b/i.test(title)) penalty += 2;
+  if (/\bplus\b/i.test(title) && !/plus/i.test(searchTerm)) penalty += 2;
   if (/&/.test(title)) penalty += 2;
   if (/\bcomplex\b/i.test(title) && !/complex/i.test(searchTerm)) penalty += 1;
+  if (/\bsoothe\b|\bcalm\b|\bblend\b|\bformula\b/i.test(title) && !/soothe|calm|blend|formula/i.test(searchTerm)) penalty += 3;
   if (/\bgumm/i.test(title)) penalty += 1;
   if (/\bpowder\b/i.test(title) && !/powder/i.test(searchTerm)) penalty += 3;
   if (/\bfor dogs?\b|\bfor cats?\b|\bpets?\b/i.test(title)) penalty += 20;
+  // Chemically different compounds that share a search token (e.g. inositol
+  // hexanicotinate is a niacin form, not myo-inositol).
+  if (/\bhexanicotinate\b|\bnicotinate\b/i.test(title)) penalty += 20;
   penalty += Math.max(0, tokenize(title).length - 6) * 0.25;
+  return penalty;
+}
+
+const GENERIC_INGREDIENT_TOKENS = new Set([
+  'oil', 'root', 'extract', 'seed', 'fiber', 'husk', 'acid', 'complex', 'mushroom',
+  'peptides', 'fish', 'tea', 'balm', 'leaf', 'green', 'apple', 'cider', 'vinegar',
+  'liver', 'monohydrate', 'glycinate', 'citrate', 'malate', 'vitamin',
+]);
+
+/** Tokens that identify a specific catalog ingredient (e.g. "ashwagandha"). */
+const INGREDIENT_TOKENS = new Set([
+  ...SUPPLEMENTS.flatMap((entry) => tokenize(entry.name.replace(/vitamin/gi, 'vitamin ')))
+    .filter((token) => token.length > 2 && !GENERIC_INGREDIENT_TOKENS.has(token)),
+  // Common pairing ingredients that signal a blend even though they are not
+  // catalog supplements themselves (including frequent label misspellings
+  // like "gingko"), plus trend-marketing terms that misrepresent a single
+  // ingredient ("GLP-1 ...").
+  'goldenseal', 'bioperine', 'ashwaghanda', 'chamomile', 'lavender', 'lutein',
+  'gotu', 'kola', 'dmae', 'gingko', 'rosemary', 'serine', 'glp',
+]);
+
+/**
+ * Penalizes listings whose title or handle names OTHER catalog ingredients
+ * than the one being searched — those are multi-ingredient blends (e.g.
+ * "Melatonin + Magnesium", handle "amen-magnesium-citrate-vitaminb6"), which
+ * would misrepresent the supplement page they'd be attached to.
+ */
+function crossIngredientPenalty(text, searchTerm) {
+  const searchTokens = new Set(tokenize(searchTerm));
+  let penalty = 0;
+  for (const token of new Set(tokenize(String(text).replace(/vitamin/gi, 'vitamin ')))) {
+    if (INGREDIENT_TOKENS.has(token) && !searchTokens.has(token)) penalty += 3;
+  }
+  if (/vitamin\s*[a-k]?\d*/i.test(text) && !/vitamin/i.test(searchTerm)) penalty += 2;
   return penalty;
 }
 
@@ -177,6 +244,15 @@ const UNIT_PATTERN =
   /(?:^|[^0-9a-z])(\d{2,4})\s*-?\s*(?:(?!mg\b|mcg\b|iu\b|g\b|oz\b|ml\b|billion\b|million\b|cfu\b)[a-z]+\s+){0,2}(?:veggie capsules|veggie caps|veg capsules|veg caps|capsules|caps|softgels|soft gels|gels|caplets|tablets|gummies|chewables|vcaps|lozenges|sticks?|packets?|count|ct)\b/i;
 
 const SERVINGS_PATTERN = /(?:^|[^0-9a-z])(\d{2,4})\s*-?\s*servings\b/i;
+
+/** "a 150-day supply" — labels equate a day's dose with a serving. */
+const DAY_SUPPLY_PATTERN = /(?:^|[^0-9a-z])(\d{2,4})\s*-?\s*day supply\b/i;
+
+/** Supplement-facts line: "Servings Per Container: 45" (page HTML). */
+const SERVINGS_PER_CONTAINER_PATTERN = /servings? per container[^0-9]{0,12}(\d{1,4})/i;
+
+/** "2-Pack" / "2 Bottles" bundles multiply the per-bottle unit count. */
+const PACK_PATTERN = /(\d{1,2})\s*-?\s*(?:pack|bottles)\b/i;
 
 const WORD_NUMBERS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
 
@@ -192,45 +268,108 @@ function matchNumber(text, pattern) {
  */
 function parsePerServing(description) {
   const text = description.toLowerCase();
-  const unitWords = '(?:veggie\\s+|veg\\s+)?(?:capsules?|softgels?|soft gels?|tablets?|caplets?|caps|gummies)';
-  const numberWord = '(\\d|one|two|three|four|five|six)';
+  // Up to two adjectives may sit between the number and the unit ("2 quick
+  // release capsules", "3 veggie caps").
+  const unitWords =
+    '(?:[a-z]+\\s+){0,2}(?:capsules?|softgels?|soft gels?|tablets?|caplets?|caps|vegcaps?|vcaps?|gummies)';
+  // Digit boundaries so the "5" inside "135 Capsules" can never match.
+  const numberWord = '((?<![0-9])\\d(?![0-9])|one|two|three|four|five|six)';
   const match =
-    text.match(new RegExp(`serving size[^a-z0-9]{0,5}(?:consists of\\s*)?${numberWord}\\s*${unitWords}`)) ||
+    text.match(new RegExp(`serving size(?:\\s+(?:is|of))?[^a-z0-9]{0,5}(?:consists of\\s*)?${numberWord}\\s*${unitWords}`)) ||
     text.match(new RegExp(`(?:each serving|per serving)[^.]{0,40}?${numberWord}\\s*${unitWords}`)) ||
-    text.match(new RegExp(`${numberWord}\\s*${unitWords}\\s*per serving`));
+    text.match(new RegExp(`${numberWord}\\s*${unitWords}\\s*per serving`)) ||
+    text.match(new RegExp(`(?:take\\s+)?${numberWord}\\s*${unitWords}\\s*(?:daily|per day|a day|each day)`));
   if (!match) return null;
   const value = WORD_NUMBERS[match[1]] ?? Number(match[1]);
   return value >= 1 && value <= 6 ? value : null;
 }
 
-function defaultServings(title) {
-  if (/\bsoftgels?\b|\bcapsules?\b|\btablets?\b|\bcaps\b|\bcaplets?\b/i.test(title)) return 60;
-  if (/\bpowder\b/i.test(title)) return 30;
-  if (/\bliquid\b|\bfl oz\b|\boil\b/i.test(title)) return 32;
-  return 60;
+/** Fetches the rendered product page as tag-stripped text (for
+ * supplement-facts prose that never appears in the .js description). */
+async function fetchPageText(store, handle) {
+  const url = `https://${store.domain}/products/${handle}`;
+  const init = {
+    headers: {
+      accept: 'text/html,application/xhtml+xml',
+      'user-agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125 Safari/537.36',
+    },
+    redirect: 'follow',
+  };
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+    try {
+      const response = await fetch(url, { ...init, signal: controller.signal });
+      if (response.status === 429 || response.status === 503) {
+        await new Promise((resolvePromise) => setTimeout(resolvePromise, 5000 * (attempt + 1)));
+        continue;
+      }
+      if (!response.ok) return '';
+      const html = await response.text();
+      return html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ');
+    } catch {
+      return '';
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  return '';
 }
 
 /**
  * Servings = units / units-per-serving. Unit counts come from the variant
- * title, product title, or handle ("...-240-softgels"); units-per-serving
- * from "Serving Size: N capsules" prose. When the merchant states a servings
- * figure directly, the smaller of the two estimates wins (servings never
- * exceed the bottle's unit count).
+ * title (including bare-number variants like "40"), product title, or handle
+ * ("...-240-softgels"), multiplied for "2-Pack"/"2 Bottles" bundles.
+ *
+ * A unit count alone is NOT serving evidence — serving sizes of 2-3 units
+ * are common and usually printed only in the page's supplement facts, so an
+ * uncorroborated unit count would overstate servings (and understate
+ * $/serving) by 2-3x. When the .js description carries no per-serving or
+ * stated-servings signal, the rendered product page is fetched and scanned
+ * for "Servings Per Container: N" / "Serving Size: N". Returns null — never
+ * a made-up number — when no listing surface supports a figure.
  */
-function parseServings(productJson, variant) {
+async function parseServings(productJson, variant, store) {
   const description = String(productJson.description || '').replace(/<[^>]+>/g, ' ');
-  const unitCount =
+  const titleAndVariant = `${variant?.title ?? ''} ${productJson.title}`;
+  const packCount = matchNumber(titleAndVariant, PACK_PATTERN) ?? 1;
+  const bareVariantCount = /^\d{1,4}$/.test(String(variant?.title ?? '').trim())
+    ? Number(String(variant.title).trim())
+    : null;
+  const unitsPerBottle =
     matchNumber(variant?.title, UNIT_PATTERN) ??
+    bareVariantCount ??
     matchNumber(productJson.title, UNIT_PATTERN) ??
     matchNumber(String(productJson.handle || '').replace(/-/g, ' '), UNIT_PATTERN) ??
     matchNumber(description, UNIT_PATTERN);
-  const perServing = parsePerServing(description) ?? 1;
-  const statedServings =
-    matchNumber(description, SERVINGS_PATTERN) ?? matchNumber(productJson.title, SERVINGS_PATTERN);
-  const derivedServings = unitCount ? Math.max(1, Math.floor(unitCount / perServing)) : null;
+  const totalUnits = unitsPerBottle ? unitsPerBottle * packCount : null;
+
+  let perServing = parsePerServing(description);
+  let statedServings =
+    matchNumber(description, SERVINGS_PATTERN) ??
+    matchNumber(productJson.title, SERVINGS_PATTERN) ??
+    matchNumber(description, DAY_SUPPLY_PATTERN);
+
+  if (perServing == null && statedServings == null && totalUnits) {
+    const pageText = await fetchPageText(store, productJson.handle);
+    // Only the specific supplement-facts phrasing is trusted from page HTML;
+    // a generic "N servings" match could come from cross-sell modules.
+    const perContainer = matchNumber(pageText, SERVINGS_PER_CONTAINER_PATTERN);
+    if (perContainer) {
+      statedServings = perContainer * packCount;
+    } else {
+      perServing = parsePerServing(pageText);
+    }
+  }
+
+  const derivedServings =
+    totalUnits && perServing != null ? Math.max(1, Math.floor(totalUnits / perServing)) : null;
 
   if (statedServings && derivedServings) return Math.min(statedServings, derivedServings);
-  return statedServings ?? derivedServings ?? defaultServings(productJson.title);
+  if (statedServings) return Math.min(statedServings, totalUnits ?? statedServings);
+  return derivedServings ?? null;
 }
 
 /**
@@ -271,13 +410,36 @@ async function searchStore(store, searchTerm) {
       store,
       handle: product.handle,
       title: product.title,
-      score: comboPenalty(product.title, searchTerm) + index * 0.05,
+      score:
+        comboPenalty(product.title, searchTerm) +
+        crossIngredientPenalty(`${product.title} ${product.handle}`, searchTerm) +
+        index * 0.05,
     }));
 }
 
-async function resolveProduct(store, handle) {
+/**
+ * Some stores (e.g. Piping Rock) are marketplaces carrying third-party
+ * brands. A pick whose live vendor is not the store's house brand would be
+ * misattributed in brand filters, logos, and discovery — skip it.
+ */
+function vendorMatchesStore(vendor, store) {
+  if (!vendor) return true;
+  const vendorTokens = new Set(tokenize(vendor));
+  return tokenize(store.brandName).some((token) => vendorTokens.has(token));
+}
+
+async function resolveProduct(store, handle, searchTerm) {
   const productJson = await fetchJson(`https://${store.domain}/products/${handle}.js`);
   if (!productJson) return null;
+
+  if (!vendorMatchesStore(productJson.vendor, store)) return null;
+
+  // Blends often keep their title clean and bury the other ingredients in
+  // the description ("Our complex contains ... Ginkgo Biloba, Gotu Kola").
+  const descriptionText = String(productJson.description || '')
+    .replace(/<[^>]+>/g, ' ')
+    .slice(0, 600);
+  if (searchTerm && crossIngredientPenalty(descriptionText, searchTerm) >= 6) return null;
 
   const variant = pickVariant(productJson);
   if (!variant) return null;
@@ -297,29 +459,39 @@ async function resolveProduct(store, handle) {
     variantId: String(variant.id),
     price: Math.round(Number(variant.price)) / 100,
     image: image.startsWith('//') ? `https:${image}` : image,
-    servings: parseServings(productJson, variant),
+    servings: await parseServings(productJson, variant, store),
     url: `https://${store.domain}/products/${handle}`,
   };
 }
 
-async function sourceSupplement(entry) {
-  for (const searchTerm of entry.searchTerms) {
-    const candidateGroups = await Promise.all(STORES.map((store) => searchStore(store, searchTerm)));
-    const candidates = candidateGroups
-      .flatMap((group, storeIndex) => group.map((candidate) => ({ ...candidate, score: candidate.score + storeIndex * 0.1 })))
-      .sort((a, b) => a.score - b.score);
+async function sourceSupplement(entry, brandUsage) {
+  // First pass applies the brand-diversity penalty; if no candidate resolves,
+  // retry on match quality alone so diversity never costs catalog coverage.
+  for (const reusePenalty of [BRAND_REUSE_PENALTY, 0]) {
+    for (const searchTerm of entry.searchTerms) {
+      const candidateGroups = await Promise.all(STORES.map((store) => searchStore(store, searchTerm)));
+      const candidates = candidateGroups
+        .flat()
+        .map((candidate) => ({
+          ...candidate,
+          score: candidate.score + (brandUsage.get(candidate.store.brandId) ?? 0) * reusePenalty,
+        }))
+        .sort((a, b) => a.score - b.score);
 
-    for (const candidate of candidates.slice(0, 4)) {
-      const resolved = await resolveProduct(candidate.store, candidate.handle);
-      if (!resolved || !resolved.variantId || !resolved.price) continue;
+      for (const candidate of candidates.slice(0, 8)) {
+        const resolved = await resolveProduct(candidate.store, candidate.handle, searchTerm);
+        if (!resolved || !resolved.variantId || !resolved.price) continue;
 
-      return {
-        supplementName: entry.name,
-        store: candidate.store.domain,
-        brandId: candidate.store.brandId,
-        brandName: candidate.store.brandName,
-        ...resolved,
-      };
+        brandUsage.set(candidate.store.brandId, (brandUsage.get(candidate.store.brandId) ?? 0) + 1);
+
+        return {
+          supplementName: entry.name,
+          store: candidate.store.domain,
+          brandId: candidate.store.brandId,
+          brandName: candidate.store.brandName,
+          ...resolved,
+        };
+      }
     }
   }
 
@@ -334,20 +506,29 @@ function esc(value) {
   return String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
-function badgeFor(title) {
-  if (/powder/i.test(title)) return 'Bulk powder';
-  if (/gumm/i.test(title)) return 'Gummies';
-  if (/softgel/i.test(title)) return 'Softgels';
-  if (/tablet/i.test(title)) return 'Tablets';
-  if (/liquid|drops|oil\b|fl oz/i.test(title)) return 'Liquid';
-  return 'Capsules';
+/** Form badge from the full listing (variant + title), since e.g. "Bags /
+ * 500 grams" or "2 fl oz" only appear in the variant title. Returns null
+ * when the form isn't stated rather than guessing. */
+function badgeFor(text) {
+  if (/powder|\bbags?\b|\bgrams?\b(?![a-z])/i.test(text)) return 'Bulk powder';
+  if (/gumm/i.test(text)) return 'Gummies';
+  if (/chewable/i.test(text)) return 'Chewables';
+  if (/softgel|soft gel/i.test(text)) return 'Softgels';
+  if (/tablet|caplet/i.test(text)) return 'Tablets';
+  if (/liquid|drops|\boil\b|fl oz|\boz\b/i.test(text)) return 'Liquid';
+  if (/capsule|\bcaps\b|vcap/i.test(text)) return 'Capsules';
+  return null;
 }
 
 function emitSeed(entry) {
   const slug = slugify(entry.supplementName);
   const cleanName = entry.displayName.replace(/\s+\|.*$/, '').trim();
   const description = `${entry.brandName} ${entry.supplementName.toLowerCase()} pick with a verified merchant listing, so shoppers can move straight from the supplement page into secure cart checkout.`;
-  const servings = Math.max(1, Number(entry.servings) || 30);
+  // 0 = servings unverifiable from the listing; the UI hides per-serving
+  // math for these rather than displaying an invented number.
+  const servings = Number(entry.servings) > 0 ? Number(entry.servings) : 0;
+  const formBadge = badgeFor(`${entry.variantTitle ?? ''} ${entry.title}`);
+  const badges = ['Verified merchant', 'Verified variant', ...(formBadge ? [formBadge] : [])];
 
   return `  {
     product_id: 'real-${entry.brandId}-${slug}',
@@ -369,7 +550,7 @@ function emitSeed(entry) {
     commerce_channel: 'shopify',
     ucp_enabled: true,
     inventory_status: 'in_stock',
-    quality_badges: ['Verified merchant', 'Verified variant', '${badgeFor(entry.title)}'],
+    quality_badges: [${badges.map((badge) => `'${esc(badge)}'`).join(', ')}],
     subscriptions_available: false,
     data_source: 'shopify_ucp',
   },`;
@@ -377,9 +558,10 @@ function emitSeed(entry) {
 
 async function main() {
   const results = [];
+  const brandUsage = new Map();
 
   for (const entry of SUPPLEMENTS) {
-    const result = await sourceSupplement(entry);
+    const result = await sourceSupplement(entry, brandUsage);
     results.push(result);
     console.log(
       result.error
@@ -387,6 +569,9 @@ async function main() {
         : `OK    ${entry.name} -> [${result.store}] ${result.displayName} ($${result.price}, ${result.servings} servings, variant ${result.variantId})`
     );
   }
+
+  const distribution = [...brandUsage.entries()].sort((a, b) => b[1] - a[1]);
+  console.log(`\nBrand distribution: ${distribution.map(([brand, count]) => `${brand}=${count}`).join(', ')}`);
 
   const misses = results.filter((result) => result.error);
   if (misses.length) {

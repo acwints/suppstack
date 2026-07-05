@@ -72,9 +72,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const { isStartingCheckout, startCheckout } = useCommerceCheckout();
 
   // Price calculations
+  // servings_per_container of 0 means the merchant listing doesn't state a
+  // serving count; per-serving math is hidden rather than invented.
   const { costPerServing, monthlyCost } = usePriceCalculations(
     product?.product_price || 0,
-    product?.servings_per_container || 1,
+    product?.servings_per_container || 0,
     product?.servings_per_day || 1
   );
 
@@ -245,27 +247,30 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             ${formatPrice(product.product_price)}
           </div>
 
-          {/* Stats Grid */}
-          <Grid cols={{ sm: 3 }} gap={4}>
-            <Card padding="md" className="text-center bg-gray-50">
-              <div className="text-xl font-semibold text-gray-900">
-                ${formatPrice(costPerServing)}
-              </div>
-              <div className="text-sm text-gray-600">per serving</div>
-            </Card>
-            <Card padding="md" className="text-center bg-gray-50">
-              <div className="text-xl font-semibold text-gray-900">
-                ${formatPrice(monthlyCost)}
-              </div>
-              <div className="text-sm text-gray-600">per month</div>
-            </Card>
-            <Card padding="md" className="text-center bg-gray-50">
-              <div className="text-xl font-semibold text-gray-900">
-                {product.servings_per_container}
-              </div>
-              <div className="text-sm text-gray-600">servings</div>
-            </Card>
-          </Grid>
+          {/* Stats Grid — hidden when the merchant listing doesn't state a
+              serving count, rather than showing invented numbers */}
+          {product.servings_per_container > 0 && (
+            <Grid cols={{ sm: 3 }} gap={4}>
+              <Card padding="md" className="text-center bg-gray-50">
+                <div className="text-xl font-semibold text-gray-900">
+                  ${formatPrice(costPerServing)}
+                </div>
+                <div className="text-sm text-gray-600">per serving</div>
+              </Card>
+              <Card padding="md" className="text-center bg-gray-50">
+                <div className="text-xl font-semibold text-gray-900">
+                  ${formatPrice(monthlyCost)}
+                </div>
+                <div className="text-sm text-gray-600">per month</div>
+              </Card>
+              <Card padding="md" className="text-center bg-gray-50">
+                <div className="text-xl font-semibold text-gray-900">
+                  {product.servings_per_container}
+                </div>
+                <div className="text-sm text-gray-600">servings</div>
+              </Card>
+            </Grid>
+          )}
 
           {/* Description */}
           {product.product_description && (

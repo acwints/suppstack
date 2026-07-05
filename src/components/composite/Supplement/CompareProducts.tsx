@@ -265,19 +265,19 @@ export function CompareProducts({
                   <tr className="border-b border-gray-100">
                     <td className="py-2.5 pr-4 text-gray-600">Per Serving</td>
                     {products.map((p) => {
-                      const costs = products.map(pp => costPerServing(pp));
-                      const lowest = Math.min(...costs);
+                      const costs = products.map(pp => costPerServing(pp)).filter(cost => cost > 0);
+                      const lowest = costs.length > 0 ? Math.min(...costs) : 0;
                       const thisCost = costPerServing(p);
                       return (
                         <td
                           key={p.product_id}
                           className={cn(
                             'py-2.5 px-2 text-center font-medium',
-                            thisCost === lowest ? 'text-green-600' : 'text-gray-900'
+                            thisCost > 0 && thisCost === lowest ? 'text-green-600' : 'text-gray-900'
                           )}
                         >
-                          ${formatPrice(thisCost)}
-                          {thisCost === lowest && (
+                          {thisCost > 0 ? `$${formatPrice(thisCost)}` : '—'}
+                          {thisCost > 0 && thisCost === lowest && (
                             <Badge variant="success" size="sm" className="ml-1">Best</Badge>
                           )}
                         </td>
@@ -287,18 +287,18 @@ export function CompareProducts({
                   <tr className="border-b border-gray-100">
                     <td className="py-2.5 pr-4 text-gray-600">Monthly Cost</td>
                     {products.map((p) => {
-                      const costs = products.map(pp => monthlyCost(pp));
-                      const lowest = Math.min(...costs);
+                      const costs = products.map(pp => monthlyCost(pp)).filter(cost => cost > 0);
+                      const lowest = costs.length > 0 ? Math.min(...costs) : 0;
                       const thisCost = monthlyCost(p);
                       return (
                         <td
                           key={p.product_id}
                           className={cn(
                             'py-2.5 px-2 text-center font-medium',
-                            thisCost === lowest ? 'text-green-600' : 'text-gray-900'
+                            thisCost > 0 && thisCost === lowest ? 'text-green-600' : 'text-gray-900'
                           )}
                         >
-                          ${formatPrice(thisCost)}
+                          {thisCost > 0 ? `$${formatPrice(thisCost)}` : '—'}
                         </td>
                       );
                     })}
@@ -307,7 +307,7 @@ export function CompareProducts({
                     <td className="py-2.5 pr-4 text-gray-600">Servings</td>
                     {products.map((p) => (
                       <td key={p.product_id} className="py-2.5 px-2 text-center text-gray-900">
-                        {p.servings_per_container}
+                        {p.servings_per_container > 0 ? p.servings_per_container : '—'}
                       </td>
                     ))}
                   </tr>

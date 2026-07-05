@@ -153,9 +153,11 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
             <span className="text-lg font-semibold text-gray-900">
               ${formatPrice(product.product_price)}
             </span>
-            <span className="text-xs text-gray-500">
-              ${formatPrice(costPerServing)}/serving
-            </span>
+            {costPerServing > 0 && (
+              <span className="text-xs text-gray-500">
+                ${formatPrice(costPerServing)}/serving
+              </span>
+            )}
           </div>
         </div>
       </Link>
