@@ -90,91 +90,16 @@
   }
 }
 
+/*
+ * Component styling lives in the `components/ui` primitives (Button, Card,
+ * Badge, Input, ...). This layer only carries the handful of page-level
+ * classes that are actually referenced; everything else was dead CSS that
+ * duplicated the primitives and has been removed.
+ */
 @layer components {
-  /* Button Styles - Clean, minimal */
-  .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 rounded font-medium text-sm transition-all duration-150;
-    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900;
-  }
-
-  .btn-primary {
-    @apply bg-gray-900 text-white hover:bg-gray-800;
-  }
-
-  .btn-secondary {
-    @apply bg-white text-gray-900 border border-gray-200 hover:bg-gray-50 hover:border-gray-300;
-  }
-
-  .btn-accent {
-    @apply bg-accent-600 text-white hover:bg-accent-700;
-  }
-
-  .btn-outline {
-    @apply border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 bg-white;
-  }
-
-  .btn-ghost {
-    @apply text-gray-600 hover:text-gray-900 hover:bg-gray-100;
-  }
-
-  .btn-link {
-    @apply text-gray-900 underline underline-offset-4 hover:text-gray-600 p-0;
-  }
-
-  /* Card Styles - Editorial, minimal borders */
-  .card {
-    @apply bg-white border border-gray-100 rounded-lg;
-    @apply transition-all duration-150;
-  }
-
-  .card:hover {
-    @apply border-gray-200;
-  }
-
-  .card-header {
-    @apply p-6 border-b border-gray-100;
-  }
-
-  .card-body {
-    @apply p-6;
-  }
-
-  .card-footer {
-    @apply p-6 border-t border-gray-100;
-  }
-
-  /* Badge Styles - Subtle */
-  .badge {
-    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
-  }
-
-  .badge-primary {
-    @apply bg-gray-100 text-gray-700;
-  }
-
-  .badge-accent {
-    @apply bg-accent-50 text-accent-700;
-  }
-
-  .badge-success {
-    @apply bg-green-50 text-green-700;
-  }
-
-  .badge-warning {
-    @apply bg-amber-50 text-amber-700;
-  }
-
-  .badge-error {
-    @apply bg-red-50 text-red-700;
-  }
-
   /* Layout Utilities */
   .container-custom {
     @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-
-  .container-narrow {
-    @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
   /* Editorial section styles */
@@ -185,71 +110,6 @@
   .section-header h2 {
     @apply text-sm font-sans font-semibold uppercase tracking-wider text-gray-900;
   }
-
-  /* Divider */
-  .divider {
-    @apply w-full h-px bg-gray-200;
-  }
-
-  .divider-thick {
-    @apply w-full h-0.5 bg-gray-900;
-  }
-
-  /* Modern editorial card */
-  .editorial-card {
-    @apply bg-white border-t border-gray-200 pt-6;
-    @apply hover:bg-gray-50 transition-colors duration-150;
-  }
-
-  /* Link styles */
-  .link-underline {
-    @apply underline underline-offset-4 decoration-gray-300 hover:decoration-gray-900 transition-colors;
-  }
-
-  /* Input styles */
-  .input-editorial {
-    @apply w-full px-4 py-3 border border-gray-200 rounded bg-white;
-    @apply focus:border-gray-900 focus:ring-1 focus:ring-gray-900 focus:outline-none;
-    @apply placeholder-gray-400 text-gray-900;
-    @apply transition-colors duration-150;
-  }
-
-  /* Button - Editorial primary */
-  .btn-editorial {
-    @apply bg-gray-900 text-white px-6 py-3 font-medium rounded;
-    @apply hover:bg-gray-800 transition-colors duration-150;
-    @apply focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2;
-  }
-
-  /* Search bar */
-  .search-editorial {
-    @apply w-full px-4 py-3 border border-gray-200 rounded-lg bg-white;
-    @apply focus:border-gray-400 focus:ring-0 focus:outline-none;
-    @apply placeholder-gray-400 text-gray-900;
-    @apply transition-colors duration-150;
-  }
-}
-
-/* Line clamp utilities */
-.line-clamp-1 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-}
-
-.line-clamp-2 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.line-clamp-3 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
 }
 
 /* Custom scrollbar - Minimal */
@@ -269,70 +129,5 @@
   @apply bg-gray-300;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(16px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.98);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* Utility classes */
-.text-balance {
-  text-wrap: balance;
-}
-
-/* Editorial accent underline */
-.accent-underline {
-  position: relative;
-}
-
-.accent-underline::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: #e87a2e;
-}
-
-/* Subtle hover state for links */
-.hover-lift {
-  @apply transition-transform duration-150;
-}
-
-.hover-lift:hover {
-  transform: translateY(-1px);
-}
-
-/* Focus visible for accessibility */
-.focus-ring {
-  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2;
-}
+/* Animation keyframes (animate-fade-in / animate-scale-in) are defined in
+   tailwind.config.ts alongside the rest of the theme. */

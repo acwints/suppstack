@@ -2,7 +2,8 @@
 
 import { forwardRef, type HTMLAttributes } from 'react';
 import Image from 'next/image';
-import { cn, getInitials } from '@/lib/design-system';
+import { cn } from '@/lib/design-system';
+import { getInitials } from '@/lib/utils';
 
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 

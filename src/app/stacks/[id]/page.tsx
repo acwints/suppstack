@@ -13,7 +13,6 @@ import {
   FiCheck,
   FiShare2,
 } from 'react-icons/fi';
-import { FaYoutube, FaMicrophone, FaNewspaper, FaGlobe } from 'react-icons/fa';
 import { useAuth } from '@/app/context/AuthContext';
 import { useStacks, useStackLikes, useUserFollows } from '@/hooks';
 import {
@@ -27,16 +26,8 @@ import {
   Inline,
   useToast,
 } from '@/components/ui';
-import { StackCard, BuyStackPanel } from '@/components/composite/Stack';
+import { StackCard, BuyStackPanel, getStackSourceIcon } from '@/components/composite/Stack';
 import type { Stack as StackType } from '@/types';
-
-const sourceIcons: Record<string, JSX.Element> = {
-  youtube: <FaYoutube className="text-red-500" size={20} />,
-  podcast: <FaMicrophone className="text-purple-500" size={20} />,
-  article: <FaNewspaper className="text-gray-600" size={20} />,
-  interview: <FaMicrophone className="text-orange-500" size={20} />,
-  website: <FaGlobe className="text-gray-500" size={20} />,
-};
 
 export default function StackDetailPage() {
   const params = useParams();
@@ -142,9 +133,7 @@ export default function StackDetailPage() {
     }
   };
 
-  const getSourceIcon = (sourceType: string) => {
-    return sourceIcons[sourceType] || <FaGlobe className="text-gray-500" size={20} />;
-  };
+  const getSourceIcon = (sourceType: string) => getStackSourceIcon(sourceType, 20);
 
   if (isLoading) {
     return (
