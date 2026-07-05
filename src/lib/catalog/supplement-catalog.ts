@@ -2452,3 +2452,26 @@ export function findCatalogProductById(productId: string) {
 
   return createCatalogProductsForSupplement(supplement).find((product) => product.product_id === productId) ?? null;
 }
+
+function normalizeMerchantHost(host: string) {
+  return host.toLowerCase().replace(/^www\./, '');
+}
+
+/**
+ * The set of merchant hosts that appear in the curated catalog. Unauthenticated
+ * server routes (checkout, product-status) fetch merchant endpoints, so they
+ * must restrict outbound requests to these known hosts to avoid acting as an
+ * open proxy (SSRF).
+ */
+const ALLOWED_MERCHANT_HOSTS = new Set(
+  allCuratedProductSeeds
+    .map((seed) => seed.shopify_store_domain)
+    .filter((domain): domain is string => Boolean(domain))
+    .map(normalizeMerchantHost)
+);
+
+/** True when `host` (a bare hostname) is a merchant present in the catalog. */
+export function isAllowedMerchantHost(host?: string | null): boolean {
+  if (!host) return false;
+  return ALLOWED_MERCHANT_HOSTS.has(normalizeMerchantHost(host));
+}
