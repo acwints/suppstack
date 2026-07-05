@@ -2,7 +2,6 @@
 
 import { useEffect, useCallback } from 'react';
 import { FaTimes } from 'react-icons/fa';
-import Button from './Button';
 import { cn } from '@/lib/design-system/utils';
 
 export interface ModalProps {
@@ -123,58 +122,6 @@ export function Modal({
         )}
       </div>
     </div>
-  );
-}
-
-// Confirmation modal helper
-export interface ConfirmModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  title: string;
-  message: string;
-  confirmText?: string;
-  cancelText?: string;
-  variant?: 'danger' | 'warning' | 'info';
-  isLoading?: boolean;
-}
-
-export function ConfirmModal({
-  isOpen,
-  onClose,
-  onConfirm,
-  title,
-  message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
-  variant = 'info',
-  isLoading = false,
-}: ConfirmModalProps) {
-  const confirmVariant = variant === 'danger' ? 'danger' : 'primary';
-
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={title}
-      size="sm"
-      footer={
-        <>
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            {cancelText}
-          </Button>
-          <Button
-            variant={confirmVariant}
-            onClick={onConfirm}
-            isLoading={isLoading}
-          >
-            {confirmText}
-          </Button>
-        </>
-      }
-    >
-      <p className="text-gray-600">{message}</p>
-    </Modal>
   );
 }
 

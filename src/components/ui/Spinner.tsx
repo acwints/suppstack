@@ -40,19 +40,4 @@ export function Spinner({
   );
 }
 
-export interface LoadingOverlayProps {
-  message?: string;
-}
-
-export function LoadingOverlay({ message = 'Loading...' }: LoadingOverlayProps) {
-  return (
-    <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="text-center">
-        <Spinner size="lg" />
-        <p className="mt-4 text-gray-600 font-medium">{message}</p>
-      </div>
-    </div>
-  );
-}
-
 export default Spinner;

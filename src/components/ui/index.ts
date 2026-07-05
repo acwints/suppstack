@@ -17,8 +17,8 @@ export type { InputProps } from './Input';
 export { Select } from './Select';
 export type { SelectProps, SelectOption } from './Select';
 
-export { Spinner, LoadingOverlay } from './Spinner';
-export type { SpinnerProps, LoadingOverlayProps } from './Spinner';
+export { Spinner } from './Spinner';
+export type { SpinnerProps } from './Spinner';
 
 export {
   Skeleton,
@@ -29,15 +29,15 @@ export {
 } from './Skeleton';
 export type { SkeletonProps } from './Skeleton';
 
-export { Modal, ConfirmModal } from './Modal';
-export type { ModalProps, ConfirmModalProps } from './Modal';
+export { Modal } from './Modal';
+export type { ModalProps } from './Modal';
 
 // =============================================================================
 // Layout Primitives
 // =============================================================================
 
-export { Stack, Inline, Grid, Container } from './layout';
-export type { StackProps, InlineProps, GridProps, ContainerProps } from './layout';
+export { Stack, Inline, Grid } from './layout';
+export type { StackProps, InlineProps, GridProps } from './layout';
 
 // =============================================================================
 // New Components
@@ -49,14 +49,8 @@ export type { AvatarProps, AvatarSize } from './Avatar';
 export { EmptyState } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
 
-export { StatCard } from './StatCard';
-export type { StatCardProps, StatCardVariant } from './StatCard';
-
 export { Tabs, TabList, Tab } from './Tabs';
 export type { TabListProps, TabProps } from './Tabs';
-
-export { SortSelect } from './SortSelect';
-export type { SortSelectProps, SortOption } from './SortSelect';
 
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
