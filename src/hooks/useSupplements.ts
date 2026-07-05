@@ -4,6 +4,10 @@ import { useMemo } from 'react';
 import type { Supplement } from '@/types';
 import { SUPPLEMENT_CATEGORIES } from '@/types';
 import { supplementCatalog } from '@/lib/catalog/supplement-catalog';
+import {
+  groupSupplementsForBrowse,
+  type SupplementBrowseGroup,
+} from '@/lib/catalog/supplement-families';
 
 export interface UseSupplementsOptions {
   searchTerm?: string;
@@ -19,6 +23,11 @@ export interface UseSupplementsResult {
   refetch: () => Promise<void>;
   categories: CategoryWithCount[];
   filteredSupplements: Supplement[];
+  /**
+   * Browse tiles: ingredient families collapsed into single entries
+   * (one Creatine tile spanning Monohydrate and HCl), everything else 1:1.
+   */
+  browseGroups: SupplementBrowseGroup[];
 }
 
 interface CategoryWithCount {
@@ -42,14 +51,12 @@ export function useSupplements({
 }: UseSupplementsOptions = {}): UseSupplementsResult {
   const supplements = supplementCatalog;
 
-  // Calculate categories with counts
+  // Calculate categories with counts. Counts reflect browse tiles, so an
+  // ingredient family (e.g. Creatine) counts once even with multiple forms.
   const categories = useMemo((): CategoryWithCount[] => {
-    return SUPPLEMENT_CATEGORIES.map(cat => ({
-      id: cat.id,
-      name: cat.name,
-      icon: cat.icon,
-      count: cat.id === 'all'
-        ? supplements.length
+    return SUPPLEMENT_CATEGORIES.map(cat => {
+      const matching = cat.id === 'all'
+        ? supplements
         : supplements.filter(s => {
             const name = s.supplement_name.toLowerCase();
             const category = s.category?.toLowerCase() ?? '';
@@ -58,8 +65,15 @@ export function useSupplements({
               category === cat.name.toLowerCase() ||
               cat.keywords.some(k => name.includes(k) || category.includes(k))
             );
-          }).length,
-    }));
+          });
+
+      return {
+        id: cat.id,
+        name: cat.name,
+        icon: cat.icon,
+        count: groupSupplementsForBrowse(matching).length,
+      };
+    });
   }, [supplements]);
 
   // Filter and sort supplements
@@ -106,6 +120,20 @@ export function useSupplements({
     return result;
   }, [supplements, searchTerm, categoryId, sortBy]);
 
+  // Collapse ingredient families into single tiles, then re-sort so family
+  // tiles order by their own name/aggregate rather than a member's.
+  const browseGroups = useMemo(() => {
+    const groups = groupSupplementsForBrowse(filteredSupplements);
+
+    switch (sortBy) {
+      case 'popular':
+        return groups.sort((a, b) => (b.productCount ?? 0) - (a.productCount ?? 0));
+      case 'name':
+      default:
+        return groups.sort((a, b) => a.name.localeCompare(b.name));
+    }
+  }, [filteredSupplements, sortBy]);
+
   return {
     supplements,
     isLoading: false,
@@ -113,6 +141,7 @@ export function useSupplements({
     refetch: async () => {},
     categories,
     filteredSupplements,
+    browseGroups,
   };
 }
 

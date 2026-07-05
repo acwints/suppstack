@@ -2286,6 +2286,7 @@ function curatedStatsForSupplementName(supplementName: string) {
   return {
     productCount: products.length,
     averagePrice: products.reduce((total, product) => total + product.product_price, 0) / products.length,
+    lowestPrice: Math.min(...products.map((product) => product.product_price)),
   };
 }
 
@@ -2342,6 +2343,7 @@ export const supplementCatalog: Supplement[] = seeds.map((seed) => {
     // fallbacks are needed.
     product_count: curatedStats?.productCount,
     average_price: curatedStats?.averagePrice,
+    lowest_price: curatedStats?.lowestPrice,
   };
 });
 

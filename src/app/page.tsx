@@ -15,7 +15,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
 
-  const { supplements, filteredSupplements, isLoading } = useSupplements({
+  const { supplements, browseGroups, isLoading } = useSupplements({
     searchTerm,
     categoryId: selectedCategory,
     sortBy: sortBy as 'name' | 'popular',
@@ -46,7 +46,7 @@ export default function Home() {
             <Inline gap={4} align="center">
               <SortFilter value={sortBy} onChange={setSortBy} />
               <span className="text-sm text-gray-500">
-                {filteredSupplements.length} results
+                {browseGroups.length} results
               </span>
             </Inline>
           </Inline>
@@ -60,7 +60,7 @@ export default function Home() {
         ) : (
           <Stack gap={10}>
             <section>
-              <SupplementGrid supplements={filteredSupplements} />
+              <SupplementGrid groups={browseGroups} />
             </section>
 
             <section>
