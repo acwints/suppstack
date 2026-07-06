@@ -38,7 +38,7 @@ CREATE INDEX IF NOT EXISTS idx_products_shopify_variant_gid ON products(shopify_
 
 -- ── Checkout session tracking ────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS commerce_checkout_events (
-  event_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  event_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   product_id TEXT,
   supplement_id INTEGER REFERENCES supplements(supplement_id) ON DELETE SET NULL,
@@ -64,7 +64,7 @@ ALTER TABLE commerce_checkout_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE commerce_checkout_events FORCE ROW LEVEL SECURITY;
 
 CREATE TABLE IF NOT EXISTS shopify_merchant_capabilities (
-  capability_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  capability_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   store_domain VARCHAR(255) UNIQUE NOT NULL,
   origin TEXT,
   discovery_url TEXT,

@@ -79,13 +79,17 @@ tier); nothing is broken in the meantime.
 
 Follow `APP_STORE_SUBMISSION.md` in the repo root. Prerequisites only the
 owner can provide: an Apple Developer Program membership ($99/yr) and App
-Store Connect access. Key facts:
+Store Connect access. Note: current `main` contains only a thin `ios/`
+artifact set and does not include an Xcode workspace or Capacitor npm scripts,
+so the native project must be restored or regenerated before archive/upload.
+Key facts:
 
 - Bundle ID `com.suppstack.app`, app name SuppStack, Capacitor shell in
   `ios/` loading `https://suppstack.vercel.app` (config:
   `ios/App/App/capacitor.config.json`).
-- Build: `npm run build && npx cap sync ios`, then open
-  `ios/App/App.xcworkspace` in Xcode, set the signing team, archive, upload.
+- Intended build after restoring the native project: `npm run build &&
+  npx cap sync ios`, then open `ios/App/App.xcworkspace` in Xcode, set the
+  signing team, archive, upload.
 - Review-guideline landmines already accounted for in the docs: physical
   goods must use external checkout not IAP (3.1.3(e)); account deletion
   must be reachable in-app (5.1.1); add Sign in with Apple if Google

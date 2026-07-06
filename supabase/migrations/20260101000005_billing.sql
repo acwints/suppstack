@@ -10,7 +10,7 @@
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS user_entitlements (
-  entitlement_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  entitlement_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
 
   -- Entitlement identifier as configured in RevenueCat (e.g. 'premium').

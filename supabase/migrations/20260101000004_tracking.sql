@@ -4,9 +4,9 @@
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS supplement_logs (
-  log_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  log_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  product_id UUID REFERENCES products(product_id) ON DELETE CASCADE,
+  product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE,
   logged_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   log_date DATE DEFAULT CURRENT_DATE,
   time_of_day VARCHAR(20) DEFAULT 'morning',
@@ -20,9 +20,9 @@ CREATE TABLE IF NOT EXISTS supplement_logs (
 );
 
 CREATE TABLE IF NOT EXISTS user_supplement_settings (
-  setting_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  setting_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  product_id UUID REFERENCES products(product_id) ON DELETE CASCADE,
+  product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE,
   custom_dosage VARCHAR(100),
   servings_per_day DECIMAL(4,2) DEFAULT 1,
   schedule_times TEXT[],
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS user_supplement_settings (
 );
 
 CREATE TABLE IF NOT EXISTS daily_tracking_summary (
-  summary_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  summary_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   summary_date DATE NOT NULL,
   supplements_planned INTEGER DEFAULT 0,

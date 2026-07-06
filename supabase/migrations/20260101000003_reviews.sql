@@ -4,8 +4,8 @@
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS product_reviews (
-  review_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  product_id UUID REFERENCES products(product_id) ON DELETE CASCADE,
+  review_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   profile_id UUID REFERENCES user_profiles(profile_id) ON DELETE CASCADE,
 
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS product_reviews (
 );
 
 CREATE TABLE IF NOT EXISTS review_votes (
-  vote_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  vote_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   review_id UUID REFERENCES product_reviews(review_id) ON DELETE CASCADE,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   is_helpful BOOLEAN NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS review_votes (
 );
 
 CREATE TABLE IF NOT EXISTS review_images (
-  image_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  image_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   review_id UUID REFERENCES product_reviews(review_id) ON DELETE CASCADE,
   image_url VARCHAR(500) NOT NULL,
   image_order INTEGER DEFAULT 0,
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS review_images (
 );
 
 CREATE TABLE IF NOT EXISTS product_rating_stats (
-  product_id UUID PRIMARY KEY REFERENCES products(product_id) ON DELETE CASCADE,
+  product_id INTEGER PRIMARY KEY REFERENCES products(product_id) ON DELETE CASCADE,
   average_rating DECIMAL(3,2) DEFAULT 0,
   total_reviews INTEGER DEFAULT 0,
   rating_1_count INTEGER DEFAULT 0,

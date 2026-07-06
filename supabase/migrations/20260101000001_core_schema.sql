@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS brands (
 );
 
 CREATE TABLE IF NOT EXISTS products (
-  product_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  product_id SERIAL PRIMARY KEY,
   product_name VARCHAR(255) NOT NULL,
   product_description TEXT,
   product_price DECIMAL(10,2),
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS products (
 -- (src/app/profile/page.tsx) and typed in UserProfile / AccountProfile; they
 -- are part of the canonical schema, not an afterthought.
 CREATE TABLE IF NOT EXISTS user_profiles (
-  profile_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  profile_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   username VARCHAR(50) UNIQUE,
   display_name VARCHAR(100),
@@ -79,9 +79,26 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+ALTER TABLE user_profiles
+  ADD COLUMN IF NOT EXISTS date_of_birth DATE,
+  ADD COLUMN IF NOT EXISTS gender VARCHAR(30),
+  ADD COLUMN IF NOT EXISTS height DECIMAL(5,2),
+  ADD COLUMN IF NOT EXISTS weight DECIMAL(5,2),
+  ADD COLUMN IF NOT EXISTS website VARCHAR(500),
+  ADD COLUMN IF NOT EXISTS twitter_handle VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS instagram_handle VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS youtube_channel VARCHAR(500),
+  ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS is_influencer BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS follower_count INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS following_count INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS stack_count INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
 -- ── Stacks & social graph ────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS stacks (
-  stack_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  stack_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   profile_id UUID REFERENCES user_profiles(profile_id) ON DELETE CASCADE,
   stack_name VARCHAR(255) NOT NULL,
   stack_description TEXT,
@@ -105,7 +122,7 @@ CREATE TABLE IF NOT EXISTS stacks (
 );
 
 CREATE TABLE IF NOT EXISTS stack_supplements (
-  stack_supplement_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  stack_supplement_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   stack_id UUID REFERENCES stacks(stack_id) ON DELETE CASCADE,
   supplement_id INTEGER REFERENCES supplements(supplement_id),
   dosage VARCHAR(100),
@@ -118,9 +135,9 @@ CREATE TABLE IF NOT EXISTS stack_supplements (
 );
 
 CREATE TABLE IF NOT EXISTS users_products (
-  user_product_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   profile_id UUID REFERENCES user_profiles(profile_id) ON DELETE CASCADE,
-  product_id UUID REFERENCES products(product_id),
+  product_id INTEGER REFERENCES products(product_id),
   supplement_id INTEGER REFERENCES supplements(supplement_id),
   status VARCHAR(50) DEFAULT 'interested',
   start_date DATE,
@@ -132,8 +149,44 @@ CREATE TABLE IF NOT EXISTS users_products (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+ALTER TABLE users_products
+  ADD COLUMN IF NOT EXISTS user_product_id UUID DEFAULT gen_random_uuid(),
+  ADD COLUMN IF NOT EXISTS profile_id UUID REFERENCES user_profiles(profile_id) ON DELETE CASCADE,
+  ADD COLUMN IF NOT EXISTS supplement_id INTEGER REFERENCES supplements(supplement_id),
+  ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'interested',
+  ADD COLUMN IF NOT EXISTS start_date DATE,
+  ADD COLUMN IF NOT EXISTS end_date DATE,
+  ADD COLUMN IF NOT EXISTS personal_rating INTEGER CHECK (personal_rating >= 1 AND personal_rating <= 5),
+  ADD COLUMN IF NOT EXISTS personal_notes TEXT,
+  ADD COLUMN IF NOT EXISTS side_effects TEXT,
+  ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
+UPDATE users_products up
+SET profile_id = p.profile_id
+FROM user_profiles p
+WHERE up.profile_id IS NULL
+  AND up.user_id = p.user_id;
+
+UPDATE users_products up
+SET supplement_id = pr.supplement_id
+FROM products pr
+WHERE up.supplement_id IS NULL
+  AND up.product_id = pr.product_id;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'users_products_profile_product_key'
+  ) THEN
+    ALTER TABLE users_products
+      ADD CONSTRAINT users_products_profile_product_key UNIQUE (profile_id, product_id);
+  END IF;
+END;
+$$;
+
 CREATE TABLE IF NOT EXISTS stack_likes (
-  like_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  like_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   stack_id UUID REFERENCES stacks(stack_id) ON DELETE CASCADE,
   profile_id UUID REFERENCES user_profiles(profile_id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -141,7 +194,7 @@ CREATE TABLE IF NOT EXISTS stack_likes (
 );
 
 CREATE TABLE IF NOT EXISTS user_follows (
-  follow_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  follow_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   follower_id UUID REFERENCES user_profiles(profile_id) ON DELETE CASCADE,
   following_id UUID REFERENCES user_profiles(profile_id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -172,6 +225,8 @@ ALTER TABLE user_follows ENABLE ROW LEVEL SECURITY;
 
 -- Policies are dropped first so the file is re-runnable (CREATE POLICY errors
 -- if the policy already exists).
+DROP POLICY IF EXISTS "Allow public read access to public profiles" ON user_profiles;
+DROP POLICY IF EXISTS "Allow public insert for influencer profiles" ON user_profiles;
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON user_profiles;
 CREATE POLICY "Public profiles are viewable by everyone" ON user_profiles
   FOR SELECT USING (is_public = true);
@@ -188,6 +243,8 @@ DROP POLICY IF EXISTS "Users can insert own profile" ON user_profiles;
 CREATE POLICY "Users can insert own profile" ON user_profiles
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Allow public read access to public stacks" ON stacks;
+DROP POLICY IF EXISTS "Allow public insert for featured stacks" ON stacks;
 DROP POLICY IF EXISTS "Public stacks are viewable by everyone" ON stacks;
 CREATE POLICY "Public stacks are viewable by everyone" ON stacks
   FOR SELECT USING (
@@ -199,8 +256,12 @@ DROP POLICY IF EXISTS "Users can manage own stacks" ON stacks;
 CREATE POLICY "Users can manage own stacks" ON stacks
   FOR ALL USING (
     profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+  ) WITH CHECK (
+    profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
   );
 
+DROP POLICY IF EXISTS "Allow public read access to stack supplements" ON stack_supplements;
+DROP POLICY IF EXISTS "Allow public insert for stack supplements" ON stack_supplements;
 DROP POLICY IF EXISTS "Stack supplements visible based on stack visibility" ON stack_supplements;
 CREATE POLICY "Stack supplements visible based on stack visibility" ON stack_supplements
   FOR SELECT USING (
@@ -218,14 +279,25 @@ CREATE POLICY "Users can manage own stack supplements" ON stack_supplements
       SELECT stack_id FROM stacks WHERE
         profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
     )
+  ) WITH CHECK (
+    stack_id IN (
+      SELECT stack_id FROM stacks WHERE
+        profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+    )
   );
 
+DROP POLICY IF EXISTS "Allow public read access on users_products" ON users_products;
+DROP POLICY IF EXISTS "Allow public insert access on users_products" ON users_products;
 DROP POLICY IF EXISTS "Users can only see own product interactions" ON users_products;
 CREATE POLICY "Users can only see own product interactions" ON users_products
   FOR ALL USING (
     profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+  ) WITH CHECK (
+    profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
   );
 
+DROP POLICY IF EXISTS "Allow public read access to stack likes" ON stack_likes;
+DROP POLICY IF EXISTS "Allow public insert for stack likes" ON stack_likes;
 DROP POLICY IF EXISTS "Stack likes are viewable by everyone" ON stack_likes;
 CREATE POLICY "Stack likes are viewable by everyone" ON stack_likes
   FOR SELECT USING (true);
@@ -234,8 +306,12 @@ DROP POLICY IF EXISTS "Users can manage own likes" ON stack_likes;
 CREATE POLICY "Users can manage own likes" ON stack_likes
   FOR ALL USING (
     profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+  ) WITH CHECK (
+    profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
   );
 
+DROP POLICY IF EXISTS "Allow public read access to user follows" ON user_follows;
+DROP POLICY IF EXISTS "Allow public insert for user follows" ON user_follows;
 DROP POLICY IF EXISTS "Follows are viewable by everyone" ON user_follows;
 CREATE POLICY "Follows are viewable by everyone" ON user_follows
   FOR SELECT USING (true);
@@ -243,6 +319,8 @@ CREATE POLICY "Follows are viewable by everyone" ON user_follows
 DROP POLICY IF EXISTS "Users can manage own follows" ON user_follows;
 CREATE POLICY "Users can manage own follows" ON user_follows
   FOR ALL USING (
+    follower_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+  ) WITH CHECK (
     follower_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
   );
 
