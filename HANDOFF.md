@@ -89,7 +89,9 @@ has been uploaded. Key facts:
 - App Store provisioning profile: `SuppStack AI App Store`, UUID
   `caea33a6-0b56-4255-a84e-f1c0113a29d8`.
 - Latest uploaded build: version `1.0.0`, build `1`, delivery UUID
-  `599455c8-3fad-4ebe-9e15-659e12a9badc`, processing status `VALID`.
+  `599455c8-3fad-4ebe-9e15-659e12a9badc`, processing status `VALID`;
+  attached to App Store version `1.0` so the build-provided app icon/logo
+  appears on the version page.
 - TestFlight internal group `Internal Testers` exists with
   `acwints78@gmail.com` invited and build 1 attached.
 - The previous App Store Connect record `6788125138` is parked as

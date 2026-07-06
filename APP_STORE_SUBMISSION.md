@@ -41,7 +41,8 @@ The native Capacitor project has been restored and configured for
 `app.suppstack` / SuppStack AI. The App Store Connect record for this bundle is
 Apple ID `6788166423` with SKU `suppstack-ai-ios`. Build `1` for version
 `1.0.0` has been uploaded and processed as `VALID`; delivery UUID
-`599455c8-3fad-4ebe-9e15-659e12a9badc`.
+`599455c8-3fad-4ebe-9e15-659e12a9badc`. The build is attached to App Store
+version `1.0`, which provides the app icon/logo for the version page.
 
 The old App Store Connect record (`6788125138`) is parked as
 `SuppStack AI Legacy` because it is locked to the prior
