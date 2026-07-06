@@ -46,6 +46,7 @@ import {
   EfficacyInsights,
   RestockReminders,
 } from '@/components/composite/Tracking';
+import { PremiumGate } from '@/components/composite/Billing';
 import { FiActivity } from 'react-icons/fi';
 
 type TabType = 'collection' | 'insights' | 'journal' | 'stacks' | 'profile';
@@ -443,10 +444,25 @@ export default function Profile() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <WellnessTrends />
+              <PremiumGate
+                feature="Wellness trends"
+                description="Charts of energy, sleep, and mood over time, built from your daily logs."
+              >
+                <WellnessTrends />
+              </PremiumGate>
               <div className="space-y-6">
-                <EfficacyInsights />
-                <RestockReminders />
+                <PremiumGate
+                  feature="Efficacy insights"
+                  description="See which supplements correlate with how you actually feel."
+                >
+                  <EfficacyInsights />
+                </PremiumGate>
+                <PremiumGate
+                  feature="Restock reminders"
+                  description="Know when each container runs out based on your logging pace."
+                >
+                  <RestockReminders />
+                </PremiumGate>
               </div>
             </div>
           </section>

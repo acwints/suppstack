@@ -18,6 +18,10 @@ export type { UserPreferences } from './useLocalStorage';
 export { useReviews } from './useReviews';
 export type { UseReviewsOptions, UseReviewsResult, ReviewSortBy } from './useReviews';
 
+// Billing
+export { usePremium } from './usePremium';
+export type { UsePremiumResult } from './usePremium';
+
 // Tracking & Logging Hooks
 export { useSupplementLogs } from './useSupplementLogs';
 export type { UseSupplementLogsOptions, UseSupplementLogsResult } from './useSupplementLogs';

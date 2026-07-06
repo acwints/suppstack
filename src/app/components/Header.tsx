@@ -43,6 +43,12 @@ export default function Header() {
             >
               Brands
             </Link>
+            <Link
+              href="/premium"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Premium
+            </Link>
             {user && (
               <Link
                 href="/profile"

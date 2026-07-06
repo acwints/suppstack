@@ -9,6 +9,7 @@ schema. Each file is an ordered, idempotent migration.
 | 0002 | `20260101000002_commerce.sql` | Shopify/UCP + API-sourcing columns on `supplements`/`products`, `commerce_checkout_events` (RLS-locked, service-role only), `shopify_merchant_capabilities`. |
 | 0003 | `20260101000003_reviews.sql` | `product_reviews`, `review_votes`, `review_images`, `product_rating_stats`, aggregate triggers, RLS. |
 | 0004 | `20260101000004_tracking.sql` | `supplement_logs`, `user_supplement_settings`, `daily_tracking_summary`, streak/summary triggers, RLS. |
+| 0005 | `20260101000005_billing.sql` | `user_entitlements` (premium subscription mirror written by the RevenueCat webhook; RLS: users read own row, service-role writes). |
 
 ## Applying
 
