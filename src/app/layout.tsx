@@ -7,7 +7,7 @@ import { Providers } from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SuppStack - Supplement Marketplace",
+  title: "SuppStack AI - Supplement Marketplace",
   description: "Shop vitamins, minerals, herbs, protein, and everyday wellness supplements with verified merchant checkout.",
 };
 

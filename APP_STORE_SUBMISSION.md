@@ -15,7 +15,7 @@ project is complete.
 - Native integrations are bridged into the remote page by Capacitor:
   - Merchant checkout and Google sign-in open in SFSafariViewController
     (in-app browser), so users never leave the app.
-  - Google OAuth returns via the `com.suppstack.app://auth-callback` deep link
+  - Google OAuth returns via the `app.suppstack://auth-callback` deep link
     (registered in `ios/App/App/Info.plist`) and completes with a PKCE code
     exchange in `src/app/context/AuthContext.tsx`.
   - Splash screen and status bar are configured in the Capacitor config when
@@ -27,22 +27,25 @@ project is complete.
 1. Apple Developer Program - enroll at
    [developer.apple.com](https://developer.apple.com/programs/enroll/) ($99/yr).
 2. App Store Connect - create the app record:
-   - Bundle ID: `com.suppstack.app` (register it under Certificates,
+   - Bundle ID: `app.suppstack` (register it under Certificates,
      Identifiers & Profiles first)
-   - Name: SuppStack (reserve early; names are unique per storefront)
+   - Name: SuppStack AI (reserve early; names are unique per storefront)
    - Primary category: Shopping. Secondary: Health & Fitness.
 3. Supabase redirect allowlist - in Supabase Dashboard > Authentication >
-   URL Configuration, add `com.suppstack.app://auth-callback` to Redirect
+   URL Configuration, add `app.suppstack://auth-callback` to Redirect
    URLs. Without this, Google sign-in inside the app will not return.
 
 ## Current repo status
 
-Current `main` contains the web-facing iOS settings at
-`ios/App/App/capacitor.config.json`, but it does not contain the full
-Capacitor source setup from PR #17: root `capacitor.config.ts`, Capacitor npm
-dependencies, helper scripts, app icon/splash source assets, or
-`ios/App/App.xcworkspace`. Do not submit to App Store Connect until those
-native project files are restored or regenerated.
+The native Capacitor project has been restored and configured for
+`app.suppstack` / SuppStack AI. The App Store Connect record for this bundle is
+Apple ID `6788166423` with SKU `suppstack-ai-ios`. Build `1` for version
+`1.0.0` has been uploaded and processed as `VALID`; delivery UUID
+`599455c8-3fad-4ebe-9e15-659e12a9badc`.
+
+The old App Store Connect record (`6788125138`) is parked as
+`SuppStack AI Legacy` because it is locked to the prior
+`com.acwints.suppstack` bundle ID.
 
 The intended build flow once the Capacitor project is restored is:
 
@@ -65,7 +68,7 @@ npm run ios:open     # opens ios/App/App.xcworkspace in Xcode
 In Xcode:
 
 1. Select the `App` target > Signing & Capabilities > choose your team.
-   Signing is automatic; the bundle ID is already `com.suppstack.app`.
+   Signing is automatic; the bundle ID is already `app.suppstack`.
 2. Set Version (e.g. `1.0.0`) and Build (`1`) on the General tab.
 3. Product > Archive, then Distribute App > App Store Connect > Upload.
 4. In App Store Connect, attach the build to the 1.0 version, fill in the
@@ -76,8 +79,8 @@ In Xcode:
 
 | Item | Value |
 | --- | --- |
-| Privacy policy URL | `https://suppstack.vercel.app/privacy` (page ships in this repo) |
-| Support URL | `https://suppstack.vercel.app` |
+| Privacy policy URL | `https://www.suppstack.app/privacy` (page ships in this repo) |
+| Support URL | `https://www.suppstack.app` |
 | App Privacy (data collection) | Contact info (email, name) + user content (supplement routines), linked to identity, not used for tracking |
 | Age rating | 17+ is not needed; answer the questionnaire honestly (no objectionable content) - expect 4+ |
 | Export compliance | `ITSAppUsesNonExemptEncryption=false` is already set in Info.plist |

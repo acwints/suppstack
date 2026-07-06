@@ -77,19 +77,24 @@ tier); nothing is broken in the meantime.
 
 ## Task 3 — iOS App Store submission
 
-Follow `APP_STORE_SUBMISSION.md` in the repo root. Prerequisites only the
-owner can provide: an Apple Developer Program membership ($99/yr) and App
-Store Connect access. Note: current `main` contains only a thin `ios/`
-artifact set and does not include an Xcode workspace or Capacitor npm scripts,
-so the native project must be restored or regenerated before archive/upload.
-Key facts:
+Follow `APP_STORE_SUBMISSION.md` in the repo root for the remaining App Store
+review metadata. The native project has been restored and a TestFlight build
+has been uploaded. Key facts:
 
-- Bundle ID `com.suppstack.app`, app name SuppStack, Capacitor shell in
+- Bundle ID `app.suppstack`, app name SuppStack AI, Capacitor shell in
   `ios/` loading `https://suppstack.vercel.app` (config:
   `ios/App/App/capacitor.config.json`).
-- Intended build after restoring the native project: `npm run build &&
-  npx cap sync ios`, then open `ios/App/App.xcworkspace` in Xcode, set the
-  signing team, archive, upload.
+- Apple Developer App ID: `app.suppstack`; App Store Connect Apple ID:
+  `6788166423`; SKU: `suppstack-ai-ios`.
+- App Store provisioning profile: `SuppStack AI App Store`, UUID
+  `caea33a6-0b56-4255-a84e-f1c0113a29d8`.
+- Latest uploaded build: version `1.0.0`, build `1`, delivery UUID
+  `599455c8-3fad-4ebe-9e15-659e12a9badc`, processing status `VALID`.
+- TestFlight internal group `Internal Testers` exists with
+  `acwints78@gmail.com` invited and build 1 attached.
+- The previous App Store Connect record `6788125138` is parked as
+  `SuppStack AI Legacy` because it is locked to the old
+  `com.acwints.suppstack` bundle ID.
 - Review-guideline landmines already accounted for in the docs: physical
   goods must use external checkout not IAP (3.1.3(e)); account deletion
   must be reachable in-app (5.1.1); add Sign in with Apple if Google

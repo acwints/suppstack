@@ -1,6 +1,6 @@
 {
-	"appId": "com.suppstack.app",
-	"appName": "SuppStack",
+	"appId": "app.suppstack",
+	"appName": "SuppStack AI",
 	"webDir": "native/shell",
 	"server": {
 		"url": "https://suppstack.vercel.app",
