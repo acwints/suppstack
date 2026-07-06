@@ -32,12 +32,18 @@ project is complete.
    - Name: SuppStack AI (reserve early; names are unique per storefront)
    - Primary category: Shopping. Secondary: Health & Fitness.
 3. Supabase redirect allowlist - in Supabase Dashboard > Authentication >
-   URL Configuration, add `app.suppstack://auth-callback` to Redirect
-   URLs. Without this, Google sign-in inside the app will not return.
+   URL Configuration, keep these Redirect URLs available:
+   `https://www.suppstack.app/**`, `https://suppstack.vercel.app/**`,
+   `http://localhost:3000/**`, and `app.suppstack://auth-callback`.
 4. Supabase Apple provider - because the onboarding screen offers Google
-   sign-in, keep Sign in with Apple enabled for App Review. Configure the
-   Apple provider in Supabase Auth with the App ID / Services ID credentials
-   before submitting external TestFlight or App Review.
+   sign-in, keep Sign in with Apple enabled for App Review. The live Apple
+   OAuth provider is configured with:
+   - Team ID: `VRTT45LLND`
+   - Native App ID / bundle ID: `app.suppstack`
+   - Services ID / Supabase Apple client ID: `app.suppstack.web`
+   - Supabase callback registered in Apple Developer:
+     `https://ftjnxqyvqhpawsipfkay.supabase.co/auth/v1/callback`
+   - Apple private key ID: `FX8R3SY6HF`
 
 ## Current repo status
 
