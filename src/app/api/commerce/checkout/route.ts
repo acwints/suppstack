@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       ? await resolveShopifyPurchaseSession(product, quantity)
       : createFallbackPurchaseSession(product, quantity);
 
-    recordCheckoutEvent(product, session, quantity).catch(() => undefined);
+    await recordCheckoutEvent(product, session, quantity);
 
     return NextResponse.json({ session });
   } catch (error) {
