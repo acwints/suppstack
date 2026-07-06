@@ -3,10 +3,29 @@ import { createClient } from '@supabase/supabase-js';
 import type { Product } from '@/types';
 import { createFallbackPurchaseSession } from '@/lib/commerce/purchase-session';
 import { resolveShopifyPurchaseSession } from '@/lib/commerce/shopify-ucp-server';
+import { isAllowedMerchantHost } from '@/lib/catalog/supplement-catalog';
+
+/**
+ * Extracts a bare hostname from a raw store-domain string that may include a
+ * scheme or path (e.g. "https://cart.example.com/" -> "cart.example.com").
+ */
+function hostFromStoreDomain(storeDomain?: string | null): string | null {
+  if (!storeDomain) return null;
+  try {
+    const withScheme = storeDomain.includes('://') ? storeDomain : `https://${storeDomain}`;
+    return new URL(withScheme).hostname;
+  } catch {
+    return null;
+  }
+}
 
 function supabaseServer() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // commerce_checkout_events has RLS enabled with no client-facing policies, so
+  // it can only be written with the service-role key. Fall back to the anon key
+  // only for environments where the service role is not configured (writes will
+  // then be denied by RLS, which is the safe failure mode).
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return null;
   return createClient(url, key, {
     auth: {
@@ -50,7 +69,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'A product payload is required.' }, { status: 400 });
     }
 
-    const shouldAttemptUcp = Boolean(product.shopify_store_domain && product.shopify_variant_gid);
+    // UCP discovery makes outbound requests to the store domain. Since this
+    // route is unauthenticated and the client controls the payload, only
+    // attempt it for merchant hosts that are actually present in our catalog —
+    // otherwise this endpoint could be used to probe arbitrary hosts (SSRF).
+    const storeHost = hostFromStoreDomain(product.shopify_store_domain);
+    const shouldAttemptUcp = Boolean(
+      storeHost && product.shopify_variant_gid && isAllowedMerchantHost(storeHost)
+    );
     const session = shouldAttemptUcp
       ? await resolveShopifyPurchaseSession(product, quantity)
       : createFallbackPurchaseSession(product, quantity);

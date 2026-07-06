@@ -17,6 +17,9 @@ const gapMap: Record<SpacingValue, string> = {
   16: 'gap-16',
 };
 
+// Full, static class strings per breakpoint. Tailwind's JIT only emits classes
+// it can find as complete literals in source — building them at runtime (e.g.
+// `md:${colsMap[md]}`) means the responsive variants are never generated.
 const colsMap: Record<ColumnsValue, string> = {
   1: 'grid-cols-1',
   2: 'grid-cols-2',
@@ -25,6 +28,36 @@ const colsMap: Record<ColumnsValue, string> = {
   5: 'grid-cols-5',
   6: 'grid-cols-6',
   12: 'grid-cols-12',
+};
+
+const mdColsMap: Record<ColumnsValue, string> = {
+  1: 'md:grid-cols-1',
+  2: 'md:grid-cols-2',
+  3: 'md:grid-cols-3',
+  4: 'md:grid-cols-4',
+  5: 'md:grid-cols-5',
+  6: 'md:grid-cols-6',
+  12: 'md:grid-cols-12',
+};
+
+const lgColsMap: Record<ColumnsValue, string> = {
+  1: 'lg:grid-cols-1',
+  2: 'lg:grid-cols-2',
+  3: 'lg:grid-cols-3',
+  4: 'lg:grid-cols-4',
+  5: 'lg:grid-cols-5',
+  6: 'lg:grid-cols-6',
+  12: 'lg:grid-cols-12',
+};
+
+const xlColsMap: Record<ColumnsValue, string> = {
+  1: 'xl:grid-cols-1',
+  2: 'xl:grid-cols-2',
+  3: 'xl:grid-cols-3',
+  4: 'xl:grid-cols-4',
+  5: 'xl:grid-cols-5',
+  6: 'xl:grid-cols-6',
+  12: 'xl:grid-cols-12',
 };
 
 export interface GridProps extends HTMLAttributes<HTMLDivElement> {
@@ -60,12 +93,14 @@ export const Grid = forwardRef<HTMLDivElement, GridProps>(
     if (typeof cols === 'number') {
       colClasses = colsMap[cols];
     } else {
+      // `sm` is the mobile-first base (no breakpoint prefix); md/lg/xl layer on
+      // top at their breakpoints.
       const { sm = 1, md, lg, xl } = cols;
       colClasses = cn(
         colsMap[sm],
-        md && `md:${colsMap[md]}`,
-        lg && `lg:${colsMap[lg]}`,
-        xl && `xl:${colsMap[xl]}`
+        md && mdColsMap[md],
+        lg && lgColsMap[lg],
+        xl && xlColsMap[xl]
       );
     }
 

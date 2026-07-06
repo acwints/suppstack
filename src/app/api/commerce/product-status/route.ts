@@ -1,22 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchShopifyProductJson } from '@/lib/catalog/shopify-catalog-verifier';
 import { getShopifyVariantNumericId } from '@/lib/commerce/shopify-ucp';
-import { allCuratedProductSeeds } from '@/lib/catalog/supplement-catalog';
-
-function normalizeHost(host: string) {
-  return host.toLowerCase().replace(/^www\./, '');
-}
-
-/**
- * Only merchant domains present in the catalog may be fetched; this endpoint
- * is unauthenticated and must not act as an open proxy (SSRF).
- */
-const ALLOWED_MERCHANT_HOSTS = new Set(
-  allCuratedProductSeeds
-    .map((seed) => seed.shopify_store_domain)
-    .filter((domain): domain is string => Boolean(domain))
-    .map(normalizeHost)
-);
+import { isAllowedMerchantHost } from '@/lib/catalog/supplement-catalog';
 
 /** product.js variant prices are integer cents on most stores, but some themes return dollar strings. */
 function normalizePrice(value: number | string | undefined) {
@@ -58,7 +43,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid productUrl.' }, { status: 400 });
   }
 
-  if (parsedUrl.protocol !== 'https:' || !ALLOWED_MERCHANT_HOSTS.has(normalizeHost(parsedUrl.hostname))) {
+  if (parsedUrl.protocol !== 'https:' || !isAllowedMerchantHost(parsedUrl.hostname)) {
     return NextResponse.json({ error: 'Merchant domain is not allowed.' }, { status: 400 });
   }
 

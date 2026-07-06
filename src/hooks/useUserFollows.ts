@@ -92,7 +92,6 @@ export function useUserFollows(targetProfileId?: string): UseUserFollowsResult {
 
     try {
       if (isFollowing) {
-        // Unfollow
         const { error } = await supabase
           .from('user_follows')
           .delete()
@@ -103,26 +102,7 @@ export function useUserFollows(targetProfileId?: string): UseUserFollowsResult {
 
         setIsFollowing(false);
         setFollowerCount(prev => Math.max(0, prev - 1));
-
-        // Update target's follower count
-        await supabase
-          .from('user_profiles')
-          .update({ follower_count: Math.max(0, followerCount - 1) })
-          .eq('profile_id', targetProfileId);
-
-        // Update my following count
-        const { data: myProfile } = await supabase
-          .from('user_profiles')
-          .select('following_count')
-          .eq('profile_id', myProfileId)
-          .single();
-
-        await supabase
-          .from('user_profiles')
-          .update({ following_count: Math.max(0, (myProfile?.following_count || 1) - 1) })
-          .eq('profile_id', myProfileId);
       } else {
-        // Follow
         const { error } = await supabase
           .from('user_follows')
           .insert({
@@ -134,24 +114,20 @@ export function useUserFollows(targetProfileId?: string): UseUserFollowsResult {
 
         setIsFollowing(true);
         setFollowerCount(prev => prev + 1);
+      }
 
-        // Update target's follower count
-        await supabase
-          .from('user_profiles')
-          .update({ follower_count: followerCount + 1 })
-          .eq('profile_id', targetProfileId);
+      // follower_count / following_count are maintained by the
+      // trigger_update_follower_counts database trigger. Re-read the target's
+      // authoritative follower count rather than writing it again here — the
+      // previous manual updates double-counted and drifted over time.
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('follower_count')
+        .eq('profile_id', targetProfileId)
+        .single();
 
-        // Update my following count
-        const { data: myProfile } = await supabase
-          .from('user_profiles')
-          .select('following_count')
-          .eq('profile_id', myProfileId)
-          .single();
-
-        await supabase
-          .from('user_profiles')
-          .update({ following_count: (myProfile?.following_count || 0) + 1 })
-          .eq('profile_id', myProfileId);
+      if (typeof profile?.follower_count === 'number') {
+        setFollowerCount(profile.follower_count);
       }
     } catch (err) {
       console.error('Error toggling follow:', err);
@@ -159,7 +135,7 @@ export function useUserFollows(targetProfileId?: string): UseUserFollowsResult {
     } finally {
       setIsLoading(false);
     }
-  }, [user, targetProfileId, myProfileId, isFollowing, followerCount]);
+  }, [user, targetProfileId, myProfileId, isFollowing]);
 
   // Fetch followers for a profile
   const fetchFollowers = useCallback(async (profileId: string) => {

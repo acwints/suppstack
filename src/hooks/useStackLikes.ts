@@ -82,7 +82,6 @@ export function useStackLikes(stackId?: string): UseStackLikesResult {
 
     try {
       if (isLiked) {
-        // Unlike
         const { error } = await supabase
           .from('stack_likes')
           .delete()
@@ -93,14 +92,7 @@ export function useStackLikes(stackId?: string): UseStackLikesResult {
 
         setIsLiked(false);
         setLikeCount(prev => Math.max(0, prev - 1));
-
-        // Update stack like_count
-        await supabase
-          .from('stacks')
-          .update({ like_count: Math.max(0, likeCount - 1) })
-          .eq('stack_id', stackId);
       } else {
-        // Like
         const { error } = await supabase
           .from('stack_likes')
           .insert({
@@ -112,12 +104,19 @@ export function useStackLikes(stackId?: string): UseStackLikesResult {
 
         setIsLiked(true);
         setLikeCount(prev => prev + 1);
+      }
 
-        // Update stack like_count
-        await supabase
-          .from('stacks')
-          .update({ like_count: likeCount + 1 })
-          .eq('stack_id', stackId);
+      // stacks.like_count is maintained by the trigger_update_like_counts
+      // database trigger; re-read the authoritative value instead of writing
+      // it a second time here (a double-write would drift the count).
+      const { data: stack } = await supabase
+        .from('stacks')
+        .select('like_count')
+        .eq('stack_id', stackId)
+        .single();
+
+      if (typeof stack?.like_count === 'number') {
+        setLikeCount(stack.like_count);
       }
     } catch (err) {
       console.error('Error toggling like:', err);
@@ -125,7 +124,7 @@ export function useStackLikes(stackId?: string): UseStackLikesResult {
     } finally {
       setIsLoading(false);
     }
-  }, [user, stackId, profileId, isLiked, likeCount]);
+  }, [user, stackId, profileId, isLiked]);
 
   // Fetch all stacks the user has liked
   const fetchLikedStacks = useCallback(async () => {
