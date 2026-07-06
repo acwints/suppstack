@@ -34,6 +34,10 @@ project is complete.
 3. Supabase redirect allowlist - in Supabase Dashboard > Authentication >
    URL Configuration, add `app.suppstack://auth-callback` to Redirect
    URLs. Without this, Google sign-in inside the app will not return.
+4. Supabase Apple provider - because the onboarding screen offers Google
+   sign-in, keep Sign in with Apple enabled for App Review. Configure the
+   Apple provider in Supabase Auth with the App ID / Services ID credentials
+   before submitting external TestFlight or App Review.
 
 ## Current repo status
 
