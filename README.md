@@ -55,7 +55,7 @@ SuppStack keeps supplement discovery, product comparison, and purchasing as sepa
 
 - `src/lib/catalog/supplement-catalog.ts` provides the universal supplement database and generated product offers for catalog gaps.
 - `src/lib/commerce/shopify-ucp.ts` resolves the preferred purchase path for every product, prioritizing Shopify/UCP metadata before official-store or Amazon URLs.
-- `src/scripts/addShopifyUcpCommerce.sql` adds optional Shopify product, variant, store, checkout, stock, badge, and subscription fields to Supabase.
+- The Shopify/UCP product, variant, store, checkout, stock, badge, and subscription columns live in migration `supabase/migrations/20260101000002_commerce.sql`.
 - UI components use the same card, badge, button, and pricing language across discovery, supplement detail, product detail, and stack checkout.
 
 Shopify UCP checkout requires merchant capability discovery and authenticated/signed checkout access. Until those credentials are connected, SuppStack stores UCP-ready metadata and hands shoppers to Shopify product discovery or merchant checkout URLs.
@@ -65,7 +65,8 @@ Shopify UCP checkout requires merchant capability discovery and authenticated/si
 1. Clone the repository
 2. Install dependencies: `npm install`
 3. Set up your environment variables (see `.env.example`)
-4. Run the development server: `npm run dev`
+4. Apply the database schema: run the migrations in `supabase/migrations/` in order (see `supabase/migrations/README.md`)
+5. Run the development server: `npm run dev`
 
 ## Technologies Used
 

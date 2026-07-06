@@ -37,10 +37,8 @@ src/
 │   └── useSupplementSettings.ts # User supplement settings
 ├── lib/
 │   ├── api/               # External API integrations
-│   ├── design-system/     # Design tokens and utilities
-│   │   ├── tokens.ts      # Colors, spacing, typography
-│   │   └── utils.ts       # Design system helpers
-│   └── utils/             # Helper functions
+│   ├── design-system/     # cn() class-merging utility
+│   └── utils/             # Formatting/price/rating helpers (single source)
 ├── types/
 │   └── index.ts           # Core domain types (60+ interfaces)
 └── scripts/               # Data seeding scripts
@@ -73,10 +71,11 @@ export function useExample() {
 ```
 
 ### Design System
-Always use tokens from `lib/design-system/tokens.ts`:
-- Colors: `colors.gray[900]`, `colors.accent.primary`
-- Spacing: `spacing[4]`, `spacing[8]`
-- Typography: `typography.sizes.lg`, `typography.weights.medium`
+Design tokens are defined once in `tailwind.config.ts` (colors, typography,
+radii, shadows, animations) and consumed as Tailwind classes. Compose classes
+with `cn()` from `@/lib/design-system`. Formatting helpers (prices, dates,
+compact numbers, initials) live in `@/lib/utils` — never reimplement them
+inline.
 
 ### Type Definitions
 All domain types are in `src/types/index.ts`:
@@ -99,7 +98,7 @@ Import from: `import { supabase } from '@/app/supabase'`
 - `profiles` - User profiles
 
 ## Critical Rules
-1. Never hardcode colors/spacing - use design tokens
+1. Never hardcode colors/spacing - use the Tailwind theme (tailwind.config.ts)
 2. Always handle loading/error states in data components
 3. Use existing hooks when available (check src/hooks/ first)
 4. Follow the ApiResponse<T> pattern for API returns

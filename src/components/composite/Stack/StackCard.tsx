@@ -6,14 +6,11 @@ import {
   FaEye,
   FaHeart,
   FaCopy,
-  FaYoutube,
-  FaGlobe,
-  FaMicrophone,
-  FaNewspaper,
 } from 'react-icons/fa';
 import type { Stack } from '@/types';
 import { formatCompactNumber } from '@/lib/utils/format';
 import { Badge, Card, Avatar, Stack as StackLayout, Inline } from '@/components/ui';
+import { getStackSourceIcon } from './sourceIcons';
 
 export interface StackCardProps {
   stack: Stack;
@@ -22,24 +19,12 @@ export interface StackCardProps {
   compact?: boolean;
 }
 
-const sourceIcons: Record<string, JSX.Element> = {
-  youtube: <FaYoutube className="text-red-500" />,
-  podcast: <FaMicrophone className="text-purple-500" />,
-  article: <FaNewspaper className="text-gray-600" />,
-  interview: <FaMicrophone className="text-orange-500" />,
-  website: <FaGlobe className="text-gray-500" />,
-};
-
 export function StackCard({
   stack,
   index = 0,
   showCreator = true,
   compact = false,
 }: StackCardProps) {
-  const getSourceIcon = (sourceType: string) => {
-    return sourceIcons[sourceType] || <FaGlobe className="text-gray-500" />;
-  };
-
   if (compact) {
     return (
       <Link href={`/stacks/${stack.stack_id}`} className="block">
@@ -160,7 +145,7 @@ export function StackCard({
             {stack.source_title && (
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <Inline gap={2} align="center" className="mb-1">
-                  {getSourceIcon(stack.source_type)}
+                  {getStackSourceIcon(stack.source_type)}
                   <span className="text-xs font-medium text-gray-700">Source</span>
                 </Inline>
                 <p className="text-xs text-gray-600 line-clamp-1 mb-2">{stack.source_title}</p>

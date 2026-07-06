@@ -21,7 +21,7 @@ import {
 import { useAuth } from '@/app/context/AuthContext';
 import { supabase } from '../supabase';
 import type { RegimenItem, UserSupplementSettingsInput } from '@/types';
-import { formatCurrency, feetInchesToCm, cmToFeetInches, lbsToKg, kgToLbs } from '@/lib/utils';
+import { formatCurrency, formatDate, feetInchesToCm, cmToFeetInches, lbsToKg, kgToLbs } from '@/lib/utils';
 import { useRegimenCost, useSupplementLogs, useSupplementSettings, useStacks } from '@/hooks';
 import { getOrCreateUserProfile, type AccountProfile } from '@/lib/account/profile';
 import Link from 'next/link';
@@ -267,15 +267,6 @@ export default function Profile() {
       setIsDeleting(false);
       setDeleteConfirm(null);
     }
-  };
-
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
   };
 
   if (authLoading || !user) {
