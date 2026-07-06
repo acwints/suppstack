@@ -172,7 +172,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
 
   if (!supplement) {
     return (
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="mobile-page">
         <EmptyState
           icon="404"
           title="Supplement not found"
@@ -189,18 +189,18 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-8">
+    <main className="mobile-page">
       {/* Back Navigation */}
       <Link
         href="/"
-        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+        className="mb-5 inline-flex min-h-10 items-center gap-2 rounded border border-gray-200 px-3 text-sm text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900 sm:border-0 sm:px-0"
       >
         <FiArrowLeft />
         <span>All products</span>
       </Link>
 
       {/* Header */}
-      <Stack gap={2} className="mb-6">
+      <Stack gap={2} className="mb-5 sm:mb-6">
         <div className="flex flex-wrap items-center gap-2">
           {supplement.category && (
             <span className="rounded border border-gray-200 px-2 py-1 text-xs font-medium text-gray-600">
@@ -214,7 +214,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
           )}
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-3xl font-serif text-gray-900">
+          <h1 className="font-serif text-4xl leading-tight tracking-normal text-gray-900 sm:text-5xl">
             {supplement.supplement_name}
           </h1>
           {isResearchOnly && (
@@ -223,11 +223,11 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
             </span>
           )}
         </div>
-        <p className="text-sm text-gray-600 line-clamp-2 max-w-3xl">
+        <p className="max-w-3xl text-base leading-7 text-gray-600 sm:line-clamp-2">
           {supplement.supplement_description}
         </p>
         {supplement.common_dosage && (
-          <p className="text-xs text-gray-500">Typical dose: {supplement.common_dosage}</p>
+          <p className="text-sm text-gray-500">Typical dose: {supplement.common_dosage}</p>
         )}
         {family && (
           <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -314,7 +314,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
               />
             ) : (
               <>
-                <Grid cols={{ sm: 2, md: 3, lg: 4 }} gap={4}>
+                <Grid cols={{ sm: 1, md: 2, lg: 3, xl: 4 }} gap={4}>
                   {displayedProducts.map((product) => (
                     <ProductCard key={product.product_id} product={product} />
                   ))}

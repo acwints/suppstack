@@ -22,6 +22,7 @@ import {
   getPurchaseLabel,
 } from '@/lib/commerce/shopify-ucp';
 import { hasShopifyVariant } from '@/lib/commerce/product-source';
+import { cn } from '@/lib/design-system/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -98,18 +99,18 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
   };
 
   return (
-    <div className="group flex h-full flex-col overflow-hidden rounded border border-gray-200 bg-white transition-all duration-150 hover:border-gray-300 hover:shadow-md">
+    <div className="group flex h-full min-w-0 flex-col overflow-hidden rounded border border-gray-200 bg-white transition-all duration-150 hover:border-gray-300 hover:shadow-md">
       {/* Clickable Product Link - wraps image and basic info */}
       <Link href={`/product/${productId}`} className="block">
         {/* Product Image */}
-        <div className="relative aspect-square overflow-hidden bg-white">
+        <div className="relative aspect-[4/3] overflow-hidden bg-white sm:aspect-square">
           {product.product_image ? (
             <Image
               src={product.product_image}
               alt={product.product_name}
               fill
-              className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.04]"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.04] sm:p-5"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
           ) : (
             <div className="flex items-center justify-center h-full">
@@ -127,7 +128,7 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
         </div>
 
         {/* Product Info (clickable) */}
-        <div className="border-t border-gray-100 p-3 pb-0">
+        <div className="border-t border-gray-100 p-4 pb-0 sm:p-3 sm:pb-0">
           <span className="flex items-center gap-1.5">
             <BrandLogo
               domain={product.shopify_store_domain}
@@ -138,7 +139,7 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
               {product.brands?.brand_name || product.shopify_store_domain || ''}
             </span>
           </span>
-          <h3 className="mt-0.5 text-sm font-medium leading-5 text-gray-900 line-clamp-2 group-hover:underline">
+          <h3 className="mt-1 text-base font-medium leading-6 tracking-normal text-gray-900 line-clamp-2 group-hover:underline sm:text-sm sm:leading-5">
             {product.product_name}
           </h3>
 
@@ -163,7 +164,7 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
       </Link>
 
       {/* Non-clickable actions section */}
-      <div className="mt-auto flex flex-col gap-2 p-3">
+      <div className="mt-auto flex flex-col gap-2 p-4 sm:p-3">
         <Button
           variant="primary"
           size="sm"
@@ -171,6 +172,7 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
           onClick={handleStartCheckout}
           disabled={!canPurchase(product)}
           isLoading={isStartingCheckout}
+          className="h-11 text-sm sm:h-8 sm:text-xs"
         >
           {purchaseLabel}
         </Button>
@@ -183,7 +185,10 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
           fullWidth
           leftIcon={isInStack ? <FaCheck className="w-3.5 h-3.5" /> : <FaShoppingCart className="w-3.5 h-3.5" />}
           isLoading={isUpdating}
-          className={isInStack ? 'bg-success-50 text-success-700 border-success-200 hover:bg-success-100' : ''}
+          className={cn(
+            'h-11 text-sm sm:h-8 sm:text-xs',
+            isInStack ? 'bg-success-50 text-success-700 border-success-200 hover:bg-success-100' : ''
+          )}
         >
           {isInStack ? 'In Stack' : 'Add to Stack'}
         </Button>

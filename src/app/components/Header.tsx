@@ -2,30 +2,32 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/app/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 export default function Header() {
-  const { user, loading, loginWithGoogle, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const isLoginPage = pathname === '/login';
 
   const handleAuth = async () => {
     if (user) {
       await logout();
       router.push('/');
     } else {
-      await loginWithGoogle();
+      router.push('/login');
     }
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="app-header sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
       <div className="container-custom">
-        <div className="flex justify-between items-center py-4">
+        <div className="app-header-row flex items-center justify-between gap-3">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 group">
-            <span className="text-xl font-serif font-normal text-gray-900 tracking-tight">
-              SuppStack
+          <Link href="/" className="group flex min-w-0 items-center">
+            <span className="truncate font-serif text-xl font-normal tracking-normal text-gray-900 sm:text-2xl">
+              SuppStack AI
             </span>
           </Link>
 
@@ -60,14 +62,14 @@ export default function Header() {
           </nav>
 
           {/* Auth */}
-          <div className="flex items-center space-x-4">
+          <div className="flex shrink-0 items-center">
             {!loading && (
               <>
                 {user ? (
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center gap-2 sm:gap-4">
                     <Link
                       href="/profile"
-                      className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+                      className="flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900"
                     >
                       {user.user_metadata.avatar_url && (
                         <Image
@@ -84,19 +86,19 @@ export default function Header() {
                     </Link>
                     <button
                       onClick={handleAuth}
-                      className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+                      className="min-h-10 rounded border border-gray-200 px-3 text-sm text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900"
                     >
-                      Sign Out
+                      Sign out
                     </button>
                   </div>
-                ) : (
+                ) : !isLoginPage ? (
                     <button
                       onClick={handleAuth}
-                      className="rounded bg-gray-900 px-6 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                      className="min-h-10 rounded bg-gray-900 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 sm:px-5"
                     >
-                    Sign In
+                    Sign in
                   </button>
-                )}
+                ) : null}
               </>
             )}
           </div>

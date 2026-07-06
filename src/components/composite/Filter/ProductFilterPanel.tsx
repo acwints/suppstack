@@ -107,10 +107,10 @@ export function ProductFilterPanel({
   return (
     <div className={className}>
       {/* Filter Toggle Bar */}
-      <div className="flex items-center justify-between gap-4 mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          className="flex min-h-11 items-center gap-2 rounded border border-gray-200 px-3 text-sm text-gray-700 transition-colors hover:border-gray-300 hover:text-gray-900 sm:min-h-0 sm:border-0 sm:px-0"
         >
           <FiFilter size={16} />
           <span>Filters</span>
@@ -122,11 +122,11 @@ export function ProductFilterPanel({
           {isExpanded ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as ProductSortBy)}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
+            className="h-11 min-w-0 flex-1 rounded border border-gray-200 px-3 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300 sm:h-9 sm:flex-none"
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -134,7 +134,7 @@ export function ProductFilterPanel({
               </option>
             ))}
           </select>
-          <span className="text-sm text-gray-500">
+          <span className="shrink-0 whitespace-nowrap text-sm text-gray-500">
             {totalResults} {totalResults === 1 ? 'product' : 'products'}
           </span>
         </div>
@@ -142,8 +142,8 @@ export function ProductFilterPanel({
 
       {/* Expanded Filter Panel */}
       {isExpanded && (
-        <Card variant="outlined" padding="md" className="mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card variant="outlined" padding="md" className="mb-6 bg-white">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
             {/* Price Range */}
             <div>
               <h4 className="text-sm font-medium text-gray-900 mb-3">Price Range</h4>

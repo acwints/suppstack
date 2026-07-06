@@ -10,7 +10,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: (nextPath?: string) => Promise<void>;
+  loginWithApple: (nextPath?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -53,25 +54,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         getOrCreateUserProfile(session.user).catch((error) => {
           console.error('Failed to prepare user profile:', error);
         });
-        router.push('/profile');
+        const nextPath =
+          typeof window !== 'undefined'
+            ? window.sessionStorage.getItem('suppstack_post_login_path')
+            : null;
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.removeItem('suppstack_post_login_path');
+        }
+        router.push(nextPath || '/profile');
       }
     });
 
     return () => subscription.unsubscribe();
   }, [router]);
 
-  const loginWithGoogle = async () => {
+  const startOAuth = async (provider: 'google' | 'apple', nextPath = '/profile') => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('suppstack_post_login_path', nextPath);
+    }
+
     const redirectUrl =
       typeof window !== 'undefined'
-        ? `${window.location.origin}/profile`
+        ? `${window.location.origin}/login`
         : 'https://www.suppstack.app/profile';
 
     await supabase.auth.signInWithOAuth({
-      provider: 'google',
+      provider,
       options: {
         redirectTo: redirectUrl,
       },
     });
+  };
+
+  const loginWithGoogle = async (nextPath = '/profile') => {
+    await startOAuth('google', nextPath);
+  };
+
+  const loginWithApple = async (nextPath = '/profile') => {
+    await startOAuth('apple', nextPath);
   };
 
   const logout = async () => {
@@ -79,7 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, session, loading, loginWithGoogle, loginWithApple, logout }}>
       {children}
     </AuthContext.Provider>
   );

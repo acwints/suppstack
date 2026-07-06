@@ -35,7 +35,7 @@ export default function Home() {
       </div>
 
       {/* Filters */}
-      <div className="sticky top-[65px] z-40 border-b border-gray-100 bg-white">
+      <div className="sticky-under-header sticky z-40 border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-2.5">
           <Inline justify="between" align="center" wrap gap={4}>
             <CategoryFilter

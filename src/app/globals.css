@@ -35,11 +35,17 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     @apply bg-white text-gray-900;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    min-width: 320px;
+    overflow-x: hidden;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   /* Typography - Editorial style */
@@ -100,6 +106,31 @@
   /* Layout Utilities */
   .container-custom {
     @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .app-shell {
+    --app-header-height: 57px;
+    min-height: 100dvh;
+  }
+
+  .app-header {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .app-header-row {
+    min-height: var(--app-header-height);
+  }
+
+  .app-main {
+    min-height: calc(100dvh - var(--app-header-height) - env(safe-area-inset-top));
+  }
+
+  .sticky-under-header {
+    top: calc(var(--app-header-height) + env(safe-area-inset-top));
+  }
+
+  .mobile-page {
+    @apply mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8;
   }
 
   /* Editorial section styles */
