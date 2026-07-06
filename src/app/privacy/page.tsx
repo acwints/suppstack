@@ -68,9 +68,9 @@ export default function PrivacyPolicy() {
           5. Data Retention and Deletion
         </h2>
         <p>
-          Your data is retained while your account is active. You can request deletion of your
-          account and all associated data at any time by contacting us at the address below, and we
-          will complete the deletion within 30 days.
+          Your data is retained while your account is active. You can delete your account in the
+          app from Profile Settings, or request deletion by contacting us at the address below.
+          Email deletion requests are completed within 30 days.
         </p>
 
         <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">

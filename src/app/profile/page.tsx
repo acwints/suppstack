@@ -60,7 +60,7 @@ const tabItems: { id: TabType; label: string; icon?: React.ReactNode }[] = [
 ];
 
 export default function Profile() {
-  const { user, logout, loading: authLoading } = useAuth() || {};
+  const { user, session, logout, loading: authLoading } = useAuth() || {};
   const router = useRouter();
   const toast = useToast();
 
@@ -95,6 +95,9 @@ export default function Profile() {
     null
   );
   const [isDeleting, setIsDeleting] = useState(false);
+  const [accountDeleteOpen, setAccountDeleteOpen] = useState(false);
+  const [accountDeleteInput, setAccountDeleteInput] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   // Journal logs
   const { logs, isLoading: logsLoading } = useSupplementLogs();
@@ -267,6 +270,45 @@ export default function Profile() {
     } finally {
       setIsDeleting(false);
       setDeleteConfirm(null);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (accountDeleteInput !== 'DELETE') {
+      toast.error('Type DELETE to confirm account deletion');
+      return;
+    }
+
+    const accessToken = session?.access_token;
+    if (!accessToken) {
+      toast.error('Please sign in again before deleting your account');
+      return;
+    }
+
+    setIsDeletingAccount(true);
+    try {
+      const response = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Unable to delete account');
+      }
+
+      await logout?.();
+      toast.success('Account deleted');
+      router.replace('/login');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to delete account');
+    } finally {
+      setIsDeletingAccount(false);
+      setAccountDeleteOpen(false);
+      setAccountDeleteInput('');
     }
   };
 
@@ -763,6 +805,25 @@ export default function Profile() {
                   </div>
                 </Stack>
               </form>
+
+              <div className="mt-12 border-t border-red-100 pt-8">
+                <h3 className="text-sm font-medium uppercase tracking-wider text-red-700">
+                  Account
+                </h3>
+                <p className="mt-3 text-sm text-gray-600">
+                  Permanently delete your account and remove your profile, saved supplements,
+                  stacks, tracking history, and subscription entitlement records from SuppStack AI.
+                </p>
+                <Button
+                  type="button"
+                  variant="danger"
+                  className="mt-5"
+                  leftIcon={<FiTrash2 size={16} />}
+                  onClick={() => setAccountDeleteOpen(true)}
+                >
+                  Delete account
+                </Button>
+              </div>
             </div>
           </section>
         )}
@@ -793,6 +854,35 @@ export default function Profile() {
           danger
           isLoading={isDeleting}
         />
+
+        <ConfirmDialog
+          isOpen={accountDeleteOpen}
+          onClose={() => {
+            if (!isDeletingAccount) {
+              setAccountDeleteOpen(false);
+              setAccountDeleteInput('');
+            }
+          }}
+          onConfirm={handleDeleteAccount}
+          title="Delete Account"
+          description="This permanently removes your account and saved SuppStack data. This cannot be undone."
+          confirmText="Delete account"
+          danger
+          isLoading={isDeletingAccount}
+          confirmDisabled={accountDeleteInput !== 'DELETE'}
+        >
+          <label className="block text-left text-sm font-medium text-gray-700" htmlFor="delete-account-confirm">
+            Type DELETE to confirm
+          </label>
+          <input
+            id="delete-account-confirm"
+            value={accountDeleteInput}
+            onChange={(event) => setAccountDeleteInput(event.target.value)}
+            className="mt-2 w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-red-600 focus:outline-none focus:ring-1 focus:ring-red-600"
+            autoComplete="off"
+            inputMode="text"
+          />
+        </ConfirmDialog>
       </div>
     </main>
   );

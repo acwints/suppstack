@@ -113,9 +113,9 @@ Other guidelines worth knowing:
   (supplements), which must use methods other than IAP (guideline 3.1.3(e)).
   Checkout happens on the merchant's site, which is compliant.
 - 5.1.1 Account deletion - apps with account creation must offer account
-  deletion. The privacy policy documents email-based deletion; a
-  self-service delete button in the profile page is a fast follow if review
-  requires it in-app.
+  deletion. SuppStack AI includes in-app self-service deletion from
+  Profile Settings -> Account -> Delete account, backed by
+  `/api/account/delete`.
 - 2.5.2 Remote content - loading your own web content in WKWebView is
   allowed; no hidden features or code injection.
 

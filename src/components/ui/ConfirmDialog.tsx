@@ -26,6 +26,8 @@ export interface ConfirmDialogProps {
   confirmVariant?: ButtonVariant;
   /** Loading state for async confirm */
   isLoading?: boolean;
+  /** Disable confirm button until required confirmation input is complete */
+  confirmDisabled?: boolean;
   /** Danger/destructive action styling */
   danger?: boolean;
 }
@@ -55,6 +57,7 @@ export function ConfirmDialog({
   cancelText = 'Cancel',
   confirmVariant,
   isLoading = false,
+  confirmDisabled = false,
   danger = false,
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -194,6 +197,7 @@ export function ConfirmDialog({
             variant={finalConfirmVariant}
             onClick={handleConfirm}
             isLoading={isLoading}
+            disabled={confirmDisabled}
             className={danger ? 'sm:w-auto w-full' : ''}
           >
             {confirmText}
