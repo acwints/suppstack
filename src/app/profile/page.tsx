@@ -24,6 +24,7 @@ import type { RegimenItem, UserSupplementSettingsInput } from '@/types';
 import { formatCurrency, formatDate, feetInchesToCm, cmToFeetInches, lbsToKg, kgToLbs } from '@/lib/utils';
 import { useRegimenCost, useSupplementLogs, useSupplementSettings, useStacks } from '@/hooks';
 import { getOrCreateUserProfile, type AccountProfile } from '@/lib/account/profile';
+import { fetchUserProductLinks } from '@/lib/account/user-products';
 import Link from 'next/link';
 import {
   Button,
@@ -46,13 +47,14 @@ import {
   EfficacyInsights,
   RestockReminders,
 } from '@/components/composite/Tracking';
+import { HealthIntelligencePanel } from '@/components/composite/Health';
 import { PremiumGate } from '@/components/composite/Billing';
 import { FiActivity } from 'react-icons/fi';
 
-type TabType = 'collection' | 'insights' | 'journal' | 'stacks' | 'profile';
+type TabType = 'stack' | 'insights' | 'journal' | 'stacks' | 'profile';
 
 const tabItems: { id: TabType; label: string; icon?: React.ReactNode }[] = [
-  { id: 'collection', label: 'My Collection', icon: <FiPackage size={16} /> },
+  { id: 'stack', label: 'My Stack', icon: <FiPackage size={16} /> },
   { id: 'insights', label: 'Insights', icon: <FiActivity size={16} /> },
   { id: 'journal', label: 'Journal', icon: <FiBookOpen size={16} /> },
   { id: 'stacks', label: 'My Stacks', icon: <FiLayers size={16} /> },
@@ -65,7 +67,7 @@ export default function Profile() {
   const toast = useToast();
 
   // Active tab
-  const [activeTab, setActiveTab] = useState<TabType>('collection');
+  const [activeTab, setActiveTab] = useState<TabType>('stack');
 
   // Profile form state
   const [dateOfBirth, setDateOfBirth] = useState('');
@@ -82,7 +84,7 @@ export default function Profile() {
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState<AccountProfile | null>(null);
 
-  // Collection state
+  // Current stack state
   const [regimen, setRegimen] = useState<RegimenItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -127,10 +129,9 @@ export default function Profile() {
       const currentProfile = await getOrCreateUserProfile(user);
       setProfile(currentProfile);
 
-      const { data, error } = await supabase
-        .from('users_products')
-        .select(
-          `
+      const data = await fetchUserProductLinks<any>(
+        user,
+        `
           product_id,
           products (
             product_name, product_description, product_price,
@@ -139,10 +140,7 @@ export default function Profile() {
             supplements (supplement_name)
           )
         `
-        )
-        .eq('profile_id', currentProfile.profile_id);
-
-      if (error) throw error;
+      );
 
       const mappedData = (data || []).map((item: any) => ({
         product_id: item.product_id,
@@ -240,11 +238,6 @@ export default function Profile() {
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleLogout = async () => {
-    await logout?.();
-    router.push('/');
   };
 
   const handleOpenSettings = (productId: string, productName: string) => {
@@ -348,9 +341,6 @@ export default function Profile() {
                 {bio && <p className="text-gray-600 mt-3 max-w-md">{bio}</p>}
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              Sign Out
-            </Button>
           </Inline>
         </header>
 
@@ -389,11 +379,11 @@ export default function Profile() {
         </Tabs.List>
 
         {/* Tab Content */}
-        {activeTab === 'collection' && (
+        {activeTab === 'stack' && (
           <section>
             <div className="flex justify-between items-center mb-8">
               <div>
-                <h2 className="text-2xl font-serif text-gray-900">My Collection</h2>
+                <h2 className="text-2xl font-serif text-gray-900">My Stack</h2>
                 <p className="text-gray-500 mt-1">Supplements you&apos;re currently taking</p>
               </div>
               <Button variant="primary" onClick={() => router.push('/')}>
@@ -405,7 +395,7 @@ export default function Profile() {
               <EmptyState
                 icon={<FiPackage size={32} className="text-gray-400" />}
                 title="No supplements yet"
-                description="Start building your collection to track what you're taking."
+                description="Start building your stack to track what you're taking."
                 action={
                   <Button variant="primary" onClick={() => router.push('/')}>
                     Browse Supplements
@@ -483,6 +473,15 @@ export default function Profile() {
               <p className="text-gray-500 mt-1">
                 Track your wellness trends and understand how supplements affect you
               </p>
+            </div>
+
+            <div className="mb-6">
+              <PremiumGate
+                feature="Health intelligence"
+                description="Connect Apple Health and turn sleep, body, and activity trends into supplement opportunities."
+              >
+                <HealthIntelligencePanel />
+              </PremiumGate>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

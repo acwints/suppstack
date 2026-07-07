@@ -2,11 +2,12 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { FaSearch, FaTimes, FaHistory, FaArrowRight } from 'react-icons/fa';
-import { FiPackage, FiHash } from 'react-icons/fi';
+import { FiActivity, FiPackage, FiHash } from 'react-icons/fi';
 import Link from 'next/link';
 import { useDebounce } from '@/hooks';
 import { cn } from '@/lib/design-system/utils';
 import { allCuratedProductSeeds, supplementCatalog } from '@/lib/catalog/supplement-catalog';
+import { HEALTH_GOAL_DEFINITIONS, healthGoalHref } from '@/lib/catalog/health-goal-directory';
 
 export interface EnhancedSearchBarProps {
   value: string;
@@ -92,6 +93,24 @@ export function EnhancedSearchBar({
 
     const term = debouncedValue.toLowerCase();
 
+    const categorySuggestions: SearchSuggestion[] = HEALTH_GOAL_DEFINITIONS
+      .filter(
+        (goal) =>
+          goal.title.toLowerCase().includes(term) ||
+          goal.shortTitle.toLowerCase().includes(term) ||
+          goal.description.toLowerCase().includes(term) ||
+          goal.signalLabel.toLowerCase().includes(term) ||
+          goal.supplementNames.some((name) => name.toLowerCase().includes(term))
+      )
+      .slice(0, 3)
+      .map((goal) => ({
+          type: 'category' as const,
+          id: goal.id,
+          name: goal.title,
+          subtitle: goal.signalLabel,
+          href: healthGoalHref(goal.id),
+      }));
+
     const supplementSuggestions: SearchSuggestion[] = supplementCatalog
       .filter(
         (s) =>
@@ -122,7 +141,7 @@ export function EnhancedSearchBar({
         href: `/product/${p.product_id}`,
       }));
 
-    setSuggestions([...supplementSuggestions, ...productSuggestions]);
+    setSuggestions([...categorySuggestions, ...supplementSuggestions, ...productSuggestions]);
     setIsSearching(false);
   }, [debouncedValue]);
 
@@ -308,14 +327,14 @@ export function EnhancedSearchBar({
 
               {suggestions.length > 0 && (
                 <>
-                  {/* Supplement results */}
-                  {suggestions.filter(s => s.type === 'supplement').length > 0 && (
+                  {/* Health goal results */}
+                  {suggestions.filter(s => s.type === 'category').length > 0 && (
                     <div className="mb-2">
                       <span className="text-xs font-medium text-gray-500 uppercase tracking-wider px-2">
-                        Supplements
+                        Health Goals
                       </span>
                       {suggestions
-                        .filter(s => s.type === 'supplement')
+                        .filter(s => s.type === 'category')
                         .map((suggestion, i) => (
                           <Link
                             key={`${suggestion.type}-${suggestion.id}`}
@@ -331,7 +350,7 @@ export function EnhancedSearchBar({
                             aria-selected={highlightedIndex === i}
                           >
                             <div className="p-1.5 bg-gray-100 rounded-md">
-                              <FiHash className="text-gray-500" size={14} />
+                              <FiActivity className="text-gray-500" size={14} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-gray-900 truncate">
@@ -349,6 +368,50 @@ export function EnhancedSearchBar({
                     </div>
                   )}
 
+                  {/* Supplement results */}
+                  {suggestions.filter(s => s.type === 'supplement').length > 0 && (
+                    <div className="mb-2">
+                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wider px-2">
+                        Supplements
+                      </span>
+                      {suggestions
+                        .filter(s => s.type === 'supplement')
+                        .map((suggestion, i) => {
+                          const globalIndex = suggestions.filter(s => s.type === 'category').length + i;
+                          return (
+                            <Link
+                              key={`${suggestion.type}-${suggestion.id}`}
+                              href={suggestion.href}
+                              onClick={() => handleSelectSuggestion(suggestion)}
+                              className={cn(
+                                'flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-left transition-colors mt-1',
+                                highlightedIndex === globalIndex
+                                  ? 'bg-gray-100'
+                                  : 'hover:bg-gray-50'
+                              )}
+                              role="option"
+                              aria-selected={highlightedIndex === globalIndex}
+                            >
+                              <div className="p-1.5 bg-gray-100 rounded-md">
+                                <FiHash className="text-gray-500" size={14} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">
+                                  {suggestion.name}
+                                </p>
+                                {suggestion.subtitle && (
+                                  <p className="text-xs text-gray-500 truncate">
+                                    {suggestion.subtitle}
+                                  </p>
+                                )}
+                              </div>
+                              <FaArrowRight className="text-gray-300 shrink-0" size={10} />
+                            </Link>
+                          );
+                        })}
+                    </div>
+                  )}
+
                   {/* Product results */}
                   {suggestions.filter(s => s.type === 'product').length > 0 && (
                     <div>
@@ -358,7 +421,10 @@ export function EnhancedSearchBar({
                       {suggestions
                         .filter(s => s.type === 'product')
                         .map((suggestion, i) => {
-                          const globalIndex = suggestions.filter(s => s.type === 'supplement').length + i;
+                          const globalIndex =
+                            suggestions.filter(s => s.type === 'category').length +
+                            suggestions.filter(s => s.type === 'supplement').length +
+                            i;
                           return (
                             <Link
                               key={`${suggestion.type}-${suggestion.id}`}

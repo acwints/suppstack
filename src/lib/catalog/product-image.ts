@@ -12,15 +12,31 @@ const STANDARD_IMAGE_PARAMS: Record<string, string> = {
   pad_color: 'ffffff',
 };
 
+export const PRODUCT_IMAGE_FALLBACK = '/icon-512.png';
+
+function normalizeImageUrl(imageUrl?: string | null) {
+  if (!imageUrl) return '';
+  return imageUrl.startsWith('//') ? `https:${imageUrl}` : imageUrl;
+}
+
+function isKnownBrokenProductImage(imageUrl: string) {
+  const lower = imageUrl.toLowerCase();
+
+  return (
+    lower.includes('/s/files/1/0035/4654/6274/') &&
+    lower.includes('creatine_fro')
+  );
+}
+
 /**
  * Returns a square, white-padded rendition of a Shopify CDN image.
  * Non-Shopify hosts are returned unchanged (they cannot be transformed);
  * protocol-relative URLs are normalized to https. Idempotent.
  */
 export function standardizeProductImage(imageUrl?: string | null): string {
-  if (!imageUrl) return '';
-
-  const normalized = imageUrl.startsWith('//') ? `https:${imageUrl}` : imageUrl;
+  const normalized = normalizeImageUrl(imageUrl);
+  if (!normalized) return '';
+  if (isKnownBrokenProductImage(normalized)) return PRODUCT_IMAGE_FALLBACK;
 
   let url: URL;
   try {
@@ -36,4 +52,12 @@ export function standardizeProductImage(imageUrl?: string | null): string {
   }
 
   return url.toString();
+}
+
+export function getProductImageSrc(imageUrl?: string | null): string {
+  return standardizeProductImage(imageUrl) || PRODUCT_IMAGE_FALLBACK;
+}
+
+export function isRemoteImageSrc(imageUrl?: string | null) {
+  return Boolean(imageUrl?.startsWith('http://') || imageUrl?.startsWith('https://'));
 }

@@ -4,8 +4,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
 import { getUserProfileId } from '@/lib/account/profile';
+import { isMissingColumnError } from '@/lib/account/user-products';
 import type { Product } from '@/types';
-import { findDatabaseProductId, resolveDatabaseProductId } from '@/lib/catalog/supplement-sync';
+import {
+  findDatabaseProductId,
+  resolveDatabaseProductId,
+  resolveDatabaseSupplementId,
+} from '@/lib/catalog/supplement-sync';
 
 export interface UseProductInStackResult {
   isInStack: boolean;
@@ -17,8 +22,98 @@ export interface UseProductInStackResult {
   toggleInStack: () => Promise<void>;
 }
 
+const UNIQUE_VIOLATION = '23505';
+
+async function findUserProductLink(profileId: string, userId: string, productId: number | string) {
+  const byUser = await supabase
+    .from('users_products')
+    .select('product_id')
+    .eq('user_id', userId)
+    .eq('product_id', productId)
+    .limit(1);
+
+  if (!byUser.error) return byUser.data?.[0] ?? null;
+  if (!isMissingColumnError(byUser.error, 'user_id')) throw byUser.error;
+
+  const byProfile = await supabase
+    .from('users_products')
+    .select('product_id')
+    .eq('profile_id', profileId)
+    .eq('product_id', productId)
+    .limit(1);
+
+  if (byProfile.error) throw byProfile.error;
+  return byProfile.data?.[0] ?? null;
+}
+
+async function insertUserProductLink({
+  profileId,
+  userId,
+  productId,
+  supplementId,
+}: {
+  profileId: string;
+  userId: string;
+  productId: number | string;
+  supplementId: number | null;
+}) {
+  const fullPayload = {
+    product_id: productId,
+    supplement_id: supplementId,
+    status: 'active',
+  };
+  const minimalPayload = {
+    product_id: productId,
+  };
+  const attempts = [
+    { ...minimalPayload, user_id: userId },
+    { ...minimalPayload, profile_id: profileId, user_id: userId },
+    { ...fullPayload, profile_id: profileId, user_id: userId },
+    { ...fullPayload, user_id: userId },
+    { ...minimalPayload, profile_id: profileId },
+    { ...fullPayload, profile_id: profileId },
+  ];
+
+  let lastError: { code?: string; message?: string } | null = null;
+
+  for (const payload of attempts) {
+    const { error } = await supabase.from('users_products').insert(payload);
+    if (!error || error.code === UNIQUE_VIOLATION) return;
+
+    const canRetry =
+      isMissingColumnError(error, 'profile_id') ||
+      isMissingColumnError(error, 'user_id') ||
+      isMissingColumnError(error, 'supplement_id') ||
+      isMissingColumnError(error, 'status');
+
+    lastError = error;
+    if (!canRetry) break;
+  }
+
+  throw lastError ?? new Error('Failed to add product to stack');
+}
+
+async function deleteUserProductLink(profileId: string, userId: string, productId: number | string) {
+  const byUser = await supabase
+    .from('users_products')
+    .delete()
+    .eq('user_id', userId)
+    .eq('product_id', productId);
+
+  if (!byUser.error) return;
+  if (!isMissingColumnError(byUser.error, 'user_id')) throw byUser.error;
+
+  const byProfile = await supabase
+    .from('users_products')
+    .delete()
+    .eq('profile_id', profileId)
+    .eq('product_id', productId);
+
+  if (byProfile.error) throw byProfile.error;
+}
+
 /**
- * Tracks whether a product is in the user's collection (`users_products`).
+ * Tracks whether a product is in the user's stack (`users_products`).
  * Works for both database products and curated catalog products — catalog
  * products are synced into the `products` table on first add.
  */
@@ -29,7 +124,7 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // Check if product is in user's collection
+  // Check if product is in user's stack
   const checkIfInStack = useCallback(async () => {
     if (!user || !product) {
       setIsInStack(false);
@@ -48,16 +143,7 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
       }
 
       const profileId = await getUserProfileId(user);
-      const { data, error: queryError } = await supabase
-        .from('users_products')
-        .select('product_id')
-        .eq('profile_id', profileId)
-        .eq('product_id', databaseProductId)
-        .single();
-
-      if (queryError && queryError.code !== 'PGRST116') {
-        throw queryError;
-      }
+      const data = await findUserProductLink(profileId, user.id, databaseProductId);
 
       setIsInStack(!!data);
     } catch (err) {
@@ -90,21 +176,18 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
     setError(null);
 
     try {
-      const [profileId, databaseProductId] = await Promise.all([
+      const [profileId, databaseProductId, databaseSupplementId] = await Promise.all([
         getUserProfileId(user),
         resolveDatabaseProductId(product),
+        product.supplement_id ? resolveDatabaseSupplementId(product.supplement_id) : Promise.resolve(null),
       ]);
 
-      const { error: insertError } = await supabase
-        .from('users_products')
-        .insert({
-          profile_id: profileId,
-          product_id: databaseProductId,
-        });
-
-      if (insertError) {
-        throw insertError;
-      }
+      await insertUserProductLink({
+        profileId,
+        userId: user.id,
+        productId: databaseProductId,
+        supplementId: databaseSupplementId,
+      });
 
       setIsInStack(true);
     } catch (err) {
@@ -136,15 +219,7 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
       }
 
       const profileId = await getUserProfileId(user);
-      const { error: deleteError } = await supabase
-        .from('users_products')
-        .delete()
-        .eq('profile_id', profileId)
-        .eq('product_id', databaseProductId);
-
-      if (deleteError) {
-        throw deleteError;
-      }
+      await deleteUserProductLink(profileId, user.id, databaseProductId);
 
       setIsInStack(false);
     } catch (err) {

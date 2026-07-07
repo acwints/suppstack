@@ -33,15 +33,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     async function getInitialSession() {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        getOrCreateUserProfile(session.user).catch((error) => {
-          console.error('Failed to prepare user profile:', error);
-        });
+      try {
+        const sessionResult = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise<{ data: { session: Session | null } }>((resolve) =>
+            setTimeout(() => resolve({ data: { session: null } }), 5000)
+          ),
+        ]);
+        const session = sessionResult.data.session;
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          getOrCreateUserProfile(session.user).catch((error) => {
+            console.error('Failed to prepare user profile:', error);
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load auth session:', error);
+        setSession(null);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     getInitialSession();
 

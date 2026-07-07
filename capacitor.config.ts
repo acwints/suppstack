@@ -10,7 +10,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
  *
  * `webDir` holds only a minimal offline fallback page; it is not the app.
  */
-const config: CapacitorConfig = {
+const config: CapacitorConfig & { packageClassList?: string[] } = {
   appId: 'app.suppstack',
   appName: 'SuppStack AI',
   webDir: 'native/shell',
@@ -39,6 +39,13 @@ const config: CapacitorConfig = {
       style: 'LIGHT',
     },
   },
+  packageClassList: [
+    'AppPlugin',
+    'CAPBrowserPlugin',
+    'SplashScreenPlugin',
+    'StatusBarPlugin',
+    'SuppStackHealthPlugin',
+  ],
 };
 
 export default config;

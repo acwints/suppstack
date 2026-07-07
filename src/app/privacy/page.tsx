@@ -36,6 +36,11 @@ export default function PrivacyPolicy() {
             and are not shared publicly.
           </li>
           <li>
+            <strong>Health data you choose to connect.</strong> In the iOS app, you may grant access
+            to Apple Health data such as sleep, weight, body fat, calories burned, and activity
+            summaries. This access is optional and controlled by Apple Health permissions.
+          </li>
+          <li>
             <strong>Usage data.</strong> Standard server logs (IP address, browser type, pages
             requested) used for security and reliability.
           </li>
@@ -47,11 +52,22 @@ export default function PrivacyPolicy() {
         <ul className="list-disc pl-6">
           <li>We do not sell your personal information.</li>
           <li>We do not share your supplement data with merchants or advertisers.</li>
+          <li>We do not use Apple Health data for advertising or merchant targeting.</li>
           <li>We do not process payments; purchases are completed on the merchant&apos;s own site.</li>
         </ul>
 
         <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">
-          4. Checkout and Third Parties
+          4. Apple Health and AI Summaries
+        </h2>
+        <p>
+          Apple Health data is used to create wellness trends, supplement opportunity rankings, and
+          optional coach summaries inside SuppStack. If an AI coach summary is enabled, the summary
+          request may process the health snapshot and related opportunity rankings with our AI
+          provider. Health data is not sent to merchants, used to target ads, or sold.
+        </p>
+
+        <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">
+          5. Checkout and Third Parties
         </h2>
         <p>
           When you buy a product, checkout happens directly with the merchant, for example a
@@ -65,7 +81,7 @@ export default function PrivacyPolicy() {
         </p>
 
         <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">
-          5. Data Retention and Deletion
+          6. Data Retention and Deletion
         </h2>
         <p>
           Your data is retained while your account is active. You can delete your account in the
@@ -74,7 +90,7 @@ export default function PrivacyPolicy() {
         </p>
 
         <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">
-          6. Health Disclaimer
+          7. Health Disclaimer
         </h2>
         <p>
           SuppStack is a shopping and organization tool, not a medical service. Supplement
@@ -83,14 +99,14 @@ export default function PrivacyPolicy() {
         </p>
 
         <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">
-          7. Changes to This Policy
+          8. Changes to This Policy
         </h2>
         <p>
           If we make material changes to this policy, we will update this page and revise the
           &quot;Last updated&quot; date above.
         </p>
 
-        <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">8. Contact</h2>
+        <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">9. Contact</h2>
         <p>
           Questions or deletion requests:{' '}
           <a href="mailto:support@suppstack.com" className="text-gray-900 underline">

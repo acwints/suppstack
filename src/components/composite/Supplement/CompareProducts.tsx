@@ -9,6 +9,7 @@ import { Card, Button, Spinner, Badge } from '@/components/ui';
 import { cn } from '@/lib/design-system/utils';
 import { formatPrice, calculatePrices } from '@/lib/utils';
 import { isListableDatabaseProduct } from '@/lib/catalog/supplement-catalog';
+import { getProductImageSrc, isRemoteImageSrc } from '@/lib/catalog/product-image';
 import type { Product } from '@/types';
 
 export interface CompareProductsProps {
@@ -161,10 +162,11 @@ export function CompareProducts({
                     {product.product_image ? (
                       <div className="relative w-16 h-16 mx-auto mb-2">
                         <Image
-                          src={product.product_image}
+                          src={getProductImageSrc(product.product_image)}
                           alt={product.product_name}
                           fill
                           className="object-contain"
+                          unoptimized={isRemoteImageSrc(getProductImageSrc(product.product_image))}
                         />
                       </div>
                     ) : (

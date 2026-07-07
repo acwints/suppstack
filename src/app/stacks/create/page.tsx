@@ -176,7 +176,7 @@ export default function CreateStackPage() {
         className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
       >
         <FiArrowLeft />
-        <span>Back to My Collection</span>
+        <span>Back to My Stack</span>
       </Link>
 
       <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-8">Create a Stack</h1>

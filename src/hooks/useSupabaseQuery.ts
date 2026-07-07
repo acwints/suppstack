@@ -148,13 +148,13 @@ export function useSupabaseRecord<T = any>(
         .from(table)
         .select(select)
         .eq('id', id)
-        .single();
+        .limit(1);
 
       if (queryError) {
         throw queryError;
       }
 
-      setData(result as T);
+      setData(((result || [])[0] as T | undefined) || null);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {

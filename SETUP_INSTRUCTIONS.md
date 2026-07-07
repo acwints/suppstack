@@ -37,7 +37,7 @@ existing one, and safe to re-run.
 ## Verify
 
 Sign in and create a personal stack from `/stacks/create`, then confirm it
-appears under **My Collection** on `/profile`. Editing your profile
+appears under **My Stack** on `/profile`. Editing your profile
 (date of birth, height, weight, socials) should persist across reloads.
 
 ## Notes on security
@@ -48,4 +48,4 @@ RLS policies follow least privilege:
 - **INSERT/UPDATE/DELETE:** require authentication and ownership.
 - **Counters** (`follower_count`, `following_count`, `like_count`) are maintained by database triggers — application code must not write them.
 - **`commerce_checkout_events`** has RLS enabled with no client policies, so only the service-role server key can read or write it.
-- Public influencer stacks have been removed; stacks are personal collections only.
+- Public influencer stacks have been removed; stacks are personal stacks only.

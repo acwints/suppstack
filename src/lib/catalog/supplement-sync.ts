@@ -84,9 +84,8 @@ async function resolveDatabaseBrandId(brandName?: string | null): Promise<number
       .from('brands')
       .select('brand_id')
       .ilike('brand_name', brandName)
-      .limit(1)
-      .maybeSingle();
-    return data?.brand_id ?? null;
+      .limit(1);
+    return data?.[0]?.brand_id ?? null;
   };
 
   const existingId = await findExisting();
@@ -117,10 +116,9 @@ export async function findDatabaseProductId(product: Product): Promise<number | 
     .from('products')
     .select('product_id')
     .eq('product_url', product.product_url)
-    .limit(1)
-    .maybeSingle();
+    .limit(1);
 
-  return existing?.product_id ?? null;
+  return existing?.[0]?.product_id ?? null;
 }
 
 export async function resolveDatabaseProductId(product: Product): Promise<number | string> {

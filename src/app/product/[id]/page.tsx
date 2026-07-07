@@ -1,15 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft, FaShoppingCart, FaCheck, FaExternalLinkAlt } from 'react-icons/fa';
-import { FiShield } from 'react-icons/fi';
+import { FiActivity, FiClock, FiCpu, FiMoon, FiShield, FiTarget } from 'react-icons/fi';
 import { supabase } from '../../supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useReviews } from '@/hooks/useReviews';
-import { useProductInStack, usePriceCalculations } from '@/hooks';
+import {
+  useHealthExperiments,
+  useHealthSnapshots,
+  useProductInStack,
+  usePriceCalculations,
+} from '@/hooks';
 import { useCommerceCheckout } from '@/hooks';
 import { formatPrice } from '@/lib/utils';
 import type { Product } from '@/types';
@@ -38,12 +43,25 @@ import {
   isShopifySearchUrl,
 } from '@/lib/commerce/shopify-ucp';
 import { hasShopifyVariant } from '@/lib/commerce/product-source';
+import {
+  getProductImageSrc,
+  isRemoteImageSrc,
+  PRODUCT_IMAGE_FALLBACK,
+} from '@/lib/catalog/product-image';
+import { buildProductDirectory } from '@/lib/catalog/product-directory';
+import { buildProductSignalMatches } from '@/lib/catalog/product-match';
+import {
+  buildHealthTrackerPlan,
+  DEMO_HEALTH_SNAPSHOT,
+} from '@/lib/health/health-intelligence';
+import { findHealthGoalDirectoryItem } from '@/lib/catalog/health-goal-directory';
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
   const router = useRouter();
   const toast = useToast();
   const [product, setProduct] = useState<Product | null>(null);
+  const [productImageSrc, setProductImageSrc] = useState(PRODUCT_IMAGE_FALLBACK);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [sortBy, setSortBy] = useState<ReviewSortBy>('newest');
@@ -70,6 +88,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   // Stack management
   const { isInStack, isUpdating, addToStack } = useProductInStack(product);
   const { isStartingCheckout, startCheckout } = useCommerceCheckout();
+  const { latestSnapshot } = useHealthSnapshots({ limit: 1 });
+  const {
+    activeExperiments,
+    createExperiment,
+    isSaving: isSavingExperiment,
+    schemaWarning: experimentSchemaWarning,
+  } = useHealthExperiments({ limit: 8 });
 
   // Price calculations
   // servings_per_container of 0 means the merchant listing doesn't state a
@@ -107,6 +132,53 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
     fetchProduct();
   }, [params.id]);
+
+  useEffect(() => {
+    setProductImageSrc(getProductImageSrc(product?.product_image));
+  }, [product?.product_image]);
+
+  const productDirectory = useMemo(() => buildProductDirectory(), []);
+  const directoryProduct = useMemo(() => {
+    if (!product) return null;
+
+    return (
+      productDirectory.products.find(
+        (item) => String(item.product_id) === String(product.product_id)
+      ) ?? null
+    );
+  }, [product, productDirectory.products]);
+  const signalMatch = useMemo(() => {
+    if (!directoryProduct) return null;
+    return (
+      buildProductSignalMatches([directoryProduct], DEMO_HEALTH_SNAPSHOT).get(
+        String(directoryProduct.product_id)
+      ) ?? null
+    );
+  }, [directoryProduct]);
+  const healthGoalFits = useMemo(
+    () =>
+      (directoryProduct?.health_goal_ids ?? [])
+        .map((goalId) => findHealthGoalDirectoryItem(goalId))
+        .filter((goal): goal is NonNullable<ReturnType<typeof findHealthGoalDirectoryItem>> =>
+          Boolean(goal)
+        )
+        .slice(0, 4),
+    [directoryProduct]
+  );
+  const productImpactGoalId =
+    signalMatch?.primaryGoalId ?? directoryProduct?.health_goal_ids[0] ?? healthGoalFits[0]?.id ?? null;
+  const activeProductExperiment = useMemo(() => {
+    if (!product) return null;
+    return (
+      activeExperiments.find((experiment) =>
+        experiment.productIds.includes(String(product.product_id))
+      ) ?? null
+    );
+  }, [activeExperiments, product]);
+  const latestSnapshotTracker = useMemo(
+    () => (latestSnapshot ? buildHealthTrackerPlan(latestSnapshot) : null),
+    [latestSnapshot]
+  );
 
   const handleAddToStack = async () => {
     if (!user) {
@@ -176,6 +248,48 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     }
   };
 
+  const handleStartProductImpactTest = async () => {
+    if (!user) {
+      toast.info('Please log in to start an impact test');
+      router.push('/login');
+      return;
+    }
+
+    if (!productImpactGoalId || !directoryProduct) {
+      toast.info('This product needs a health signal before it can start an impact test');
+      return;
+    }
+
+    if (activeProductExperiment) {
+      toast.info('Impact test already active for this product');
+      return;
+    }
+
+    try {
+      await createExperiment({
+        snapshotId: latestSnapshot?.snapshotId ?? null,
+        goalId: productImpactGoalId,
+        title: `14-day ${directoryProduct.directory_supplement_name} impact test`,
+        targetDays: 14,
+        productIds: [String(product.product_id)],
+        supplementNames: [directoryProduct.directory_supplement_name],
+        baselineReadinessScore: latestSnapshotTracker?.readinessScore ?? null,
+        baselineSleepHoursAvg: latestSnapshot?.sleepHoursAvg ?? null,
+        notes: [
+          `Product detail impact test for ${product.product_name}.`,
+          signalMatch?.score ? `Signal score ${signalMatch.score}.` : null,
+          signalMatch?.reasons.length ? `Reasons: ${signalMatch.reasons.join(', ')}.` : null,
+          'Keep the rest of the stack steady before comparing the next health snapshot.',
+        ]
+          .filter(Boolean)
+          .join(' '),
+      });
+      toast.success('Impact test started');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to start impact test');
+    }
+  };
+
   return (
     <main className="max-w-7xl mx-auto px-4 py-8">
       {/* Back Navigation */}
@@ -195,23 +309,15 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       <Grid cols={{ sm: 1, lg: 2 }} gap={12} className="mb-12">
         {/* Product Image */}
         <Card padding="lg" className="aspect-square relative overflow-hidden bg-gray-50">
-          {product.product_image ? (
-            <Image
-              src={product.product_image}
-              alt={product.product_name}
-              fill
-              className="object-contain p-8"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="w-32 h-32 rounded-full border border-gray-200 bg-white flex items-center justify-center">
-                <span className="text-4xl font-semibold text-gray-900">
-                  {product.product_name.charAt(0)}
-                </span>
-              </div>
-            </div>
-          )}
+          <Image
+            src={productImageSrc}
+            alt={product.product_name}
+            fill
+            className="object-contain p-8"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            unoptimized={isRemoteImageSrc(productImageSrc)}
+            onError={() => setProductImageSrc(PRODUCT_IMAGE_FALLBACK)}
+          />
         </Card>
 
         {/* Product Info */}
@@ -284,6 +390,105 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               {product.servings_per_day !== 1 ? 's' : ''} per day
             </div>
           </div>
+
+          {(signalMatch || healthGoalFits.length > 0) && (
+            <div className="rounded border border-gray-200 bg-gray-50 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
+                    <FiCpu />
+                    Health signal fit
+                  </div>
+                  <p className="mt-1 text-sm leading-6 text-gray-600">
+                    Ranked against SuppStack&apos;s demo sleep, body, output, and recovery signal mix.
+                  </p>
+                </div>
+                {signalMatch && signalMatch.score > 0 && (
+                  <Badge variant="success" size="sm">
+                    {signalMatch.score} match
+                  </Badge>
+                )}
+              </div>
+
+              {signalMatch && signalMatch.reasons.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {signalMatch.reasons.map((reason) => (
+                    <span
+                      key={reason}
+                      className="rounded border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-600"
+                    >
+                      {reason}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {healthGoalFits.length > 0 && (
+                <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {healthGoalFits.map((goal) => (
+                    <Link
+                      key={goal.id}
+                      href={`/products?goal=${goal.id}`}
+                      className="rounded border border-gray-200 bg-white p-3 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{goal.shortTitle}</p>
+                          <p className="mt-1 text-xs leading-5 text-gray-500">{goal.signalLabel}</p>
+                        </div>
+                        <FiTarget className="mt-0.5 shrink-0 text-gray-400" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <Button
+                  size="sm"
+                  onClick={handleStartProductImpactTest}
+                  disabled={Boolean(activeProductExperiment) || !productImpactGoalId}
+                  isLoading={isSavingExperiment}
+                  leftIcon={activeProductExperiment ? <FiClock /> : <FiActivity />}
+                >
+                  {activeProductExperiment ? 'Impact test active' : 'Start impact test'}
+                </Button>
+                <Link
+                  href="/products"
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <FiTarget />
+                  Compare products
+                </Link>
+                <Link
+                  href="/products?goal=sleep-recovery"
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <FiMoon />
+                  Sleep shelf
+                </Link>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-500">
+                <div className="rounded border border-gray-100 bg-white p-2">
+                  <span className="block font-medium text-gray-900">
+                    {latestSnapshotTracker ? latestSnapshotTracker.readinessScore : 'No baseline'}
+                  </span>
+                  Readiness baseline
+                </div>
+                <div className="rounded border border-gray-100 bg-white p-2">
+                  <span className="block font-medium text-gray-900">
+                    {latestSnapshot?.sleepHoursAvg
+                      ? `${latestSnapshot.sleepHoursAvg.toFixed(1)}h`
+                      : 'No sleep data'}
+                  </span>
+                  Sleep baseline
+                </div>
+              </div>
+              {experimentSchemaWarning && (
+                <p className="mt-3 text-xs leading-5 text-amber-700">{experimentSchemaWarning}</p>
+              )}
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-2">
             <Badge variant={purchaseDestination.isDirectCheckout ? 'success' : 'primary'}>

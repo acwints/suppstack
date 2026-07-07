@@ -174,7 +174,7 @@ export default function StackDetailPage() {
         className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
       >
         <FiArrowLeft />
-        <span>Back to My Collection</span>
+        <span>Back to My Stack</span>
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

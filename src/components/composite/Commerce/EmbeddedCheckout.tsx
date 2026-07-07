@@ -13,6 +13,11 @@ import {
   getShopifyCartPermalink,
   getShopifyVariantNumericId,
 } from '@/lib/commerce/shopify-ucp';
+import {
+  getProductImageSrc,
+  isRemoteImageSrc,
+  PRODUCT_IMAGE_FALLBACK,
+} from '@/lib/catalog/product-image';
 
 export interface EmbeddedCheckoutProps {
   product: Product;
@@ -61,8 +66,13 @@ function openCheckoutWindow(url: string) {
 export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutProps) {
   const [quantity, setQuantity] = useState(1);
   const [stage, setStage] = useState<CheckoutStage>('review');
+  const [imageSrc, setImageSrc] = useState(() => getProductImageSrc(product.product_image));
   const [live, setLive] = useState<LiveStatus>({ status: 'loading', price: null, variantTitle: null });
   const { resolveCheckoutSession } = useCommerceCheckout();
+
+  useEffect(() => {
+    setImageSrc(getProductImageSrc(product.product_image));
+  }, [product.product_image]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -141,18 +151,15 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
         {/* Order summary */}
         <div className="flex gap-4">
           <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded border border-gray-200 bg-gray-50">
-            {product.product_image ? (
-              <Image
-                src={product.product_image}
-                alt={product.product_name}
-                fill
-                className="object-contain p-2"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-xl font-semibold text-gray-900">
-                {product.product_name.charAt(0)}
-              </div>
-            )}
+            <Image
+              src={imageSrc}
+              alt={product.product_name}
+              fill
+              className="object-contain p-2"
+              sizes="96px"
+              unoptimized={isRemoteImageSrc(imageSrc)}
+              onError={() => setImageSrc(PRODUCT_IMAGE_FALLBACK)}
+            />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-gray-500">

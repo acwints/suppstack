@@ -5,9 +5,9 @@ import { FiAlertCircle, FiShoppingCart, FiExternalLink, FiClock } from 'react-ic
 import Link from 'next/link';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
-import { getOrCreateUserProfile } from '@/lib/account/profile';
 import { Card, Button, Spinner, Badge } from '@/components/ui';
 import { cn } from '@/lib/design-system/utils';
+import { fetchUserProductLinks } from '@/lib/account/user-products';
 import { formatPrice } from '@/lib/utils';
 import { DAYS_PER_MONTH } from '@/types';
 
@@ -57,12 +57,11 @@ export function RestockReminders({ className }: RestockRemindersProps) {
 
     setIsLoading(true);
     try {
-      const profile = await getOrCreateUserProfile(user);
       // Fetch user's products with settings
-      const [productsResult, logsResult, settingsResult] = await Promise.all([
-        supabase
-          .from('users_products')
-          .select(`
+      const [products, logsResult, settingsResult] = await Promise.all([
+        fetchUserProductLinks<any>(
+          user,
+          `
             product_id,
             created_at,
             products (
@@ -70,8 +69,8 @@ export function RestockReminders({ className }: RestockRemindersProps) {
               amazon_url, product_url,
               brands (brand_name)
             )
-          `)
-          .eq('profile_id', profile.profile_id),
+          `
+        ),
         // Get last 30 days of logs to compute average daily usage
         supabase
           .from('supplement_logs')
@@ -84,7 +83,9 @@ export function RestockReminders({ className }: RestockRemindersProps) {
           .eq('user_id', user.id),
       ]);
 
-      const products = productsResult.data || [];
+      if (logsResult.error) throw logsResult.error;
+      if (settingsResult.error) throw settingsResult.error;
+
       const logs = logsResult.data || [];
       const settings = settingsResult.data || [];
 
@@ -193,7 +194,7 @@ export function RestockReminders({ className }: RestockRemindersProps) {
         </div>
       ) : items.length === 0 ? (
         <div className="text-center py-6">
-          <p className="text-gray-500 text-sm">No supplements in your collection.</p>
+          <p className="text-gray-500 text-sm">No supplements in your stack.</p>
         </div>
       ) : (
         <div className="space-y-3">

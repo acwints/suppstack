@@ -31,6 +31,7 @@
 		"AppPlugin",
 		"CAPBrowserPlugin",
 		"SplashScreenPlugin",
-		"StatusBarPlugin"
+		"StatusBarPlugin",
+		"SuppStackHealthPlugin"
 	]
 }

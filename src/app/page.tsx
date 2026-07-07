@@ -7,7 +7,11 @@ import { brandSlug, buildBrandDiscovery } from '@/lib/catalog/brand-discovery';
 import { SkeletonGrid, SkeletonCard, Inline, Stack } from '@/components/ui';
 import { EnhancedSearchBar } from '@/components/composite/Search';
 import { CategoryFilter, SortFilter } from '@/components/composite/Filter';
-import { SupplementGrid, FeaturedCategories } from '@/components/composite/Supplement';
+import {
+  SupplementGrid,
+  FeaturedCategories,
+  HealthGoalDirectory,
+} from '@/components/composite/Supplement';
 import { BrandLogo } from '@/components/composite/Brand';
 
 export default function Home() {
@@ -60,6 +64,32 @@ export default function Home() {
         ) : (
           <Stack gap={10}>
             <section>
+              <Inline justify="between" align="end" className="section-header">
+                <div>
+                  <h2>Shop by Health Signal</h2>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Sleep, body composition, calories burned, and recovery-aware shelves.
+                  </p>
+                </div>
+                <Link href="/health/tracker" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                  Connect data
+                </Link>
+              </Inline>
+              <HealthGoalDirectory supplements={supplements} />
+            </section>
+
+            <section>
+              <Inline justify="between" align="end" className="section-header">
+                <div>
+                  <h2>All Products</h2>
+                  <p className="text-sm text-gray-500">
+                    {browseGroups.length} browsable supplement groups
+                  </p>
+                </div>
+                <Link href="/products" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                  View product directory
+                </Link>
+              </Inline>
               <SupplementGrid groups={browseGroups} />
             </section>
 

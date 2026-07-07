@@ -36,7 +36,8 @@ export interface UseSupplementLogsResult {
 }
 
 function getLocalDateString(date: Date = new Date()): string {
-  return date.toISOString().split('T')[0];
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return localDate.toISOString().split('T')[0];
 }
 
 function getCurrentTimeOfDay(): TimeOfDay {
@@ -122,13 +123,13 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
         .select('*')
         .eq('user_id', user.id)
         .eq('summary_date', today)
-        .single();
+        .limit(1);
 
-      if (queryError && queryError.code !== 'PGRST116') {
+      if (queryError) {
         throw queryError;
       }
 
-      setDailySummary(data || null);
+      setDailySummary(((data || [])[0] as DailyTrackingSummary | undefined) || null);
     } catch (err) {
       console.error('Error fetching daily summary:', err);
     }
@@ -323,12 +324,15 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
     };
 
     // Check if summary exists for today
-    const { data: existing } = await supabase
+    const { data: existingRows, error: existingError } = await supabase
       .from('daily_tracking_summary')
       .select('summary_id')
       .eq('user_id', user.id)
       .eq('summary_date', today)
-      .single();
+      .limit(1);
+
+    if (existingError) throw existingError;
+    const existing = (existingRows || [])[0] as { summary_id: string } | undefined;
 
     if (existing) {
       // Update existing

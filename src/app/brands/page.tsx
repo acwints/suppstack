@@ -10,6 +10,7 @@ import { getPreferredPurchaseUrl } from '@/lib/commerce/shopify-ucp';
 import { formatCurrency } from '@/lib/utils';
 import { Spinner } from '@/components/ui';
 import { BrandLogo } from '@/components/composite/Brand';
+import { getProductImageSrc, isRemoteImageSrc } from '@/lib/catalog/product-image';
 
 export default function BrandsPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -74,11 +75,12 @@ export default function BrandsPage() {
                 <div className="relative aspect-[4/3] border-b border-gray-100 bg-white">
                   {brand.heroProduct.product_image && (
                     <Image
-                      src={brand.heroProduct.product_image}
+                      src={getProductImageSrc(brand.heroProduct.product_image)}
                       alt={brand.heroProduct.product_name}
                       fill
                       className="object-contain p-6"
                       sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      unoptimized={isRemoteImageSrc(getProductImageSrc(brand.heroProduct.product_image))}
                     />
                   )}
                 </div>

@@ -92,16 +92,16 @@ In Xcode:
 | --- | --- |
 | Privacy policy URL | `https://www.suppstack.app/privacy` (page ships in this repo) |
 | Support URL | `https://www.suppstack.app` |
-| App Privacy (data collection) | Contact info (email, name) + user content (supplement routines), linked to identity, not used for tracking |
+| App Privacy (data collection) | Contact info (email, name), user content (supplement routines), and optional health/fitness data (sleep, weight, body fat, activity summaries), linked to identity, not used for tracking or advertising |
 | Age rating | 17+ is not needed; answer the questionnaire honestly (no objectionable content) - expect 4+ |
 | Export compliance | `ITSAppUsesNonExemptEncryption=false` is already set in Info.plist |
-| Screenshots | 6.9" (iPhone 16 Pro Max) and 6.5" (iPhone 11 Pro Max) sizes; capture home, a supplement page, the checkout sheet, and profile |
+| Screenshots | 6.9" (iPhone 16 Pro Max) and 6.5" (iPhone 11 Pro Max) sizes; capture home, health intelligence, a supplement page, the checkout sheet, and profile |
 
 ## Review risk: Guideline 4.2 (Minimum Functionality)
 
 Apple rejects apps that are plain website wrappers. Mitigations already in
-place: native in-app browser checkout, native OAuth deep-link flow, splash and
-status-bar integration, offline fallback. If the reviewer still flags 4.2, the
+place: native HealthKit integration, native in-app browser checkout, native
+OAuth deep-link flow, splash and status-bar integration, offline fallback. If the reviewer still flags 4.2, the
 strongest next additions are push notifications for restock reminders (the
 web app already computes restock dates) and iOS widgets. Plan for one
 resubmission cycle; respond in Resolution Center describing the native
@@ -116,6 +116,10 @@ Other guidelines worth knowing:
   deletion. SuppStack AI includes in-app self-service deletion from
   Profile Settings -> Account -> Delete account, backed by
   `/api/account/delete`.
+- 5.1.3 Health and health research - Apple Health data must be used only for
+  health, fitness, and wellness management. Do not use HealthKit data for
+  advertising, merchant targeting, or unrelated analytics. Keep the privacy
+  policy and App Privacy answers aligned with the Health Intelligence feature.
 - 2.5.2 Remote content - loading your own web content in WKWebView is
   allowed; no hidden features or code injection.
 

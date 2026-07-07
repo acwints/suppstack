@@ -29,6 +29,23 @@ export type { UseSupplementLogsOptions, UseSupplementLogsResult } from './useSup
 export { useSupplementSettings } from './useSupplementSettings';
 export type { UseSupplementSettingsResult } from './useSupplementSettings';
 
+export { useHealthSnapshots } from './useHealthSnapshots';
+export type {
+  SavedHealthSnapshot,
+  UseHealthSnapshotsOptions,
+  UseHealthSnapshotsResult,
+} from './useHealthSnapshots';
+
+export { useHealthExperiments } from './useHealthExperiments';
+export type {
+  CompleteHealthExperimentInput,
+  CreateHealthExperimentInput,
+  HealthExperiment,
+  HealthExperimentStatus,
+  UseHealthExperimentsOptions,
+  UseHealthExperimentsResult,
+} from './useHealthExperiments';
+
 // Stacks & Social Hooks
 export { useStacks } from './useStacks';
 export type { UseStacksOptions, UseStacksResult, StackSortBy, StackFilter } from './useStacks';

@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { FiTrendingUp, FiTrendingDown, FiMinus, FiInfo } from 'react-icons/fi';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
-import { getOrCreateUserProfile } from '@/lib/account/profile';
 import { Card, Spinner, Badge } from '@/components/ui';
 import { cn } from '@/lib/design-system/utils';
+import { fetchUserProductLinks } from '@/lib/account/user-products';
 
 export interface EfficacyInsightsProps {
   className?: string;
@@ -48,13 +48,12 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
 
     setIsLoading(true);
     try {
-      const profile = await getOrCreateUserProfile(user);
       // Get last 30 days of logs and wellness data
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const startDate = thirtyDaysAgo.toISOString().split('T')[0];
 
-      const [logsResult, summariesResult, productsResult] = await Promise.all([
+      const [logsResult, summariesResult, products] = await Promise.all([
         supabase
           .from('supplement_logs')
           .select('product_id, log_date')
@@ -65,15 +64,17 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
           .select('summary_date, overall_mood, overall_energy, sleep_quality')
           .eq('user_id', user.id)
           .gte('summary_date', startDate),
-        supabase
-          .from('users_products')
-          .select('product_id, products(product_name, supplements(supplement_name))')
-          .eq('profile_id', profile.profile_id),
+        fetchUserProductLinks<any>(
+          user,
+          'product_id, products(product_name, supplements(supplement_name))'
+        ),
       ]);
+
+      if (logsResult.error) throw logsResult.error;
+      if (summariesResult.error) throw summariesResult.error;
 
       const logs = logsResult.data || [];
       const summaries = summariesResult.data || [];
-      const products = productsResult.data || [];
 
       if (summaries.length < 7 || products.length === 0) {
         setHasEnoughData(false);
@@ -210,7 +211,7 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
         </div>
       ) : insights.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-gray-500 text-sm">No supplements in your collection yet.</p>
+          <p className="text-gray-500 text-sm">No supplements in your stack yet.</p>
         </div>
       ) : (
         <div className="space-y-4">

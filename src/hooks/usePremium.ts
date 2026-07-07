@@ -44,8 +44,8 @@ export function usePremium(): UsePremiumResult {
         )
         .eq('user_id', user.id)
         .eq('entitlement', PREMIUM_ENTITLEMENT)
-        .maybeSingle();
-      setEntitlement((data as UserEntitlement | null) ?? null);
+        .limit(1);
+      setEntitlement(((data || [])[0] as UserEntitlement | undefined) ?? null);
     } catch {
       setEntitlement(null);
     } finally {

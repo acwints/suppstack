@@ -10,6 +10,7 @@ schema. Each file is an ordered, idempotent migration.
 | 0003 | `20260101000003_reviews.sql` | `product_reviews`, `review_votes`, `review_images`, `product_rating_stats`, aggregate triggers, RLS. |
 | 0004 | `20260101000004_tracking.sql` | `supplement_logs`, `user_supplement_settings`, `daily_tracking_summary`, streak/summary triggers, RLS. |
 | 0005 | `20260101000005_billing.sql` | `user_entitlements` (premium subscription mirror written by the RevenueCat webhook; RLS: users read own row, service-role writes). |
+| 0006 | `20260101000006_health_snapshots.sql` | Apple Health / manual health intelligence tables: `health_metric_snapshots`, `health_experiments`, sleep-stage, recovery/cardio columns, outcome deltas, RLS. |
 
 ## Applying
 
@@ -21,6 +22,17 @@ supabase migration up     # apply to a local dev database
 ```
 
 Or paste each file, in order, into the Supabase dashboard SQL editor.
+
+After applying the health migration to the hosted project, verify the live
+PostgREST schema with:
+
+```bash
+npm run check:health-migration
+```
+
+If it reports missing tables or columns, apply
+`20260101000006_health_snapshots.sql` in the Supabase SQL editor, or authenticate
+the CLI with `SUPABASE_ACCESS_TOKEN` / `supabase login` and run `supabase db push`.
 
 ## Rules
 

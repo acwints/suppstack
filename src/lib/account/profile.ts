@@ -42,7 +42,7 @@ function profileDefaults(user: User) {
 }
 
 // profile_id never changes for a user, so it is safe to memoize per session.
-// This keeps product grids (15+ cards each checking collection membership)
+// This keeps product grids (15+ cards each checking stack membership)
 // from re-querying user_profiles once per card.
 const profileIdCache = new Map<string, Promise<string>>();
 
@@ -62,15 +62,14 @@ export async function getOrCreateUserProfile(user: User): Promise<AccountProfile
     .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .limit(1);
 
   if (fetchError && fetchError.code !== 'PGRST116') {
     throw fetchError;
   }
 
-  if (existing) {
-    return existing as AccountProfile;
+  if (existing?.[0]) {
+    return existing[0] as AccountProfile;
   }
 
   const defaults = profileDefaults(user);
@@ -89,12 +88,11 @@ export async function getOrCreateUserProfile(user: User): Promise<AccountProfile
     .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .limit(1);
 
-  if (retryError || !retry) {
+  if (retryError || !retry?.[0]) {
     throw createError || retryError || new Error('Unable to create user profile');
   }
 
-  return retry as AccountProfile;
+  return retry[0] as AccountProfile;
 }

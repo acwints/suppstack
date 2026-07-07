@@ -136,6 +136,7 @@ CREATE TABLE IF NOT EXISTS stack_supplements (
 
 CREATE TABLE IF NOT EXISTS users_products (
   user_product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   profile_id UUID REFERENCES user_profiles(profile_id) ON DELETE CASCADE,
   product_id INTEGER REFERENCES products(product_id),
   supplement_id INTEGER REFERENCES supplements(supplement_id),
@@ -151,6 +152,7 @@ CREATE TABLE IF NOT EXISTS users_products (
 
 ALTER TABLE users_products
   ADD COLUMN IF NOT EXISTS user_product_id UUID DEFAULT gen_random_uuid(),
+  ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   ADD COLUMN IF NOT EXISTS profile_id UUID REFERENCES user_profiles(profile_id) ON DELETE CASCADE,
   ADD COLUMN IF NOT EXISTS supplement_id INTEGER REFERENCES supplements(supplement_id),
   ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'interested',
@@ -210,6 +212,7 @@ CREATE INDEX IF NOT EXISTS idx_stacks_profile_id ON stacks(profile_id);
 CREATE INDEX IF NOT EXISTS idx_stacks_featured ON stacks(is_featured);
 CREATE INDEX IF NOT EXISTS idx_stacks_public ON stacks(is_public);
 CREATE INDEX IF NOT EXISTS idx_stack_supplements_stack_id ON stack_supplements(stack_id);
+CREATE INDEX IF NOT EXISTS idx_users_products_user_id ON users_products(user_id);
 CREATE INDEX IF NOT EXISTS idx_users_products_profile_id ON users_products(profile_id);
 CREATE INDEX IF NOT EXISTS idx_stack_likes_stack_id ON stack_likes(stack_id);
 CREATE INDEX IF NOT EXISTS idx_user_follows_follower ON user_follows(follower_id);
@@ -291,9 +294,11 @@ DROP POLICY IF EXISTS "Allow public insert access on users_products" ON users_pr
 DROP POLICY IF EXISTS "Users can only see own product interactions" ON users_products;
 CREATE POLICY "Users can only see own product interactions" ON users_products
   FOR ALL USING (
-    profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+    user_id = auth.uid()
+    OR profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
   ) WITH CHECK (
-    profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
+    user_id = auth.uid()
+    OR profile_id IN (SELECT profile_id FROM user_profiles WHERE user_id = auth.uid())
   );
 
 DROP POLICY IF EXISTS "Allow public read access to stack likes" ON stack_likes;

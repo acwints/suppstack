@@ -15,6 +15,7 @@ import { Rating } from '@/components/composite/Rating';
 import { EmbeddedCheckout } from '@/components/composite/Commerce';
 import { BrandLogo } from '@/components/composite/Brand';
 import { supabase } from '../supabase';
+import type { ProductSignalMatch } from '@/lib/catalog/product-match';
 import {
   canPurchase,
   getInventoryLabel,
@@ -23,19 +24,32 @@ import {
 } from '@/lib/commerce/shopify-ucp';
 import { hasShopifyVariant } from '@/lib/commerce/product-source';
 import { cn } from '@/lib/design-system/utils';
+import {
+  getProductImageSrc,
+  isRemoteImageSrc,
+  PRODUCT_IMAGE_FALLBACK,
+} from '@/lib/catalog/product-image';
 
 interface ProductCardProps {
   product: Product;
   ratingStats?: ProductRatingStats | null;
+  signalMatch?: ProductSignalMatch | null;
 }
 
-export default function ProductCard({ product, ratingStats: initialStats }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  ratingStats: initialStats,
+  signalMatch,
+}: ProductCardProps) {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [ratingStats, setRatingStats] = useState<ProductRatingStats | null>(initialStats || null);
   const { user } = useAuth();
   const router = useRouter();
   const toast = useToast();
   const productId = String(product.product_id);
+  const [imageSrc, setImageSrc] = useState<string | null>(() =>
+    getProductImageSrc(product.product_image)
+  );
 
   // Use custom hook for stack management
   const { isInStack, isUpdating, addToStack } = useProductInStack(product);
@@ -57,12 +71,16 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
         .from('product_rating_stats')
         .select('*')
         .eq('product_id', productId)
-        .single();
+        .limit(1);
 
-      if (data) setRatingStats(data);
+      if (data?.[0]) setRatingStats(data[0]);
     }
     fetchRatings();
   }, [productId, initialStats]);
+
+  useEffect(() => {
+    setImageSrc(getProductImageSrc(product.product_image));
+  }, [product.product_image]);
 
   const rating = ratingStats?.average_rating || 0;
   const reviewCount = ratingStats?.total_reviews || 0;
@@ -104,13 +122,15 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
       <Link href={`/product/${productId}`} className="block">
         {/* Product Image */}
         <div className="relative aspect-[4/3] overflow-hidden bg-white sm:aspect-square">
-          {product.product_image ? (
+          {imageSrc ? (
             <Image
-              src={product.product_image}
+              src={imageSrc}
               alt={product.product_name}
               fill
               className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.04] sm:p-5"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              unoptimized={isRemoteImageSrc(imageSrc)}
+              onError={() => setImageSrc(PRODUCT_IMAGE_FALLBACK)}
             />
           ) : (
             <div className="flex items-center justify-center h-full">
@@ -160,6 +180,20 @@ export default function ProductCard({ product, ratingStats: initialStats }: Prod
               </span>
             )}
           </div>
+
+          {signalMatch && signalMatch.score > 0 && (
+            <div className="mt-3 border-t border-gray-100 pt-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="success" size="sm">
+                  {signalMatch.score}
+                </Badge>
+                <span className="text-xs font-medium text-gray-700">Signal match</span>
+              </div>
+              <p className="mt-1 line-clamp-2 text-xs leading-5 text-gray-500">
+                {signalMatch.reasons.join(' · ')}
+              </p>
+            </div>
+          )}
         </div>
       </Link>
 
