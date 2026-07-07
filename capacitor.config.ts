@@ -15,12 +15,12 @@ const config: CapacitorConfig = {
   appName: 'SuppStack AI',
   webDir: 'native/shell',
   server: {
-    url: 'https://suppstack.vercel.app',
+    url: 'https://www.suppstack.app',
     // Keep first-party navigation inside the webview. External hosts
     // (merchant checkout, shop.app, Google OAuth) are opened via the Browser
     // plugin (SFSafariViewController) instead — Google blocks OAuth inside
     // webviews, so accounts.google.com must NOT be allowed here.
-    allowNavigation: ['suppstack.vercel.app', '*.supabase.co'],
+    allowNavigation: ['www.suppstack.app', 'suppstack.app', 'suppstack.vercel.app', '*.supabase.co'],
     // Local page shown when the remote app cannot be loaded (offline).
     errorPath: 'index.html',
   },

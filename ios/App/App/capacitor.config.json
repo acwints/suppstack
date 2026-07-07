@@ -3,8 +3,10 @@
 	"appName": "SuppStack AI",
 	"webDir": "native/shell",
 	"server": {
-		"url": "https://suppstack.vercel.app",
+		"url": "https://www.suppstack.app",
 		"allowNavigation": [
+			"www.suppstack.app",
+			"suppstack.app",
 			"suppstack.vercel.app",
 			"*.supabase.co"
 		],

@@ -9,7 +9,7 @@ project is complete.
 ## How the app is built
 
 - `ios/App/App/capacitor.config.json` points the native WKWebView at the
-  production site (`https://suppstack.vercel.app`). The web app is SSR + API
+  production site (`https://www.suppstack.app`). The web app is SSR + API
   routes, so it is served remotely rather than bundled. Shipping web updates
   does not require an App Store release.
 - Native integrations are bridged into the remote page by Capacitor:
