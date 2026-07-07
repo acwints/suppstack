@@ -1,6 +1,10 @@
 const MISSING_RELATION_CODES = new Set(['42P01', 'PGRST205']);
 const MISSING_COLUMN_CODES = new Set(['42703', 'PGRST204']);
 
+export function isRemoteHealthStorageEnabled() {
+  return process.env.NEXT_PUBLIC_HEALTH_REMOTE_STORAGE === 'enabled';
+}
+
 interface SupabaseLikeError {
   code?: string;
   message?: string;
@@ -49,4 +53,3 @@ export function isMissingHealthColumnError(error: unknown, columns: string[]) {
 export function healthMigrationMessage(feature = 'Health history') {
   return `${feature} needs the Supabase health migration. Apply supabase/migrations/20260101000006_health_snapshots.sql before relying on saved Apple Health history.`;
 }
-

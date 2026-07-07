@@ -6,6 +6,7 @@ import { useAuth } from '@/app/context/AuthContext';
 import type { HealthGoalId } from '@/lib/catalog/health-goal-directory';
 import {
   healthMigrationMessage,
+  isRemoteHealthStorageEnabled,
   isMissingHealthRelationError,
 } from '@/lib/health/health-schema';
 
@@ -176,6 +177,10 @@ function localExperimentWarning(feature = 'Health experiments') {
   return `${healthMigrationMessage(feature)} Saving locally in this browser until the hosted database is updated.`;
 }
 
+function localOnlyExperimentWarning(feature = 'Health experiments') {
+  return `${feature} are saving locally in this browser. Set NEXT_PUBLIC_HEALTH_REMOTE_STORAGE=enabled after applying the Supabase health migration to use hosted experiments.`;
+}
+
 function localId(prefix: string) {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return `${prefix}_${crypto.randomUUID()}`;
@@ -317,6 +322,13 @@ export function useHealthExperiments(
     setError(null);
     setSchemaWarning(null);
 
+    if (!isRemoteHealthStorageEnabled()) {
+      setExperiments(readLocalExperiments(user.id, limit));
+      setSchemaWarning(localOnlyExperimentWarning());
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const { data, error: queryError } = await supabase
         .from('health_experiments')
@@ -356,6 +368,14 @@ export function useHealthExperiments(
       setIsSaving(true);
       setError(null);
       setSchemaWarning(null);
+
+      if (!isRemoteHealthStorageEnabled()) {
+        const created = saveLocalExperiment(user.id, input, limit);
+        setExperiments((previous) => [created, ...previous].slice(0, limit));
+        setSchemaWarning(localOnlyExperimentWarning());
+        setIsSaving(false);
+        return created;
+      }
 
       try {
         const targetDays = input.targetDays ?? 14;

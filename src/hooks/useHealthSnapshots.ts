@@ -10,6 +10,7 @@ import {
 } from '@/lib/health/health-intelligence';
 import {
   healthMigrationMessage,
+  isRemoteHealthStorageEnabled,
   isMissingHealthColumnError,
   isMissingHealthRelationError,
 } from '@/lib/health/health-schema';
@@ -130,6 +131,10 @@ function localSnapshotWarning(feature = 'Health history') {
   return `${healthMigrationMessage(feature)} Saving locally in this browser until the hosted database is updated.`;
 }
 
+function localOnlySnapshotWarning(feature = 'Health history') {
+  return `${feature} is saving locally in this browser. Set NEXT_PUBLIC_HEALTH_REMOTE_STORAGE=enabled after applying the Supabase health migration to use hosted history.`;
+}
+
 function localId(prefix: string) {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return `${prefix}_${crypto.randomUUID()}`;
@@ -225,6 +230,13 @@ export function useHealthSnapshots(
     setError(null);
     setSchemaWarning(null);
 
+    if (!isRemoteHealthStorageEnabled()) {
+      setSnapshots(readLocalSnapshots(user.id, limit));
+      setSchemaWarning(localOnlySnapshotWarning());
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const { data, error: queryError } = await supabase
         .from('health_metric_snapshots')
@@ -264,6 +276,14 @@ export function useHealthSnapshots(
       setIsSaving(true);
       setError(null);
       setSchemaWarning(null);
+
+      if (!isRemoteHealthStorageEnabled()) {
+        const saved = saveLocalSnapshot(user.id, snapshot, limit);
+        setSnapshots((previous) => [saved, ...previous].slice(0, limit));
+        setSchemaWarning(localOnlySnapshotWarning());
+        setIsSaving(false);
+        return saved;
+      }
 
       try {
         const tracker = buildHealthTrackerPlan(snapshot);
