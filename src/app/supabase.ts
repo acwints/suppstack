@@ -8,6 +8,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    // PKCE so the native shell can complete OAuth via deep link: the auth
+    // code returns on app.suppstack://auth-callback and is exchanged in the
+    // webview, where the code verifier lives.
+    flowType: 'pkce',
   },
   global: {
     fetch: (url, options) => {

@@ -5,6 +5,15 @@ import { supabase } from '../supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { getOrCreateUserProfile } from '@/lib/account/profile';
+import {
+  closeNativeBrowser,
+  isNativeApp,
+  onAppUrlOpen,
+  openInNativeBrowser,
+} from '@/lib/native/capacitor';
+
+/** Deep link Supabase redirects to after OAuth completes in the native shell. */
+const NATIVE_AUTH_CALLBACK = 'app.suppstack://auth-callback';
 
 interface AuthContextType {
   user: User | null;
@@ -81,9 +90,50 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [router]);
 
+  // Native OAuth return leg: Supabase redirects the in-app browser to the
+  // app.suppstack:// deep link with a PKCE code; exchange it here in the
+  // webview (where the code verifier lives), then dismiss the browser sheet.
+  useEffect(() => {
+    if (!isNativeApp()) return;
+
+    return onAppUrlOpen(async (url) => {
+      if (!url.startsWith(NATIVE_AUTH_CALLBACK)) return;
+
+      await closeNativeBrowser();
+      try {
+        const code = new URL(url.replace(NATIVE_AUTH_CALLBACK, 'https://callback')).searchParams.get('code');
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+        }
+      } catch (error) {
+        console.error('Failed to complete native OAuth callback:', error);
+      }
+    });
+  }, []);
+
   const startOAuth = async (provider: 'google' | 'apple', nextPath = '/profile') => {
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem('suppstack_post_login_path', nextPath);
+    }
+
+    if (isNativeApp()) {
+      // Google forbids OAuth inside webviews, and a plain redirect bounces
+      // the user out to the Safari app (and strands the session there).
+      // Instead: get the authorize URL without navigating, present it in
+      // SFSafariViewController, and return via the deep link above.
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: NATIVE_AUTH_CALLBACK,
+          skipBrowserRedirect: true,
+        },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        await openInNativeBrowser(data.url);
+      }
+      return;
     }
 
     const redirectUrl =
