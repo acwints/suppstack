@@ -65,6 +65,22 @@ export default function BrandsPage() {
           <div className="flex justify-center py-16">
             <Spinner size="lg" />
           </div>
+        ) : filteredBrands.length === 0 ? (
+          <div className="rounded border border-gray-200 bg-gray-50 p-10 text-center">
+            <p className="text-base font-medium text-gray-900">
+              No brands match &ldquo;{searchTerm}&rdquo;
+            </p>
+            <p className="mt-2 text-sm text-gray-500">
+              Try a shorter term, or browse every brand below.
+            </p>
+            <button
+              type="button"
+              onClick={() => setSearchTerm('')}
+              className="mt-5 inline-flex min-h-11 items-center justify-center rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
+            >
+              Show all brands
+            </button>
+          </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredBrands.map((brand) => (

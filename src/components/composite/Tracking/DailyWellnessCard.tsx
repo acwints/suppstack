@@ -231,7 +231,7 @@ export function DailyWellnessCard({
               value={sleepHours}
               onChange={(e) => setSleepHours(e.target.value)}
               placeholder="7.5"
-              className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-sm"
+              className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900 text-base sm:text-sm"
             />
           </div>
           <div>
@@ -239,7 +239,7 @@ export function DailyWellnessCard({
             <select
               value={sleepQuality}
               onChange={(e) => setSleepQuality(Number(e.target.value))}
-              className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base sm:text-sm bg-white"
+              className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900 text-base sm:text-sm bg-white"
             >
               <option value={0}>Select...</option>
               {sleepOptions.map((option) => (
@@ -262,7 +262,7 @@ export function DailyWellnessCard({
           onChange={(e) => setNotes(e.target.value)}
           placeholder="How are you feeling? Anything notable about today?"
           rows={2}
-          className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none text-base sm:text-sm"
+          className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900 resize-none text-base sm:text-sm"
         />
       </div>
 

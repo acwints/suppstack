@@ -12,6 +12,8 @@ import { HEALTH_GOAL_DEFINITIONS, healthGoalHref } from '@/lib/catalog/health-go
 export interface EnhancedSearchBarProps {
   value: string;
   onChange: (value: string) => void;
+  /** Called with the trimmed term when the user submits (Enter without a highlighted suggestion). */
+  onSubmit?: (term: string) => void;
   placeholder?: string;
   className?: string;
 }
@@ -63,6 +65,7 @@ function clearRecentSearches(): void {
 export function EnhancedSearchBar({
   value,
   onChange,
+  onSubmit,
   placeholder = 'Search supplements, brands, and products...',
   className,
 }: EnhancedSearchBarProps) {
@@ -194,6 +197,7 @@ export function EnhancedSearchBar({
       saveRecentSearch(value.trim());
       setIsOpen(false);
       inputRef.current?.blur();
+      onSubmit?.(value.trim());
     }
   };
 

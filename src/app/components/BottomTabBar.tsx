@@ -1,0 +1,84 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import type { IconType } from 'react-icons';
+import { FiActivity, FiCheckCircle, FiSearch, FiShoppingBag, FiUser } from 'react-icons/fi';
+import { cn } from '@/lib/design-system';
+
+interface TabItem {
+  href: string;
+  label: string;
+  icon: IconType;
+  /** Route prefixes (besides href) that keep this tab active. */
+  match: string[];
+}
+
+const TABS: TabItem[] = [
+  { href: '/', label: 'Shop', icon: FiShoppingBag, match: ['/supplement', '/brands'] },
+  { href: '/products', label: 'Browse', icon: FiSearch, match: [] },
+  { href: '/log', label: 'Log', icon: FiCheckCircle, match: [] },
+  { href: '/health', label: 'Health', icon: FiActivity, match: [] },
+  { href: '/profile', label: 'You', icon: FiUser, match: ['/stacks'] },
+];
+
+/** Routes where the tab bar yields to a route-specific bottom bar (e.g. the PDP buy bar). */
+const HIDDEN_PREFIXES = ['/product/', '/login'];
+
+function isTabActive(tab: TabItem, pathname: string): boolean {
+  if (tab.href === '/') {
+    return pathname === '/' || tab.match.some((prefix) => pathname.startsWith(prefix));
+  }
+  // Most specific tab wins: /health/tracker must not also light up /health.
+  const owns = [tab.href, ...tab.match];
+  if (!owns.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))) {
+    return false;
+  }
+  const moreSpecific = TABS.some(
+    (other) =>
+      other !== tab &&
+      other.href.length > tab.href.length &&
+      (pathname === other.href || pathname.startsWith(`${other.href}/`))
+  );
+  return !moreSpecific;
+}
+
+export default function BottomTabBar() {
+  const pathname = usePathname();
+
+  if (HIDDEN_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix))) {
+    return null;
+  }
+
+  return (
+    <nav
+      aria-label="Primary"
+      className="app-tabbar fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white/95 backdrop-blur md:hidden"
+    >
+      <div className="grid grid-cols-5">
+        {TABS.map((tab) => {
+          const active = isTabActive(tab, pathname);
+          const Icon = tab.icon;
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              aria-current={active ? 'page' : undefined}
+              className={cn(
+                'flex min-h-14 flex-col items-center justify-center gap-1 px-1 pt-2 pb-1.5 transition-colors duration-150',
+                'touch-manipulation active:bg-gray-50',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-900',
+                active ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'
+              )}
+            >
+              <Icon size={22} strokeWidth={active ? 2.25 : 2} aria-hidden="true" />
+              <span className={cn('text-[10px] leading-none tracking-wide', active ? 'font-semibold' : 'font-medium')}>
+                {tab.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}

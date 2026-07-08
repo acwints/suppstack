@@ -7,6 +7,7 @@ import type { Product } from '@/types';
 import { Badge, Button, Inline, Modal, Spinner, Stack } from '@/components/ui';
 import { formatPrice } from '@/lib/utils';
 import { useCommerceCheckout } from '@/hooks';
+import { isNativeApp, openInNativeBrowser } from '@/lib/native/capacitor';
 import { BrandLogo } from '@/components/composite/Brand';
 import {
   getPurchaseDestination,
@@ -127,13 +128,22 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
    * background and never gates the checkout.
    */
   const launchCheckout = () => {
-    const checkoutWindow = openCheckoutWindow(checkoutUrl);
-
-    if (checkoutWindow) {
-      checkoutWindow.focus();
-      setStage('opened');
+    if (isNativeApp()) {
+      // The native shell has no popup windows; present the merchant checkout
+      // in SFSafariViewController instead. No popup blocker exists there, so
+      // the async call is safe outside the user-activation window.
+      openInNativeBrowser(checkoutUrl)
+        .then((opened) => setStage(opened ? 'opened' : 'blocked'))
+        .catch(() => setStage('blocked'));
     } else {
-      setStage('blocked');
+      const checkoutWindow = openCheckoutWindow(checkoutUrl);
+
+      if (checkoutWindow) {
+        checkoutWindow.focus();
+        setStage('opened');
+      } else {
+        setStage('blocked');
+      }
     }
 
     resolveCheckoutSession(product, quantity).catch(() => undefined);
@@ -223,7 +233,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
                     type="button"
                     onClick={() => setQuantity((value) => Math.max(1, value - 1))}
                     disabled={quantity <= 1}
-                    className="flex h-8 w-8 items-center justify-center rounded border border-gray-200 text-gray-600 transition-colors duration-150 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-40"
+                    className="flex h-11 w-11 items-center justify-center rounded border border-gray-200 text-gray-600 transition-colors duration-150 hover:border-gray-300 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-40"
                     aria-label="Decrease quantity"
                   >
                     <FiMinus className="h-3.5 w-3.5" />
@@ -235,7 +245,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
                     type="button"
                     onClick={() => setQuantity((value) => Math.min(10, value + 1))}
                     disabled={quantity >= 10}
-                    className="flex h-8 w-8 items-center justify-center rounded border border-gray-200 text-gray-600 transition-colors duration-150 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-40"
+                    className="flex h-11 w-11 items-center justify-center rounded border border-gray-200 text-gray-600 transition-colors duration-150 hover:border-gray-300 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-40"
                     aria-label="Increase quantity"
                   >
                     <FiPlus className="h-3.5 w-3.5" />

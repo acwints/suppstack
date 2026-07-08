@@ -1,6 +1,7 @@
 import Header from './Header';
 import Footer from './Footer';
 import AuthGate from './AuthGate';
+import BottomTabBar from './BottomTabBar';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <AuthGate>{children}</AuthGate>
       </main>
       <Footer />
+      <BottomTabBar />
     </div>
   );
 }

@@ -69,6 +69,24 @@ export async function closeNativeBrowser(): Promise<void> {
 }
 
 /**
+ * Opens an external URL the platform-appropriate way: SFSafariViewController
+ * inside the native shell, `window.open` on the web with a same-tab fallback
+ * when the popup is blocked. Returns true when the URL was opened somewhere.
+ */
+export async function openExternalUrl(url: string): Promise<boolean> {
+  if (await openInNativeBrowser(url).catch(() => false)) {
+    return true;
+  }
+  if (typeof window === 'undefined') return false;
+
+  const opened = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!opened) {
+    window.location.assign(url);
+  }
+  return true;
+}
+
+/**
  * Subscribes to deep-link opens (custom URL scheme / universal links) and
  * replays the launch URL for cold starts, where the deep link arrives before
  * the remote page has registered its listener.

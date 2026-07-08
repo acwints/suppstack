@@ -5,7 +5,29 @@ import Link from 'next/link';
 import { useAuth } from '@/app/context/AuthContext';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { FiChevronDown, FiCreditCard, FiLogOut, FiPackage, FiShoppingBag } from 'react-icons/fi';
+import { FiBookmark, FiChevronDown, FiCreditCard, FiLogOut, FiPackage } from 'react-icons/fi';
+import { cn } from '@/lib/design-system';
+
+const NAV_LINKS = [
+  { href: '/', label: 'Shop' },
+  { href: '/brands', label: 'Brands' },
+  { href: '/products', label: 'Products' },
+  { href: '/health', label: 'Health' },
+  { href: '/health/tracker', label: 'Tracker' },
+  { href: '/log', label: 'Log' },
+  { href: '/premium', label: 'Premium' },
+] as const;
+
+function isNavActive(href: string, pathname: string): boolean {
+  if (href === '/') return pathname === '/';
+  if (pathname !== href && !pathname.startsWith(`${href}/`)) return false;
+  // Longest matching link wins so /health/tracker doesn't also mark /health.
+  return !NAV_LINKS.some(
+    (link) =>
+      link.href.length > href.length &&
+      (pathname === link.href || pathname.startsWith(`${link.href}/`))
+  );
+}
 
 export default function Header() {
   const { user, loading, logout } = useAuth();
@@ -71,10 +93,7 @@ export default function Header() {
   };
 
   const accountMenuLinkClass =
-    'flex min-h-10 items-center gap-3 rounded px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950 focus:bg-gray-50 focus:text-gray-950 focus:outline-none';
-
-  const mobileNavLinkClass =
-    'flex min-h-10 items-center gap-3 rounded px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950 focus:bg-gray-50 focus:text-gray-950 focus:outline-none md:hidden';
+    'flex min-h-11 items-center gap-3 rounded px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-900';
 
   const avatar = avatarUrl ? (
     <Image
@@ -97,7 +116,7 @@ export default function Header() {
         aria-haspopup="menu"
         aria-expanded={isAccountMenuOpen}
         onClick={() => setIsAccountMenuOpen((open) => !open)}
-        className="flex min-h-10 items-center gap-2 rounded px-1.5 py-1 text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 sm:px-2"
+        className="flex min-h-11 min-w-11 items-center justify-center gap-2 rounded px-1.5 py-1 text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 sm:px-2"
       >
         {avatar}
         <span className="hidden max-w-28 truncate text-sm font-medium sm:inline lg:max-w-36">
@@ -117,7 +136,7 @@ export default function Header() {
         <div
           role="menu"
           aria-label="Account menu"
-          className="absolute right-0 mt-2 w-72 rounded-md border border-gray-200 bg-white p-2 shadow-lg ring-1 ring-black/5"
+          className="absolute right-0 mt-2 w-72 rounded-md border border-gray-200 bg-white p-2 shadow-md ring-1 ring-black/5"
         >
           <div className="border-b border-gray-100 px-3 py-3">
             <p className="truncate text-sm font-semibold text-gray-900">{displayName}</p>
@@ -135,28 +154,12 @@ export default function Header() {
             </Link>
           </div>
 
-          <div className="border-t border-gray-100 py-2 md:hidden">
-            <Link href="/" role="menuitem" className={mobileNavLinkClass}>
-              <FiShoppingBag size={16} aria-hidden="true" />
-              Shop
-            </Link>
-            <Link href="/brands" role="menuitem" className={mobileNavLinkClass}>
-              Brands
-            </Link>
-            <Link href="/products" role="menuitem" className={mobileNavLinkClass}>
-              Products
-            </Link>
-            <Link href="/health" role="menuitem" className={mobileNavLinkClass}>
-              Health
-            </Link>
-          </div>
-
           <div className="border-t border-gray-100 pt-2">
             <button
               type="button"
               role="menuitem"
               onClick={handleSignOut}
-              className="flex min-h-10 w-full items-center gap-3 rounded px-3 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950 focus:bg-gray-50 focus:text-gray-950 focus:outline-none"
+              className="flex min-h-11 w-full items-center gap-3 rounded px-3 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-900"
             >
               <FiLogOut size={16} aria-hidden="true" />
               Sign out
@@ -172,7 +175,7 @@ export default function Header() {
   ) : !isLoginPage ? (
     <button
       onClick={handleSignIn}
-      className="min-h-10 rounded bg-gray-900 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 sm:px-5"
+      className="min-h-11 rounded bg-gray-900 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-gray-800 active:bg-gray-950 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 sm:px-5"
     >
       Sign in
     </button>
@@ -190,55 +193,60 @@ export default function Header() {
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden items-center gap-5 md:flex xl:gap-8">
-            <Link
-              href="/"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Shop
-            </Link>
-            <Link
-              href="/brands"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Brands
-            </Link>
-            <Link
-              href="/products"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Products
-            </Link>
-            <Link
-              href="/health"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Health
-            </Link>
-            <Link
-              href="/health/tracker"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Tracker
-            </Link>
-            <Link
-              href="/premium"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Premium
-            </Link>
+          <nav aria-label="Primary" className="hidden items-center gap-5 md:flex xl:gap-8">
+            {NAV_LINKS.map((link) => {
+              const active = isNavActive(link.href, pathname);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'rounded text-sm transition-colors hover:text-gray-900',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2',
+                    active
+                      ? 'font-semibold text-gray-900 underline decoration-gray-900 underline-offset-8'
+                      : 'font-medium text-gray-600'
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
             {user && (
               <Link
                 href="/profile"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                aria-current={isNavActive('/profile', pathname) ? 'page' : undefined}
+                className={cn(
+                  'rounded text-sm transition-colors hover:text-gray-900',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2',
+                  pathname === '/profile' || pathname.startsWith('/profile/')
+                    ? 'font-semibold text-gray-900 underline decoration-gray-900 underline-offset-8'
+                    : 'font-medium text-gray-600'
+                )}
               >
                 My Stack
               </Link>
             )}
           </nav>
 
-          {/* Auth */}
-          <div className="flex shrink-0 items-center">{authControl}</div>
+          {/* Saved + Auth */}
+          <div className="flex shrink-0 items-center gap-1">
+            <Link
+              href="/saved"
+              aria-label="Saved products"
+              aria-current={pathname === '/saved' ? 'page' : undefined}
+              className={cn(
+                'flex min-h-11 min-w-11 items-center justify-center rounded transition-colors',
+                'hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2',
+                pathname === '/saved' ? 'text-gray-900' : 'text-gray-600'
+              )}
+            >
+              <FiBookmark size={20} className={pathname === '/saved' ? 'fill-current' : ''} aria-hidden="true" />
+            </Link>
+            {authControl}
+          </div>
         </div>
       </div>
     </header>

@@ -90,7 +90,7 @@ export function Toast({ toast, onRemove }: ToastProps) {
   return (
     <div
       className={cn(
-        'w-full max-w-sm rounded-xl border shadow-lg',
+        'w-full max-w-sm rounded-lg border shadow-md',
         'transition-all duration-200 ease-out',
         styles.bg,
         styles.border,

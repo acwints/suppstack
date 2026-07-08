@@ -74,7 +74,7 @@ export function Modal({
         className={cn(
           'relative w-full mx-4',
           sizeClasses[size],
-          'bg-white rounded-2xl shadow-xl',
+          'bg-white rounded-lg shadow-md',
           'animate-scale-in',
         )}
         role="dialog"

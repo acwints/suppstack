@@ -19,7 +19,7 @@ const FREE_FEATURES = [
 ];
 
 export default function PremiumPage() {
-  const { user, loading: authLoading, loginWithGoogle } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isPremium, entitlement, loading: premiumLoading } = usePremium();
 
   const checkoutUrl = user ? premiumCheckoutUrl(user.id) : null;
@@ -46,7 +46,7 @@ export default function PremiumPage() {
           <ul className="mt-6 space-y-3">
             {FREE_FEATURES.map((feature) => (
               <li key={feature} className="flex items-start gap-2.5 text-sm text-gray-700">
-                <FiCheck size={16} className="mt-0.5 shrink-0 text-gray-400" />
+                <FiCheck size={16} className="mt-0.5 shrink-0 text-gray-500" />
                 {feature}
               </li>
             ))}
@@ -108,13 +108,15 @@ export default function PremiumPage() {
                 )}
               </div>
             ) : !user ? (
-              <button
-                onClick={() => loginWithGoogle()}
+              // Route through /login so both Apple and Google are offered —
+              // Apple-first parity matters on iOS, especially on a paid path.
+              <Link
+                href="/login?next=/premium"
                 className="inline-flex w-full items-center justify-center gap-2 rounded bg-gray-900 px-5 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
               >
                 Sign in to upgrade
                 <FiArrowRight size={16} />
-              </button>
+              </Link>
             ) : checkoutUrl ? (
               <a
                 href={checkoutUrl}
@@ -132,7 +134,7 @@ export default function PremiumPage() {
         </Card>
       </div>
 
-      <p className="mx-auto mt-8 max-w-xl text-center text-xs text-gray-400">
+      <p className="mx-auto mt-8 max-w-xl text-center text-xs text-gray-500">
         Cancel anytime. Your logging history is never paywalled — Premium only
         gates the analytics built on top of it.{' '}
         <Link href="/terms" className="underline underline-offset-2 hover:text-gray-600">

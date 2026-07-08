@@ -5,8 +5,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FaCheck, FaShoppingCart } from 'react-icons/fa';
+import { FiBookmark } from 'react-icons/fi';
 import type { Product, ProductRatingStats } from '@/types';
 import { useAuth } from '../context/AuthContext';
+import { useSavedProducts } from '../context/SavedProductsContext';
 import { useProductInStack, usePriceCalculations } from '@/hooks';
 import { useCommerceCheckout } from '@/hooks';
 import { formatPrice } from '@/lib/utils';
@@ -54,6 +56,8 @@ export default function ProductCard({
   // Use custom hook for stack management
   const { isInStack, isUpdating, addToStack } = useProductInStack(product);
   const { isStartingCheckout, startCheckout } = useCommerceCheckout();
+  const { isSaved, toggleSaved } = useSavedProducts();
+  const saved = isSaved(productId);
 
   // Use custom hook for price calculations
   const { costPerServing } = usePriceCalculations(
@@ -145,6 +149,25 @@ export default function ProductCard({
               {purchaseDestination.isDirectCheckout ? 'Instant checkout' : inventoryLabel}
             </Badge>
           </div>
+
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              toggleSaved(product);
+            }}
+            aria-label={saved ? `Remove ${product.product_name} from saved` : `Save ${product.product_name}`}
+            aria-pressed={saved}
+            className={cn(
+              'absolute right-1 top-1 flex min-h-11 min-w-11 items-center justify-center rounded',
+              'transition-colors duration-150 active:bg-gray-100',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900',
+              saved ? 'text-gray-900' : 'text-gray-400 hover:text-gray-900'
+            )}
+          >
+            <FiBookmark size={20} className={saved ? 'fill-current' : ''} aria-hidden="true" />
+          </button>
         </div>
 
         {/* Product Info (clickable) */}

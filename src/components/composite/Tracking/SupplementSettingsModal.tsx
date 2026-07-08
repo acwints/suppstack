@@ -158,7 +158,7 @@ export function SupplementSettingsModal({
               step={0.5}
               value={servingsPerDay}
               onChange={(e) => setServingsPerDay(Number(e.target.value))}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
             />
           </div>
         </div>
@@ -200,7 +200,7 @@ export function SupplementSettingsModal({
                   type="time"
                   value={time}
                   onChange={(e) => updateTime(index, e.target.value)}
-                  className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="flex-1 px-3 py-2 border rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
                 />
                 {scheduleTimes.length > 1 && (
                   <button
@@ -234,9 +234,9 @@ export function SupplementSettingsModal({
               </div>
               <div>
                 <label htmlFor="remindersEnabled" className="font-medium text-gray-900 cursor-pointer">
-                  Enable Reminders
+                  Reminder schedule
                 </label>
-                <p className="text-sm text-gray-500">Get notified at your scheduled times</p>
+                <p className="text-sm text-gray-500">Save the times you plan to take this</p>
               </div>
             </div>
             <button
@@ -256,8 +256,9 @@ export function SupplementSettingsModal({
             </button>
           </div>
           {remindersEnabled && (
-            <p className="mt-3 text-xs text-gray-500 bg-orange-50 p-2 rounded">
-              Reminders will be sent at: {scheduleTimes.join(', ')}
+            <p className="mt-3 text-xs text-gray-500 bg-gray-50 p-2 rounded">
+              Scheduled for {scheduleTimes.join(', ')}. Push reminders are coming soon — for now
+              your schedule appears on your daily log.
             </p>
           )}
         </div>
@@ -269,7 +270,7 @@ export function SupplementSettingsModal({
             id="takeWithFood"
             checked={takeWithFood}
             onChange={(e) => setTakeWithFood(e.target.checked)}
-            className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+            className="w-4 h-4 text-gray-900 rounded focus:ring-gray-900"
           />
           <label htmlFor="takeWithFood" className="text-sm text-gray-700">
             Take with food
@@ -295,7 +296,7 @@ export function SupplementSettingsModal({
             onChange={(e) => setGoal(e.target.value)}
             placeholder="e.g., Improve sleep quality, Build muscle..."
             rows={2}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none"
+            className="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900 resize-none"
           />
         </div>
 
@@ -310,7 +311,7 @@ export function SupplementSettingsModal({
             value={targetDuration}
             onChange={(e) => setTargetDuration(e.target.value ? Number(e.target.value) : '')}
             placeholder="e.g., 30, 60, 90"
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
           />
         </div>
 

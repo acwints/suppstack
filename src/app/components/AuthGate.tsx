@@ -14,6 +14,8 @@ const PUBLIC_PATHS = [
   '/privacy',
   '/products',
   '/product',
+  '/saved',
+  '/search',
   '/supplement',
   '/terms',
 ];

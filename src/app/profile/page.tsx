@@ -445,9 +445,10 @@ export default function Profile() {
                           onClick={() =>
                             handleOpenSettings(item.product_id, item.products.product_name)
                           }
-                          className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                          aria-label={`Settings for ${item.products.product_name}`}
+                          className="flex min-h-11 min-w-11 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 active:bg-gray-100"
                         >
-                          <FiSettings size={18} />
+                          <FiSettings size={18} aria-hidden="true" />
                         </button>
                       </div>
                     </div>
@@ -628,18 +629,21 @@ export default function Profile() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 ml-4">
-                      <Link href={`/stacks/${stack.stack_id}`}>
-                        <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                          <FiEye size={18} />
-                        </button>
+                      <Link
+                        href={`/stacks/${stack.stack_id}`}
+                        aria-label={`View ${stack.stack_name}`}
+                        className="flex min-h-11 min-w-11 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 active:bg-gray-100"
+                      >
+                        <FiEye size={18} aria-hidden="true" />
                       </Link>
                       <button
                         onClick={() =>
                           setDeleteConfirm({ stackId: stack.stack_id, stackName: stack.stack_name })
                         }
-                        className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                        aria-label={`Delete ${stack.stack_name}`}
+                        className="flex min-h-11 min-w-11 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-50 hover:text-red-600 active:bg-gray-100"
                       >
-                        <FiTrash2 size={18} />
+                        <FiTrash2 size={18} aria-hidden="true" />
                       </button>
                     </div>
                   </div>

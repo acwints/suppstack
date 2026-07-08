@@ -59,7 +59,7 @@ export function StackCard({
   return (
     <Link href={`/stacks/${stack.stack_id}`} className="block h-full">
       <Card
-        className="group h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 animate-fade-in"
+        className="group h-full hover:shadow-md transition-all duration-200 animate-fade-in"
         style={{ animationDelay: `${index * 0.1}s` }}
         padding="none"
       >

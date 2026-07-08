@@ -5,10 +5,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft, FaShoppingCart, FaCheck, FaExternalLinkAlt } from 'react-icons/fa';
-import { FiActivity, FiClock, FiCpu, FiMoon, FiShield, FiTarget } from 'react-icons/fi';
+import { FiActivity, FiBookmark, FiClock, FiCpu, FiMoon, FiShield, FiTarget } from 'react-icons/fi';
 import { supabase } from '../../supabase';
 import { useAuth } from '../../context/AuthContext';
+import { useSavedProducts } from '../../context/SavedProductsContext';
 import { useReviews } from '@/hooks/useReviews';
+import { recordProductView } from '@/hooks/useRecentlyViewed';
 import {
   useHealthExperiments,
   useHealthSnapshots,
@@ -87,6 +89,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   // Stack management
   const { isInStack, isUpdating, addToStack } = useProductInStack(product);
+  const { isSaved, toggleSaved } = useSavedProducts();
+  const saved = product ? isSaved(String(product.product_id)) : false;
   const { isStartingCheckout, startCheckout } = useCommerceCheckout();
   const { latestSnapshot } = useHealthSnapshots({ limit: 1 });
   const {
@@ -136,6 +140,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     setProductImageSrc(getProductImageSrc(product?.product_image));
   }, [product?.product_image]);
+
+  // Feed the home screen's "Recently Viewed" strip.
+  useEffect(() => {
+    if (product) recordProductView(product);
+  }, [product]);
 
   const productDirectory = useMemo(() => buildProductDirectory(), []);
   const directoryProduct = useMemo(() => {
@@ -335,7 +344,22 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           </span>
 
           {/* Product Name */}
-          <h1 className="text-3xl font-serif text-gray-900">{product.product_name}</h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-3xl font-serif text-gray-900">{product.product_name}</h1>
+            <button
+              type="button"
+              onClick={() => toggleSaved(product)}
+              aria-label={saved ? 'Remove from saved' : 'Save for later'}
+              aria-pressed={saved}
+              className={`flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border transition-colors duration-150 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 ${
+                saved
+                  ? 'border-gray-900 text-gray-900'
+                  : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-900'
+              }`}
+            >
+              <FiBookmark size={20} className={saved ? 'fill-current' : ''} aria-hidden="true" />
+            </button>
+          </div>
 
           {/* Rating Summary */}
           <Inline gap={3} align="center">
@@ -570,6 +594,30 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
       />
+
+      {/* Sticky purchase bar (mobile) — the tab bar yields to this on /product routes */}
+      <div className="app-bottom-bar fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white/95 backdrop-blur md:hidden">
+        <div className="flex items-center gap-4 px-4 py-2.5">
+          <div className="min-w-0 shrink-0">
+            <p className="text-lg font-semibold leading-tight text-gray-900">
+              ${formatPrice(product.product_price)}
+            </p>
+            {(product.servings_per_container ?? 0) > 0 && (
+              <p className="text-xs text-gray-500">${formatPrice(costPerServing)}/serving</p>
+            )}
+          </div>
+          <Button
+            variant="primary"
+            size="lg"
+            className="min-h-11 flex-1"
+            onClick={handleStartCheckout}
+            disabled={!canPurchase(product)}
+            isLoading={isStartingCheckout}
+          >
+            {purchaseLabel}
+          </Button>
+        </div>
+      </div>
 
       {/* Reviews Section */}
       {!isCatalogProduct && (

@@ -126,12 +126,20 @@ export function SkeletonStackCard() {
 export function SkeletonGrid({
   count = 12,
   CardComponent = SkeletonCard,
+  className,
 }: {
   count?: number;
   CardComponent?: React.ComponentType;
+  className?: string;
 }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    // Default layout mirrors SupplementGrid so the page doesn't reflow when
+    // real content replaces the skeleton.
+    <div
+      className={
+        className ?? 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-4'
+      }
+    >
       {Array.from({ length: count }).map((_, i) => (
         <CardComponent key={i} />
       ))}

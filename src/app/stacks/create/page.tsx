@@ -265,17 +265,19 @@ export default function CreateStackPage() {
                             type="button"
                             onClick={() => moveSupplement(index, 'up')}
                             disabled={index === 0}
-                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                            aria-label={`Move ${supplement.supplement_name} up`}
+                            className="flex min-h-11 min-w-11 items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-700 active:bg-gray-200 disabled:opacity-30"
                           >
-                            <FiChevronUp size={14} />
+                            <FiChevronUp size={18} aria-hidden="true" />
                           </button>
                           <button
                             type="button"
                             onClick={() => moveSupplement(index, 'down')}
                             disabled={index === supplements.length - 1}
-                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                            aria-label={`Move ${supplement.supplement_name} down`}
+                            className="flex min-h-11 min-w-11 items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-700 active:bg-gray-200 disabled:opacity-30"
                           >
-                            <FiChevronDown size={14} />
+                            <FiChevronDown size={18} aria-hidden="true" />
                           </button>
                         </Stack>
                         <div>
@@ -297,9 +299,10 @@ export default function CreateStackPage() {
                       <button
                         type="button"
                         onClick={() => removeSupplement(supplement.supplement_id)}
-                        className="text-gray-400 hover:text-red-500 p-1"
+                        aria-label={`Remove ${supplement.supplement_name}`}
+                        className="flex min-h-11 min-w-11 items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-red-600 active:bg-gray-200"
                       >
-                        <FiX size={18} />
+                        <FiX size={18} aria-hidden="true" />
                       </button>
                     </Inline>
 
@@ -313,7 +316,7 @@ export default function CreateStackPage() {
                             updateSupplement(supplement.supplement_id, 'dosage', e.target.value)
                           }
                           placeholder="e.g., 500mg"
-                          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
+                          className="w-full px-3 py-1.5 text-base sm:text-sm border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
                         />
                       </div>
                       <div>
@@ -325,7 +328,7 @@ export default function CreateStackPage() {
                             updateSupplement(supplement.supplement_id, 'frequency', e.target.value)
                           }
                           placeholder="e.g., Daily"
-                          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
+                          className="w-full px-3 py-1.5 text-base sm:text-sm border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
                         />
                       </div>
                       <div>
@@ -337,7 +340,7 @@ export default function CreateStackPage() {
                             updateSupplement(supplement.supplement_id, 'timing', e.target.value)
                           }
                           placeholder="e.g., Morning with food"
-                          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
+                          className="w-full px-3 py-1.5 text-base sm:text-sm border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
                         />
                       </div>
                       <div>
@@ -349,7 +352,7 @@ export default function CreateStackPage() {
                             updateSupplement(supplement.supplement_id, 'notes', e.target.value)
                           }
                           placeholder="Any additional notes"
-                          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
+                          className="w-full px-3 py-1.5 text-base sm:text-sm border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
                         />
                       </div>
                     </Grid>

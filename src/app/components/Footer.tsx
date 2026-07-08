@@ -13,10 +13,10 @@ export default function Footer() {
           </div>
           
           <div className="flex items-center space-x-6 text-sm">
-            <a href="/premium" className="hover:text-orange-600 transition-colors duration-200">Premium</a>
-            <a href="/privacy" className="hover:text-orange-600 transition-colors duration-200">Privacy</a>
-            <a href="/terms" className="hover:text-orange-600 transition-colors duration-200">Terms</a>
-            <a href="mailto:support@suppstack.com" className="hover:text-orange-600 transition-colors duration-200">Support</a>
+            <a href="/premium" className="hover:text-gray-900 transition-colors duration-200">Premium</a>
+            <a href="/privacy" className="hover:text-gray-900 transition-colors duration-200">Privacy</a>
+            <a href="/terms" className="hover:text-gray-900 transition-colors duration-200">Terms</a>
+            <a href="mailto:support@suppstack.com" className="hover:text-gray-900 transition-colors duration-200">Support</a>
           </div>
         </div>
         

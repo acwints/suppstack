@@ -14,6 +14,7 @@ import {
   isShopifySearchUrl,
 } from '@/lib/commerce/shopify-ucp';
 import { mergeProductSources } from '@/lib/commerce/product-source';
+import { openExternalUrl } from '@/lib/native/capacitor';
 import {
   findCatalogSupplementById,
   findCatalogSupplementByName,
@@ -152,11 +153,13 @@ export function BuyStackPanel({
   );
 
   const handleBuySelected = () => {
+    // openExternalUrl uses SFSafariViewController in the native shell (where
+    // window.open is unreliable) and tabs on the web.
     cartGroups.forEach(group => {
-      window.open(group.url, '_blank', 'noopener,noreferrer');
+      void openExternalUrl(group.url);
     });
     individualFallbackProducts.forEach(product => {
-      window.open(getPreferredPurchaseUrl(product), '_blank', 'noopener,noreferrer');
+      void openExternalUrl(getPreferredPurchaseUrl(product));
     });
   };
 

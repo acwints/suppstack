@@ -125,7 +125,7 @@ export function ConfirmDialog({
         ref={dialogRef}
         className={cn(
           'w-full max-w-md',
-          'bg-white rounded-2xl shadow-xl',
+          'bg-white rounded-lg shadow-md',
           'animate-in zoom-in-95 duration-200'
         )}
       >

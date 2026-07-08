@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { useSupplements } from '@/hooks';
 import { brandSlug, buildBrandDiscovery } from '@/lib/catalog/brand-discovery';
-import { SkeletonGrid, SkeletonCard, Inline, Stack } from '@/components/ui';
+import { SkeletonGrid, SkeletonCard, EmptyState, Inline, Stack } from '@/components/ui';
 import { EnhancedSearchBar } from '@/components/composite/Search';
 import { CategoryFilter, SortFilter } from '@/components/composite/Filter';
+import { RecentlyViewedRow } from '@/components/composite/Product/RecentlyViewedRow';
 import {
   SupplementGrid,
   FeaturedCategories,
@@ -15,6 +17,7 @@ import {
 import { BrandLogo } from '@/components/composite/Brand';
 
 export default function Home() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
@@ -34,7 +37,11 @@ export default function Home() {
       {/* Search bar — the storefront entry point */}
       <div className="border-b border-gray-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-4">
-          <EnhancedSearchBar value={searchTerm} onChange={setSearchTerm} />
+          <EnhancedSearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            onSubmit={(term) => router.push(`/search?q=${encodeURIComponent(term)}`)}
+          />
         </div>
       </div>
 
@@ -61,8 +68,28 @@ export default function Home() {
       <div className="mx-auto max-w-7xl px-4 py-6">
         {isLoading ? (
           <SkeletonGrid count={15} CardComponent={SkeletonCard} />
+        ) : browseGroups.length === 0 ? (
+          <EmptyState
+            title="No products match"
+            description="Try a different search term or category."
+            action={
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedCategory('all');
+                }}
+                className="inline-flex min-h-11 items-center justify-center rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
+              >
+                Clear filters
+              </button>
+            }
+            size="lg"
+          />
         ) : (
           <Stack gap={10}>
+            <RecentlyViewedRow />
+
             <section>
               <Inline justify="between" align="end" className="section-header">
                 <div>
@@ -130,25 +157,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="mt-10 border-t border-gray-200">
-        <div className="mx-auto max-w-7xl px-4 py-8">
-          <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-            <p className="text-sm text-gray-500">SuppStack — supplement marketplace</p>
-            <div className="flex gap-8 text-sm text-gray-500">
-              <a href="/terms" className="transition-colors hover:text-gray-900">
-                Terms
-              </a>
-              <a href="/privacy" className="transition-colors hover:text-gray-900">
-                Privacy
-              </a>
-              <a href="/contact" className="transition-colors hover:text-gray-900">
-                Contact
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

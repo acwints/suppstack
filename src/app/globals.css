@@ -110,7 +110,22 @@
 
   .app-shell {
     --app-header-height: 57px;
+    --app-tabbar-height: 56px;
     min-height: 100dvh;
+    /* Clear the fixed bottom tab bar (and route-specific bottom bars) on mobile. */
+    padding-bottom: calc(var(--app-tabbar-height) + env(safe-area-inset-bottom));
+  }
+
+  @screen md {
+    .app-shell {
+      padding-bottom: 0;
+    }
+  }
+
+  /* Fixed bottom bars (tab bar, PDP buy bar) clear the home indicator. */
+  .app-tabbar,
+  .app-bottom-bar {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .app-header {
@@ -131,6 +146,17 @@
 
   .mobile-page {
     @apply mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8;
+  }
+
+  /* Hide scrollbars on horizontal snap-scroll rows (used by tracking and
+     recently-viewed strips). */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 
   /* Editorial section styles */

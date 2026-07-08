@@ -119,6 +119,7 @@ export function ProductDirectoryClient({
   const [minimumSignalScore, setMinimumSignalScore] = useState<MinimumSignalScore>(0);
   const [signalScenarioId, setSignalScenarioId] =
     useState<DirectorySignalScenarioId>('holistic');
+  const [showSignalTools, setShowSignalTools] = useState(false);
   const {
     latestSnapshot,
     isLoading: isHealthSnapshotLoading,
@@ -434,6 +435,27 @@ export function ProductDirectoryClient({
         })}
       </div>
 
+      {/* Analytics panels are heavy; keep them collapsed so the product grid
+          leads on mobile (Etsy-style lean browse surface). */}
+      <div className="flex items-center justify-between gap-3 rounded border border-gray-200 bg-white px-4 py-3">
+        <div className="min-w-0 text-sm">
+          <span className="font-medium text-gray-900">Signal tools</span>
+          <span className="ml-2 hidden text-gray-500 sm:inline">
+            Catalog coverage, signal scenarios, and the experiment builder
+          </span>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowSignalTools((open) => !open)}
+          aria-expanded={showSignalTools}
+        >
+          {showSignalTools ? 'Hide' : 'Show'}
+        </Button>
+      </div>
+
+      {showSignalTools && (
+      <>
       <div className="rounded border border-gray-200 bg-white p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
@@ -1020,6 +1042,8 @@ export function ProductDirectoryClient({
           </div>
         )}
       </div>
+      </>
+      )}
 
       <div className="grid gap-3 lg:grid-cols-[1.1fr_0.72fr_0.72fr_0.72fr_0.56fr_0.56fr]">
         <label className="block">
@@ -1141,6 +1165,41 @@ export function ProductDirectoryClient({
         )}
       </div>
 
+      {activeFilterCount > 0 && (
+        <div className="flex flex-wrap gap-2" aria-label="Active filters">
+          {searchTerm.trim() && (
+            <FilterChip label={`"${searchTerm.trim()}"`} onRemove={() => setSearchTerm('')} />
+          )}
+          {goalId !== 'all' && (
+            <FilterChip
+              label={healthGoals.find((goal) => goal.id === goalId)?.title ?? goalId}
+              onRemove={() => setGoalId('all')}
+            />
+          )}
+          {category !== 'all' && (
+            <FilterChip label={category} onRemove={() => setCategory('all')} />
+          )}
+          {brand !== 'all' && <FilterChip label={brand} onRemove={() => setBrand('all')} />}
+          {minimumSignalScore > 0 && (
+            <FilterChip
+              label={`Signal ${minimumSignalScore}+`}
+              onRemove={() => setMinimumSignalScore(0)}
+            />
+          )}
+          {signalScenarioId !== 'holistic' && (
+            <FilterChip
+              label={
+                signalScenarioId === 'my-health'
+                  ? 'My health data'
+                  : SIGNAL_MATCH_SCENARIOS.find((scenario) => scenario.id === signalScenarioId)
+                      ?.label ?? signalScenarioId
+              }
+              onRemove={() => setSignalScenarioId('holistic')}
+            />
+          )}
+        </div>
+      )}
+
       {filteredProducts.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredProducts.map((product) => (
@@ -1163,6 +1222,21 @@ export function ProductDirectoryClient({
         </div>
       )}
     </div>
+  );
+}
+
+/** Removable chip for a single applied filter (editorial style). */
+function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onRemove}
+      aria-label={`Remove filter ${label}`}
+      className="inline-flex min-h-9 items-center gap-1.5 rounded border border-gray-300 bg-white px-3 text-xs font-medium text-gray-900 transition-colors hover:border-gray-400 hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
+    >
+      {label}
+      <FiX size={14} aria-hidden="true" />
+    </button>
   );
 }
 
