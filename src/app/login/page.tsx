@@ -70,7 +70,8 @@ export default function Login() {
       }
     } catch (error) {
       console.error(`Error logging in with ${provider}:`, error);
-      toast.error('Sign-in didn’t complete. Please try again.');
+      const detail = error instanceof Error ? error.message : String(error);
+      toast.error('Sign-in didn’t complete', detail);
       setPendingProvider(null);
     }
   };

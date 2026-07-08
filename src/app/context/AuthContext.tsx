@@ -130,8 +130,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         },
       });
       if (error) throw error;
-      if (data?.url) {
-        await openInNativeBrowser(data.url);
+      if (!data?.url) {
+        throw new Error('No authorize URL returned from Supabase');
+      }
+      const opened = await openInNativeBrowser(data.url);
+      if (!opened) {
+        throw new Error('In-app browser unavailable (Browser plugin missing?)');
       }
       return;
     }
