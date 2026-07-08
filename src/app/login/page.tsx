@@ -9,8 +9,6 @@ import { useAuth } from '../context/AuthContext';
 import { Spinner, useToast } from '@/components/ui';
 import { isNativeApp } from '@/lib/native/capacitor';
 
-const NATIVE_AUTH_CALLBACK_DIAG = 'app.suppstack://auth-callback';
-
 /**
  * Full-bleed, single-decision auth screen (Etsy iOS onboarding pattern).
  * The app chrome (header/footer/tab bar) is hidden on this route; the brand
@@ -47,7 +45,6 @@ export default function Login() {
   const toast = useToast();
   const [nextPath, setNextPath] = useState('/profile');
   const [pendingProvider, setPendingProvider] = useState<'apple' | 'google' | null>(null);
-  const [diag, setDiag] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -63,40 +60,6 @@ export default function Login() {
     }
   }, [nextPath, user, loading, router]);
 
-  // TEMP DIAGNOSTICS: probe the native bridge on mount — no tap required.
-  useEffect(() => {
-    const cap = (window as any).Capacitor;
-    if (!cap?.isNativePlatform?.()) return;
-    const out: string[] = [];
-    const add = (s: string) => {
-      out.push(s);
-      setDiag(out.join('\n'));
-    };
-    (async () => {
-      try {
-        const { supabase } = await import('../supabase');
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: NATIVE_AUTH_CALLBACK_DIAG, skipBrowserRedirect: true },
-        });
-        add('genError: ' + (error?.message ?? 'none'));
-        const url = data?.url as unknown;
-        add('type: ' + typeof url + ' len: ' + String(url ?? '').length);
-        add('hasWS: ' + /\s/.test(String(url ?? '')));
-        const s = JSON.stringify(String(url ?? ''));
-        for (let i = 0; i < s.length; i += 90) add(s.slice(i, i + 90));
-        try {
-          await cap.Plugins.Browser.open({ url: String(url) });
-          add('open(REAL URL): OK');
-        } catch (e: any) {
-          add('open(REAL URL): ' + (e?.message || e));
-        }
-      } catch (e: any) {
-        add('diag error: ' + (e?.message || e));
-      }
-    })();
-  }, []);
-
   const handleLogin = async (provider: 'apple' | 'google') => {
     setPendingProvider(provider);
     try {
@@ -107,8 +70,7 @@ export default function Login() {
       }
     } catch (error) {
       console.error(`Error logging in with ${provider}:`, error);
-      const detail = error instanceof Error ? error.message : String(error);
-      toast.error('Sign-in didn’t complete', detail);
+      toast.error('Sign-in didn’t complete. Please try again.');
       setPendingProvider(null);
     }
   };
@@ -193,12 +155,6 @@ export default function Login() {
           </Link>
         )}
       </div>
-
-      {diag && (
-        <pre className="mx-auto w-full max-w-sm overflow-x-auto whitespace-pre-wrap break-all px-4 pb-2 text-left text-[9px] leading-3 text-gray-500">
-          {diag}
-        </pre>
-      )}
 
       {/* Legal */}
       <p className="mx-auto w-full max-w-sm px-6 pb-[max(1.75rem,env(safe-area-inset-bottom))] text-center text-xs leading-5 text-gray-500">

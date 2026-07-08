@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// trim(): the deployed env vars can carry trailing newlines, which browsers
+// strip from URLs but iOS URL(string:) rejects — breaking native OAuth.
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!.trim()
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!.trim()
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
