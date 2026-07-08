@@ -1,6 +1,14 @@
+'use client';
+
 import React from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  // The auth screen is a full-bleed experience — no app chrome.
+  if (pathname === '/login') return null;
+
   return (
     <footer className="bg-white border-t border-gray-200 text-gray-600 p-8 mt-auto">
       <div className="container-custom">

@@ -170,6 +170,9 @@ export default function Header() {
     </div>
   ) : null;
 
+  // The auth screen is a full-bleed experience — no app chrome.
+  if (isLoginPage) return null;
+
   const authControl = loading ? null : user ? (
     accountMenu
   ) : !isLoginPage ? (
