@@ -39,6 +39,8 @@
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
 	<string>SuppStack reads sleep, body, and activity trends to rank supplement opportunities and wellness insights you choose to view.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>SuppStack may save health and supplement tracking updates you choose to Apple Health so your wellness history stays up to date.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
