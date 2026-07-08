@@ -45,6 +45,7 @@ export default function Login() {
   const toast = useToast();
   const [nextPath, setNextPath] = useState('/profile');
   const [pendingProvider, setPendingProvider] = useState<'apple' | 'google' | null>(null);
+  const [diag, setDiag] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -61,6 +62,31 @@ export default function Login() {
   }, [nextPath, user, loading, router]);
 
   const handleLogin = async (provider: 'apple' | 'google') => {
+    // TEMP DIAGNOSTICS: capture what actually crosses the native bridge.
+    try {
+      const cap = (window as any).Capacitor;
+      if (cap?.isNativePlatform?.()) {
+        const lines: string[] = [];
+        lines.push('capKeys: ' + Object.keys(cap).join(','));
+        lines.push('plugins: ' + Object.keys(cap.Plugins || {}).join(','));
+        lines.push('browserOpen: ' + typeof cap.Plugins?.Browser?.open);
+        for (const fn of ['toNative', 'nativePromise', 'nativeCallback']) {
+          if (typeof cap[fn] === 'function' && !cap[`__diag_${fn}`]) {
+            const orig = cap[fn].bind(cap);
+            cap[`__diag_${fn}`] = true;
+            cap[fn] = (...args: unknown[]) => {
+              try {
+                setDiag((d) => d + `\n${fn}(${JSON.stringify(args).slice(0, 220)})`);
+              } catch {}
+              return orig(...args);
+            };
+          }
+        }
+        setDiag(lines.join('\n'));
+      }
+    } catch (e) {
+      setDiag('diag error: ' + String(e));
+    }
     setPendingProvider(provider);
     try {
       if (provider === 'apple') {
@@ -156,6 +182,12 @@ export default function Login() {
           </Link>
         )}
       </div>
+
+      {diag && (
+        <pre className="mx-auto w-full max-w-sm overflow-x-auto whitespace-pre-wrap break-all px-4 pb-2 text-left text-[9px] leading-3 text-gray-500">
+          {diag}
+        </pre>
+      )}
 
       {/* Legal */}
       <p className="mx-auto w-full max-w-sm px-6 pb-[max(1.75rem,env(safe-area-inset-bottom))] text-center text-xs leading-5 text-gray-500">
