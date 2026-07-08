@@ -17,7 +17,8 @@
     "check:health-migration": "node src/scripts/checkHealthMigration.mjs",
     "ios:sync": "cap sync ios",
     "ios:open": "cap open ios",
-    "ios:assets": "capacitor-assets generate --ios"
+    "ios:assets": "capacitor-assets generate --ios",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.0",
@@ -46,6 +47,7 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.7",
+    "patch-package": "^8.0.1",
     "postcss": "^8.4.44",
     "sharp": "^0.35.3",
     "ts-node": "^10.9.2",

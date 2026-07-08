@@ -1,0 +1,22 @@
+diff --git a/node_modules/@capacitor/browser/Package.swift b/node_modules/@capacitor/browser/Package.swift
+index e499d01..d95608b 100644
+--- a/node_modules/@capacitor/browser/Package.swift
++++ b/node_modules/@capacitor/browser/Package.swift
+@@ -10,14 +10,14 @@ let package = Package(
+             targets: ["BrowserPlugin"])
+     ],
+     dependencies: [
+-        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "8.0.0")
++        .package(name: "CapacitorBinaries", path: "../../../ios/App/CapacitorBinaries")
+     ],
+     targets: [
+         .target(
+             name: "BrowserPlugin",
+             dependencies: [
+-                .product(name: "Capacitor", package: "capacitor-swift-pm"),
+-                .product(name: "Cordova", package: "capacitor-swift-pm")
++                .product(name: "Capacitor", package: "CapacitorBinaries"),
++                .product(name: "Cordova", package: "CapacitorBinaries")
+             ],
+             path: "ios/Sources/BrowserPlugin"),
+         .testTarget(

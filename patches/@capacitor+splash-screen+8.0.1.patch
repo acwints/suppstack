@@ -1,0 +1,22 @@
+diff --git a/node_modules/@capacitor/splash-screen/Package.swift b/node_modules/@capacitor/splash-screen/Package.swift
+index c2f0d6c..51730eb 100644
+--- a/node_modules/@capacitor/splash-screen/Package.swift
++++ b/node_modules/@capacitor/splash-screen/Package.swift
+@@ -10,14 +10,14 @@ let package = Package(
+             targets: ["SplashScreenPlugin"])
+     ],
+     dependencies: [
+-        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "8.0.0")
++        .package(name: "CapacitorBinaries", path: "../../../ios/App/CapacitorBinaries")
+     ],
+     targets: [
+         .target(
+             name: "SplashScreenPlugin",
+             dependencies: [
+-                .product(name: "Capacitor", package: "capacitor-swift-pm"),
+-                .product(name: "Cordova", package: "capacitor-swift-pm")
++                .product(name: "Capacitor", package: "CapacitorBinaries"),
++                .product(name: "Cordova", package: "CapacitorBinaries")
+             ],
+             path: "ios/Sources/SplashScreenPlugin"),
+         .testTarget(
