@@ -61,32 +61,44 @@ export default function Login() {
     }
   }, [nextPath, user, loading, router]);
 
-  const handleLogin = async (provider: 'apple' | 'google') => {
-    // TEMP DIAGNOSTICS: capture what actually crosses the native bridge.
-    try {
-      const cap = (window as any).Capacitor;
-      if (cap?.isNativePlatform?.()) {
-        const lines: string[] = [];
-        lines.push('capKeys: ' + Object.keys(cap).join(','));
-        lines.push('plugins: ' + Object.keys(cap.Plugins || {}).join(','));
-        lines.push('browserOpen: ' + typeof cap.Plugins?.Browser?.open);
-        for (const fn of ['toNative', 'nativePromise', 'nativeCallback']) {
-          if (typeof cap[fn] === 'function' && !cap[`__diag_${fn}`]) {
-            const orig = cap[fn].bind(cap);
-            cap[`__diag_${fn}`] = true;
-            cap[fn] = (...args: unknown[]) => {
-              try {
-                setDiag((d) => d + `\n${fn}(${JSON.stringify(args).slice(0, 220)})`);
-              } catch {}
-              return orig(...args);
-            };
-          }
+  // TEMP DIAGNOSTICS: probe the native bridge on mount — no tap required.
+  useEffect(() => {
+    const cap = (window as any).Capacitor;
+    if (!cap?.isNativePlatform?.()) return;
+    const out: string[] = [];
+    const add = (s: string) => {
+      out.push(s);
+      setDiag(out.join('\n'));
+    };
+    (async () => {
+      try {
+        add('capKeys: ' + Object.keys(cap).join(',').slice(0, 200));
+        add('plugins: ' + Object.keys(cap.Plugins || {}).join(','));
+        const open = cap.Plugins?.Browser?.open;
+        add('openSrc: ' + String(open).replace(/\s+/g, ' ').slice(0, 180));
+        try {
+          await cap.Plugins.Browser.open({ url: 'https://example.com/probe1' });
+          add('probe1 Plugins.Browser.open({url}): OK');
+        } catch (e: any) {
+          add('probe1 Plugins.Browser.open({url}): ' + (e?.message || e));
         }
-        setDiag(lines.join('\n'));
+        if (typeof cap.nativePromise === 'function') {
+          try {
+            await cap.nativePromise('Browser', 'open', { url: 'https://example.com/probe2' });
+            add('probe2 nativePromise: OK');
+          } catch (e: any) {
+            add('probe2 nativePromise: ' + (e?.message || e));
+          }
+        } else {
+          add('probe2 nativePromise: (absent)');
+        }
+      } catch (e: any) {
+        add('diag error: ' + (e?.message || e));
       }
-    } catch (e) {
-      setDiag('diag error: ' + String(e));
-    }
+    })();
+  }, []);
+
+  const handleLogin = async (provider: 'apple' | 'google') => {
     setPendingProvider(provider);
     try {
       if (provider === 'apple') {
