@@ -9,6 +9,8 @@ import { useAuth } from '../context/AuthContext';
 import { Spinner, useToast } from '@/components/ui';
 import { isNativeApp } from '@/lib/native/capacitor';
 
+const NATIVE_AUTH_CALLBACK_DIAG = 'app.suppstack://auth-callback';
+
 /**
  * Full-bleed, single-decision auth screen (Etsy iOS onboarding pattern).
  * The app chrome (header/footer/tab bar) is hidden on this route; the brand
@@ -72,25 +74,22 @@ export default function Login() {
     };
     (async () => {
       try {
-        add('capKeys: ' + Object.keys(cap).join(',').slice(0, 200));
-        add('plugins: ' + Object.keys(cap.Plugins || {}).join(','));
-        const open = cap.Plugins?.Browser?.open;
-        add('openSrc: ' + String(open).replace(/\s+/g, ' ').slice(0, 180));
+        const { supabase } = await import('../supabase');
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: NATIVE_AUTH_CALLBACK_DIAG, skipBrowserRedirect: true },
+        });
+        add('genError: ' + (error?.message ?? 'none'));
+        const url = data?.url as unknown;
+        add('type: ' + typeof url + ' len: ' + String(url ?? '').length);
+        add('hasWS: ' + /\s/.test(String(url ?? '')));
+        const s = JSON.stringify(String(url ?? ''));
+        for (let i = 0; i < s.length; i += 90) add(s.slice(i, i + 90));
         try {
-          await cap.Plugins.Browser.open({ url: 'https://example.com/probe1' });
-          add('probe1 Plugins.Browser.open({url}): OK');
+          await cap.Plugins.Browser.open({ url: String(url) });
+          add('open(REAL URL): OK');
         } catch (e: any) {
-          add('probe1 Plugins.Browser.open({url}): ' + (e?.message || e));
-        }
-        if (typeof cap.nativePromise === 'function') {
-          try {
-            await cap.nativePromise('Browser', 'open', { url: 'https://example.com/probe2' });
-            add('probe2 nativePromise: OK');
-          } catch (e: any) {
-            add('probe2 nativePromise: ' + (e?.message || e));
-          }
-        } else {
-          add('probe2 nativePromise: (absent)');
+          add('open(REAL URL): ' + (e?.message || e));
         }
       } catch (e: any) {
         add('diag error: ' + (e?.message || e));
