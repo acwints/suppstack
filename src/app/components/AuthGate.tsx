@@ -4,8 +4,14 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Spinner } from '@/components/ui';
 import { useAuth } from '@/app/context/AuthContext';
+import { isNativeApp } from '@/lib/native/capacitor';
 
-const PUBLIC_PATHS = [
+/**
+ * Web keeps guest browsing (SEO, link sharing); the native app is
+ * auth-first — everything except the login screen and legal pages
+ * requires an account.
+ */
+const WEB_PUBLIC_PATHS = [
   '/',
   '/brands',
   '/health',
@@ -20,9 +26,12 @@ const PUBLIC_PATHS = [
   '/terms',
 ];
 
+const NATIVE_PUBLIC_PATHS = ['/login', '/privacy', '/terms'];
+
 function isPublicPath(pathname: string) {
-  if (pathname === '/') return true;
-  return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  const paths = isNativeApp() ? NATIVE_PUBLIC_PATHS : WEB_PUBLIC_PATHS;
+  if (pathname === '/') return paths.includes('/');
+  return paths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {

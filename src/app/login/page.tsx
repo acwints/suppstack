@@ -7,6 +7,7 @@ import { FaApple } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../context/AuthContext';
 import { Spinner, useToast } from '@/components/ui';
+import { isNativeApp } from '@/lib/native/capacitor';
 
 /**
  * Single-decision auth screen (Etsy iOS onboarding pattern): brand mark,
@@ -105,13 +106,15 @@ export default function Login() {
           </button>
         </div>
 
-        {/* Guest escape hatch */}
-        <Link
-          href="/"
-          className="mt-5 inline-flex min-h-11 items-center justify-center self-center rounded px-4 text-sm font-medium text-gray-600 underline underline-offset-4 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
-        >
-          Continue as guest
-        </Link>
+        {/* Guest escape hatch — web only; the native app is auth-first */}
+        {!isNativeApp() && (
+          <Link
+            href="/"
+            className="mt-5 inline-flex min-h-11 items-center justify-center self-center rounded px-4 text-sm font-medium text-gray-600 underline underline-offset-4 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
+          >
+            Continue as guest
+          </Link>
+        )}
       </div>
 
       {/* Legal */}
