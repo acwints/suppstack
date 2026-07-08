@@ -26,9 +26,11 @@ function BrandMark() {
       <span className="font-sans text-[15px] font-extrabold leading-none tracking-[0.18em] text-white">
         SUPP
       </span>
-      <span className="my-2 flex w-12 flex-col gap-[3.5px]" aria-hidden="true">
-        <span className="h-[2.5px] w-full rounded-full bg-white" />
-        <span className="h-[2.5px] w-full rounded-full bg-white" />
+      {/* Rules step outward — just wider than SUPP, just narrower than STACK
+          — so the lockup funnels: SUPP → rule → rule → STACK. */}
+      <span className="my-2 flex flex-col items-center gap-[3.5px]" aria-hidden="true">
+        <span className="h-[2.5px] w-[49px] rounded-full bg-white" />
+        <span className="h-[2.5px] w-[53px] rounded-full bg-white" />
       </span>
       <span className="font-sans text-[15px] font-extrabold leading-none tracking-[0.14em] text-white">
         STACK
