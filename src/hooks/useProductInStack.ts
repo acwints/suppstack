@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
-import { getUserProfileId } from '@/lib/account/profile';
-import { isMissingColumnError } from '@/lib/account/user-products';
 import type { Product } from '@/types';
 import { findDatabaseProductId, resolveDatabaseProductId } from '@/lib/catalog/supplement-sync';
 
@@ -20,72 +18,33 @@ export interface UseProductInStackResult {
 
 const UNIQUE_VIOLATION = '23505';
 
-async function findUserProductLink(profileId: string, userId: string, productId: number | string) {
-  const byUser = await supabase
+async function findUserProductLink(userId: string, productId: number | string) {
+  const { data, error } = await supabase
     .from('users_products')
     .select('product_id')
     .eq('user_id', userId)
     .eq('product_id', productId)
     .limit(1);
 
-  if (!byUser.error) return byUser.data?.[0] ?? null;
-  if (!isMissingColumnError(byUser.error, 'user_id')) throw byUser.error;
-
-  const byProfile = await supabase
-    .from('users_products')
-    .select('product_id')
-    .eq('profile_id', profileId)
-    .eq('product_id', productId)
-    .limit(1);
-
-  if (byProfile.error) throw byProfile.error;
-  return byProfile.data?.[0] ?? null;
+  if (error) throw error;
+  return data?.[0] ?? null;
 }
 
-async function insertUserProductLink({
-  profileId,
-  userId,
-  productId,
-}: {
-  profileId: string;
-  userId: string;
-  productId: number | string;
-}) {
-  // Canonical shape after migration 0007: (user_id, product_id).
-  const byUser = await supabase
+async function insertUserProductLink(userId: string, productId: number | string) {
+  const { error } = await supabase
     .from('users_products')
     .insert({ user_id: userId, product_id: productId });
-  if (!byUser.error || byUser.error.code === UNIQUE_VIOLATION) return;
-
-  // Legacy fallback for databases that predate 0007 and only carry
-  // profile_id ownership. Removable once 0007 is applied everywhere.
-  if (!isMissingColumnError(byUser.error, 'user_id')) throw byUser.error;
-
-  const byProfile = await supabase
-    .from('users_products')
-    .insert({ profile_id: profileId, product_id: productId });
-  if (byProfile.error && byProfile.error.code !== UNIQUE_VIOLATION) {
-    throw byProfile.error;
-  }
+  if (error && error.code !== UNIQUE_VIOLATION) throw error;
 }
 
-async function deleteUserProductLink(profileId: string, userId: string, productId: number | string) {
-  const byUser = await supabase
+async function deleteUserProductLink(userId: string, productId: number | string) {
+  const { error } = await supabase
     .from('users_products')
     .delete()
     .eq('user_id', userId)
     .eq('product_id', productId);
 
-  if (!byUser.error) return;
-  if (!isMissingColumnError(byUser.error, 'user_id')) throw byUser.error;
-
-  const byProfile = await supabase
-    .from('users_products')
-    .delete()
-    .eq('profile_id', profileId)
-    .eq('product_id', productId);
-
-  if (byProfile.error) throw byProfile.error;
+  if (error) throw error;
 }
 
 /**
@@ -118,8 +77,7 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
         return;
       }
 
-      const profileId = await getUserProfileId(user);
-      const data = await findUserProductLink(profileId, user.id, databaseProductId);
+      const data = await findUserProductLink(user.id, databaseProductId);
 
       setIsInStack(!!data);
     } catch (err) {
@@ -152,16 +110,8 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
     setError(null);
 
     try {
-      const [profileId, databaseProductId] = await Promise.all([
-        getUserProfileId(user),
-        resolveDatabaseProductId(product),
-      ]);
-
-      await insertUserProductLink({
-        profileId,
-        userId: user.id,
-        productId: databaseProductId,
-      });
+      const databaseProductId = await resolveDatabaseProductId(product);
+      await insertUserProductLink(user.id, databaseProductId);
 
       setIsInStack(true);
     } catch (err) {
@@ -192,8 +142,7 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
         return;
       }
 
-      const profileId = await getUserProfileId(user);
-      await deleteUserProductLink(profileId, user.id, databaseProductId);
+      await deleteUserProductLink(user.id, databaseProductId);
 
       setIsInStack(false);
     } catch (err) {

@@ -56,6 +56,22 @@ $$;
 ALTER TABLE users_products
   ALTER COLUMN user_id SET NOT NULL;
 
+-- Drop every existing policy first: hosted databases carry differently-named
+-- legacy policies, some of which depend on profile_id and would otherwise
+-- block the column drop below.
+DO $$
+DECLARE
+  pol RECORD;
+BEGIN
+  FOR pol IN
+    SELECT policyname FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'users_products'
+  LOOP
+    EXECUTE format('DROP POLICY %I ON users_products', pol.policyname);
+  END LOOP;
+END;
+$$;
+
 ALTER TABLE users_products
   DROP COLUMN IF EXISTS profile_id,
   DROP COLUMN IF EXISTS supplement_id,
@@ -66,11 +82,7 @@ ALTER TABLE users_products
   DROP COLUMN IF EXISTS personal_notes,
   DROP COLUMN IF EXISTS side_effects;
 
--- Replace the dual-owner RLS policies with a single auth.uid() check.
-DROP POLICY IF EXISTS "Users manage own products" ON users_products;
-DROP POLICY IF EXISTS "Users read own products" ON users_products;
-DROP POLICY IF EXISTS "users_products_owner" ON users_products;
-
+-- Recreate the single-owner policy.
 ALTER TABLE users_products ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "users_products_owner" ON users_products
