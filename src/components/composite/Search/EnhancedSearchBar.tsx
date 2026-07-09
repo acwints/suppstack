@@ -247,10 +247,10 @@ export function EnhancedSearchBar({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className={cn(
-              'w-full pl-12 pr-10 py-4 text-lg',
+              'w-full pl-12 pr-10 py-4 text-base md:text-lg',
               'border border-gray-300 rounded-full',
               'focus:ring-2 focus:ring-gray-200 focus:border-gray-400',
-              'bg-white text-gray-900 placeholder-gray-500',
+              'bg-white text-gray-900 placeholder-gray-500 placeholder:text-[15px] md:placeholder:text-lg',
               'focus:outline-none transition-all duration-300',
               'shadow-sm hover:shadow-md',
             )}
