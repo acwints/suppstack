@@ -11,6 +11,7 @@ schema. Each file is an ordered, idempotent migration.
 | 0004 | `20260101000004_tracking.sql` | `supplement_logs`, `user_supplement_settings`, `daily_tracking_summary`, streak/summary triggers, RLS. |
 | 0005 | `20260101000005_billing.sql` | `user_entitlements` (premium subscription mirror written by the RevenueCat webhook; RLS: users read own row, service-role writes). |
 | 0006 | `20260101000006_health_snapshots.sql` | Apple Health / manual health intelligence tables: `health_metric_snapshots`, `health_experiments`, sleep-stage, recovery/cardio columns, outcome deltas, RLS. |
+| 0007 | `20260708000007_schema_tightening.sql` | Drops dead tables (`shopify_merchant_capabilities`, `review_images`); normalizes `users_products` to a single `user_id` owner and membership-only columns; drops catalog-only `products` columns. After applying everywhere, the legacy profile_id fallbacks in `useProductInStack`/`user-products` can be deleted. |
 
 ## Applying
 

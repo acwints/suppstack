@@ -6,11 +6,7 @@ import { useAuth } from '@/app/context/AuthContext';
 import { getUserProfileId } from '@/lib/account/profile';
 import { isMissingColumnError } from '@/lib/account/user-products';
 import type { Product } from '@/types';
-import {
-  findDatabaseProductId,
-  resolveDatabaseProductId,
-  resolveDatabaseSupplementId,
-} from '@/lib/catalog/supplement-sync';
+import { findDatabaseProductId, resolveDatabaseProductId } from '@/lib/catalog/supplement-sync';
 
 export interface UseProductInStackResult {
   isInStack: boolean;
@@ -50,47 +46,27 @@ async function insertUserProductLink({
   profileId,
   userId,
   productId,
-  supplementId,
 }: {
   profileId: string;
   userId: string;
   productId: number | string;
-  supplementId: number | null;
 }) {
-  const fullPayload = {
-    product_id: productId,
-    supplement_id: supplementId,
-    status: 'active',
-  };
-  const minimalPayload = {
-    product_id: productId,
-  };
-  const attempts = [
-    { ...minimalPayload, user_id: userId },
-    { ...minimalPayload, profile_id: profileId, user_id: userId },
-    { ...fullPayload, profile_id: profileId, user_id: userId },
-    { ...fullPayload, user_id: userId },
-    { ...minimalPayload, profile_id: profileId },
-    { ...fullPayload, profile_id: profileId },
-  ];
+  // Canonical shape after migration 0007: (user_id, product_id).
+  const byUser = await supabase
+    .from('users_products')
+    .insert({ user_id: userId, product_id: productId });
+  if (!byUser.error || byUser.error.code === UNIQUE_VIOLATION) return;
 
-  let lastError: { code?: string; message?: string } | null = null;
+  // Legacy fallback for databases that predate 0007 and only carry
+  // profile_id ownership. Removable once 0007 is applied everywhere.
+  if (!isMissingColumnError(byUser.error, 'user_id')) throw byUser.error;
 
-  for (const payload of attempts) {
-    const { error } = await supabase.from('users_products').insert(payload);
-    if (!error || error.code === UNIQUE_VIOLATION) return;
-
-    const canRetry =
-      isMissingColumnError(error, 'profile_id') ||
-      isMissingColumnError(error, 'user_id') ||
-      isMissingColumnError(error, 'supplement_id') ||
-      isMissingColumnError(error, 'status');
-
-    lastError = error;
-    if (!canRetry) break;
+  const byProfile = await supabase
+    .from('users_products')
+    .insert({ profile_id: profileId, product_id: productId });
+  if (byProfile.error && byProfile.error.code !== UNIQUE_VIOLATION) {
+    throw byProfile.error;
   }
-
-  throw lastError ?? new Error('Failed to add product to stack');
 }
 
 async function deleteUserProductLink(profileId: string, userId: string, productId: number | string) {
@@ -176,17 +152,15 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
     setError(null);
 
     try {
-      const [profileId, databaseProductId, databaseSupplementId] = await Promise.all([
+      const [profileId, databaseProductId] = await Promise.all([
         getUserProfileId(user),
         resolveDatabaseProductId(product),
-        product.supplement_id ? resolveDatabaseSupplementId(product.supplement_id) : Promise.resolve(null),
       ]);
 
       await insertUserProductLink({
         profileId,
         userId: user.id,
         productId: databaseProductId,
-        supplementId: databaseSupplementId,
       });
 
       setIsInStack(true);
