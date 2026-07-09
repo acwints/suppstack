@@ -8,6 +8,9 @@ const __dirname = path.dirname(__filename);
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  async redirects() {
+    return [{ source: '/log', destination: '/stack', permanent: true }];
+  },
   images: {
     remotePatterns: [
       {

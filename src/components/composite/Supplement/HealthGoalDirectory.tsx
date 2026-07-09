@@ -35,9 +35,9 @@ export function HealthGoalDirectory({ supplements }: HealthGoalDirectoryProps) {
           <Link
             key={goal.id}
             href={healthGoalHref(goal.id)}
-            className="group flex min-h-[250px] flex-col rounded border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 hover:bg-gray-50"
+            className="group flex flex-col rounded border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 hover:bg-gray-50"
           >
-            <div className="mb-4 flex items-start justify-between gap-3">
+            <div className="mb-3 flex items-start justify-between gap-3">
               <span className="flex h-9 w-9 items-center justify-center rounded border border-gray-200 bg-white text-gray-700">
                 {goalIcons[goal.id]}
               </span>
@@ -45,9 +45,8 @@ export function HealthGoalDirectory({ supplements }: HealthGoalDirectoryProps) {
             </div>
 
             <h3 className="text-base font-semibold text-gray-900">{goal.title}</h3>
-            <p className="mt-1 line-clamp-3 text-sm leading-5 text-gray-500">{goal.description}</p>
 
-            <div className="mt-4 grid grid-cols-4 gap-1.5">
+            <div className="mt-3 grid grid-cols-4 gap-1.5">
               {goal.supplements.slice(0, 4).map((supplement) => (
                 <div
                   key={supplement.supplement_id}
@@ -70,19 +69,14 @@ export function HealthGoalDirectory({ supplements }: HealthGoalDirectoryProps) {
               ))}
             </div>
 
-            <div className="mt-auto pt-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                {goal.signalLabel}
-              </p>
-              <p className="mt-1 text-sm text-gray-700">
-                {goal.productCount} products
-                {goal.priceFrom !== null && (
-                  <span className="font-semibold text-gray-900">
-                    {' '}from ${formatPrice(goal.priceFrom)}
-                  </span>
-                )}
-              </p>
-            </div>
+            <p className="mt-auto pt-3 text-sm text-gray-700">
+              {goal.productCount} products
+              {goal.priceFrom !== null && (
+                <span className="font-semibold text-gray-900">
+                  {' '}from ${formatPrice(goal.priceFrom)}
+                </span>
+              )}
+            </p>
           </Link>
         );
       })}

@@ -137,7 +137,7 @@ export default function StackDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <Spinner size="lg" />
         </div>
@@ -147,7 +147,7 @@ export default function StackDetailPage() {
 
   if (!stack) {
     return (
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-8">
         <EmptyState
           icon="404"
           title="Stack not found"
@@ -167,7 +167,7 @@ export default function StackDetailPage() {
   const optionalSupplements = stack.supplements?.filter(s => !s.is_core) || [];
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-8">
+    <main className="max-w-7xl mx-auto px-3 sm:px-6 py-8">
       {/* Back Button */}
       <Link
         href="/profile"

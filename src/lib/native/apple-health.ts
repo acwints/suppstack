@@ -1,5 +1,30 @@
-import type { HealthMetricSnapshot } from '@/lib/health/health-intelligence';
 import { isNativeApp } from './capacitor';
+
+/** Shape of the JSON returned by the native SuppStackHealth Capacitor plugin. */
+export interface HealthMetricSnapshot {
+  source: 'apple_health';
+  dateRangeDays: number;
+  lastSyncedAt?: string;
+  sleepHoursAvg?: number | null;
+  sleepQualityAvg?: number | null;
+  sleepDaysTracked?: number | null;
+  sleepDebtHours?: number | null;
+  sleepConsistencyScore?: number | null;
+  sleepRemHoursAvg?: number | null;
+  sleepDeepHoursAvg?: number | null;
+  sleepAwakeHoursAvg?: number | null;
+  weightKg?: number | null;
+  weightTrendKg?: number | null;
+  bodyFatPercent?: number | null;
+  bodyFatTrendPercent?: number | null;
+  activeEnergyBurnedKcalAvg?: number | null;
+  restingEnergyBurnedKcalAvg?: number | null;
+  stepsAvg?: number | null;
+  exerciseMinutesAvg?: number | null;
+  restingHeartRateBpmAvg?: number | null;
+  heartRateVariabilityMsAvg?: number | null;
+  vo2MaxMlKgMin?: number | null;
+}
 
 export interface AppleHealthAvailability {
   available: boolean;

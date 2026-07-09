@@ -5,17 +5,16 @@ import Link from 'next/link';
 import { useAuth } from '@/app/context/AuthContext';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { FiChevronDown, FiCreditCard, FiLogOut, FiPackage } from 'react-icons/fi';
+import { FiBookmark, FiChevronDown, FiCreditCard, FiLogOut, FiPackage, FiUser } from 'react-icons/fi';
 import { cn } from '@/lib/design-system';
 
 /**
- * The same four destinations as the mobile tab bar — one IA everywhere.
+ * The same destinations as the mobile tab bar — one IA everywhere.
  * Discovery drill-ins (products, brands, health, search) belong to Shop.
  */
 const NAV_LINKS = [
   { href: '/', label: 'Shop' },
-  { href: '/log', label: 'Log' },
-  { href: '/saved', label: 'Saved' },
+  { href: '/stack', label: 'Stack' },
   { href: '/premium', label: 'Premium' },
 ] as const;
 
@@ -146,9 +145,13 @@ export default function Header() {
           </div>
 
           <div className="py-2">
-            <Link href="/profile" role="menuitem" className={accountMenuLinkClass}>
+            <Link href="/stack" role="menuitem" className={accountMenuLinkClass}>
               <FiPackage size={16} aria-hidden="true" />
               My Stack
+            </Link>
+            <Link href="/profile" role="menuitem" className={accountMenuLinkClass}>
+              <FiUser size={16} aria-hidden="true" />
+              Profile
             </Link>
             <Link href="/premium" role="menuitem" className={accountMenuLinkClass}>
               <FiCreditCard size={16} aria-hidden="true" />
@@ -220,9 +223,24 @@ export default function Header() {
             })}
           </nav>
 
-          {/* Auth — desktop only; on mobile the tab bar's You tab covers it,
-              keeping a single avatar per screen. */}
-          <div className="hidden shrink-0 items-center md:flex">{authControl}</div>
+          <div className="flex shrink-0 items-center gap-1">
+            <Link
+              href="/saved"
+              aria-label="Saved products"
+              className={cn(
+                'flex min-h-11 min-w-11 items-center justify-center rounded transition-colors',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900',
+                isNavActive('/saved', pathname)
+                  ? 'text-gray-900'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+              )}
+            >
+              <FiBookmark size={20} aria-hidden="true" />
+            </Link>
+            {/* Auth — desktop only; on mobile the tab bar's You tab covers it,
+                keeping a single avatar per screen. */}
+            <div className="hidden shrink-0 items-center md:flex">{authControl}</div>
+          </div>
         </div>
       </div>
     </header>

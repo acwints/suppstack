@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { IconType } from 'react-icons';
-import { FiBookmark, FiCheckCircle, FiShoppingBag, FiUser } from 'react-icons/fi';
+import { FiLayers, FiShoppingBag, FiUser } from 'react-icons/fi';
 import { cn } from '@/lib/design-system';
 
 interface TabItem {
@@ -15,9 +15,10 @@ interface TabItem {
 }
 
 /**
- * Four destinations, four jobs: discover (Shop), do the daily habit (Log),
- * revisit saved products (Saved), manage yourself (You). Discovery drill-ins
- * (products, brands, health shelves, search) all belong to Shop.
+ * Three destinations, three jobs: find products (Shop), track and manage the
+ * routine (Stack), manage yourself (You). Discovery drill-ins (products,
+ * brands, health shelves, search) all belong to Shop; saved bookmarks live
+ * behind the header bookmark icon.
  */
 const TABS: TabItem[] = [
   {
@@ -26,8 +27,7 @@ const TABS: TabItem[] = [
     icon: FiShoppingBag,
     match: ['/supplement', '/brands', '/products', '/health', '/search'],
   },
-  { href: '/log', label: 'Log', icon: FiCheckCircle, match: [] },
-  { href: '/saved', label: 'Saved', icon: FiBookmark, match: [] },
+  { href: '/stack', label: 'Stack', icon: FiLayers, match: [] },
   { href: '/profile', label: 'You', icon: FiUser, match: ['/stacks', '/premium'] },
 ];
 
@@ -64,7 +64,7 @@ export default function BottomTabBar() {
       aria-label="Primary"
       className="app-tabbar fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white/95 backdrop-blur md:hidden"
     >
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-3">
         {TABS.map((tab) => {
           const active = isTabActive(tab, pathname);
           const Icon = tab.icon;

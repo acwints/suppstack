@@ -16,7 +16,6 @@ import { Button, Badge, useToast } from '@/components/ui';
 import { Rating } from '@/components/composite/Rating';
 import { EmbeddedCheckout } from '@/components/composite/Commerce';
 import { BrandLogo } from '@/components/composite/Brand';
-import type { ProductSignalMatch } from '@/lib/catalog/product-match';
 import {
   canPurchase,
   getInventoryLabel,
@@ -34,13 +33,11 @@ import {
 interface ProductCardProps {
   product: Product;
   ratingStats?: ProductRatingStats | null;
-  signalMatch?: ProductSignalMatch | null;
 }
 
 export default function ProductCard({
   product,
   ratingStats: initialStats,
-  signalMatch,
 }: ProductCardProps) {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const { user } = useAuth();
@@ -188,19 +185,6 @@ export default function ProductCard({
             )}
           </div>
 
-          {signalMatch && signalMatch.score > 0 && (
-            <div className="mt-3 border-t border-gray-100 pt-2">
-              <div className="flex items-center gap-2">
-                <Badge variant="success" size="sm">
-                  {signalMatch.score}
-                </Badge>
-                <span className="text-xs font-medium text-gray-700">Signal match</span>
-              </div>
-              <p className="mt-1 line-clamp-2 text-xs leading-5 text-gray-500">
-                {signalMatch.reasons.join(' · ')}
-              </p>
-            </div>
-          )}
         </div>
       </Link>
 

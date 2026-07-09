@@ -43,8 +43,8 @@ import {
 import { PremiumGate } from '@/components/composite/Billing';
 import { FiActivity } from 'react-icons/fi';
 
-// The current stack lives on the Log tab (it's what you log); Profile is
-// identity, analytics, history, shared stacks, and account settings.
+// The current stack lives on the Stack tab; Profile is identity, analytics,
+// history, shared stacks, and account settings.
 type TabType = 'insights' | 'journal' | 'stacks' | 'profile';
 
 const tabItems: { id: TabType; label: string; icon?: React.ReactNode }[] = [
@@ -247,7 +247,7 @@ export default function Profile() {
 
   return (
     <main className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-12">
         {/* Header */}
         <header className="mb-12 pb-8 border-b border-gray-200">
           <Inline justify="between" align="start">
@@ -295,22 +295,14 @@ export default function Profile() {
         {activeTab === 'insights' && (
           <section>
             <div className="mb-8">
-              <h2 className="text-2xl font-serif text-gray-900">Insights & Analytics</h2>
-              <p className="text-gray-500 mt-1">
-                Track your wellness trends and understand how supplements affect you
-              </p>
+              <h2 className="text-2xl font-serif text-gray-900">Insights</h2>
             </div>
 
-            {/* The full health-intelligence tool lives once, on /health/tracker;
-                Insights stays focused on analytics built from your own logs. */}
             <Link
               href="/health/tracker"
               className="mb-6 flex items-center justify-between rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm transition-colors hover:border-gray-300 hover:bg-gray-100"
             >
-              <span className="text-gray-700">
-                <span className="font-medium text-gray-900">Health intelligence</span> — connect
-                Apple Health and shop by your own signals
-              </span>
+              <span className="font-medium text-gray-900">Apple Health</span>
               <span className="shrink-0 font-medium text-gray-900">Open →</span>
             </Link>
 

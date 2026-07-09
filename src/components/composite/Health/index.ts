@@ -1,2 +1,1 @@
-export { HealthIntelligencePanel } from './HealthIntelligencePanel';
-export type { HealthIntelligencePanelProps } from './HealthIntelligencePanel';
+export { AppleHealthCard } from './AppleHealthCard';

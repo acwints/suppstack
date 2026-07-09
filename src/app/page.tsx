@@ -9,11 +9,7 @@ import { SkeletonGrid, SkeletonCard, EmptyState, Inline, Stack } from '@/compone
 import { EnhancedSearchBar } from '@/components/composite/Search';
 import { CategoryFilter, SortFilter } from '@/components/composite/Filter';
 import { RecentlyViewedRow } from '@/components/composite/Product/RecentlyViewedRow';
-import {
-  SupplementGrid,
-  FeaturedCategories,
-  HealthGoalDirectory,
-} from '@/components/composite/Supplement';
+import { SupplementGrid, HealthGoalDirectory } from '@/components/composite/Supplement';
 import { BrandLogo } from '@/components/composite/Brand';
 
 export default function Home() {
@@ -36,7 +32,7 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       {/* Search bar — the storefront entry point */}
       <div className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-4">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 py-4">
           <EnhancedSearchBar
             value={searchTerm}
             onChange={setSearchTerm}
@@ -47,7 +43,7 @@ export default function Home() {
 
       {/* Filters */}
       <div className="sticky-under-header sticky z-40 border-b border-gray-100 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-2.5">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 py-2.5">
           <Inline justify="between" align="center" wrap gap={4}>
             <CategoryFilter
               supplements={supplements}
@@ -65,7 +61,7 @@ export default function Home() {
       </div>
 
       {/* Products first */}
-      <div className="mx-auto max-w-7xl px-4 py-6">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 py-6">
         {isLoading ? (
           <SkeletonGrid count={15} CardComponent={SkeletonCard} />
         ) : browseGroups.length === 0 ? (
@@ -92,14 +88,9 @@ export default function Home() {
 
             <section>
               <Inline justify="between" align="end" className="section-header">
-                <div>
-                  <h2>Shop by Health Signal</h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Sleep, body composition, calories burned, and recovery-aware shelves.
-                  </p>
-                </div>
-                <Link href="/health/tracker" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                  Connect data
+                <h2>Shop by Goal</h2>
+                <Link href="/health" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                  View all
                 </Link>
               </Inline>
               <HealthGoalDirectory supplements={supplements} />
@@ -107,24 +98,12 @@ export default function Home() {
 
             <section>
               <Inline justify="between" align="end" className="section-header">
-                <div>
-                  <h2>All Products</h2>
-                  <p className="text-sm text-gray-500">
-                    {browseGroups.length} browsable supplement groups
-                  </p>
-                </div>
+                <h2>All Products</h2>
                 <Link href="/products" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                  View product directory
+                  View all
                 </Link>
               </Inline>
               <SupplementGrid groups={browseGroups} />
-            </section>
-
-            <section>
-              <div className="section-header">
-                <h2>Shop by Goal</h2>
-              </div>
-              <FeaturedCategories supplements={supplements} />
             </section>
 
             <section>

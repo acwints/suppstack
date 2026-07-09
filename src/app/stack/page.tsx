@@ -9,10 +9,10 @@ import { MyStackSection } from '@/components/composite/Stack/MyStackSection';
 import type { DailyWellnessInput, TimeOfDay } from '@/types';
 
 /**
- * The daily habit screen: log today's supplements, see the week, check in
- * on wellness — and manage the stack those logs come from.
+ * The stack screen: check off today's supplements, see the week, and manage
+ * the stack those check-offs come from.
  */
-export default function LogPage() {
+export default function StackPage() {
   const toast = useToast();
   const { regimen, isLoading: isRegimenLoading } = useRegimen();
 
@@ -81,9 +81,9 @@ export default function LogPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-5 sm:px-6 sm:py-8">
+    <main className="mx-auto w-full max-w-3xl px-3 py-5 sm:px-6 sm:py-8">
       <div className="section-header">
-        <h2>Daily Log</h2>
+        <h2>My Stack</h2>
       </div>
       <p className="mb-6 text-sm text-gray-500">{todayLabel}</p>
 
