@@ -114,7 +114,7 @@ export default function PrivacyPolicy() {
           </a>
         </p>
       </div>
-      <div className="mt-8">
+      <div className="mt-8 hidden md:block">
         <Link href="/" className="text-gray-900 underline">
           Back to Home
         </Link>

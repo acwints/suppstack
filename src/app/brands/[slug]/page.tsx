@@ -18,7 +18,7 @@ export default function BrandDetailPage({ params }: { params: { slug: string } }
         <section className="container-custom py-12">
           <Link
             href="/brands"
-            className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+            className="mb-8 hidden items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 md:inline-flex"
           >
             <FiArrowLeft />
             Back to brands
@@ -51,7 +51,7 @@ export default function BrandDetailPage({ params }: { params: { slug: string } }
         <div className="container-custom py-10 lg:py-14">
           <Link
             href="/brands"
-            className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+            className="mb-8 hidden items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 md:inline-flex"
           >
             <FiArrowLeft />
             Back to brands

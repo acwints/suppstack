@@ -2739,9 +2739,16 @@ export const allCuratedProductSeeds: CuratedProductSeed[] = [
 ];
 
 function curatedSeedsForSupplementName(supplementName: string) {
-  return allCuratedProductSeeds.filter(
-    (product) => product.supplement_name.toLowerCase() === supplementName.toLowerCase()
-  );
+  const seen = new Set<string>();
+
+  return allCuratedProductSeeds.filter((product) => {
+    if (product.supplement_name.toLowerCase() !== supplementName.toLowerCase()) return false;
+
+    const key = String(product.product_id);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function curatedStatsForSupplementName(supplementName: string) {
@@ -2814,13 +2821,13 @@ export const supplementCatalog: Supplement[] = seeds.map((seed) => {
 });
 
 export function getCuratedCatalogProducts() {
-  return allCuratedProductSeeds.flatMap((seed) => {
+  return mergeProductSources(allCuratedProductSeeds.flatMap((seed) => {
     const supplement = supplementCatalog.find(
       (item) => item.supplement_name.toLowerCase() === seed.supplement_name.toLowerCase()
     );
 
     return supplement ? [createCuratedProduct(seed, supplement)] : [];
-  });
+  }));
 }
 
 

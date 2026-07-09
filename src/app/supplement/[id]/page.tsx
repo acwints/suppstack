@@ -193,7 +193,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
       {/* Back Navigation */}
       <Link
         href="/"
-        className="mb-5 inline-flex min-h-10 items-center gap-2 rounded border border-gray-200 px-3 text-sm text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900 sm:border-0 sm:px-0"
+        className="mb-5 hidden min-h-10 items-center gap-2 rounded border border-gray-200 px-3 text-sm text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900 md:inline-flex md:border-0 md:px-0"
       >
         <FiArrowLeft />
         <span>All products</span>

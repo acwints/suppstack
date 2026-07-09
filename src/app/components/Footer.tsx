@@ -1,16 +1,23 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { isNativeApp } from '@/lib/native/capacitor';
 
 export default function Footer() {
   const pathname = usePathname();
+  const [isNative, setIsNative] = useState(false);
+
+  useEffect(() => {
+    setIsNative(isNativeApp());
+  }, []);
 
   // The auth screen is a full-bleed experience — no app chrome.
-  if (pathname === '/login') return null;
+  // The native shell has its own app navigation; never show the website footer there.
+  if (pathname === '/login' || isNative) return null;
 
   return (
-    <footer className="bg-white border-t border-gray-200 text-gray-600 p-8 mt-auto">
+    <footer className="mt-auto hidden border-t border-gray-200 bg-white p-8 text-gray-600 md:block">
       <div className="container-custom">
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="text-center md:text-left">

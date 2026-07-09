@@ -37,7 +37,7 @@ export default function HealthGoalPage({ params }: { params: { id: string } }) {
       <section className="container-custom py-6 sm:py-8">
         <Link
           href="/health"
-          className="mb-4 inline-flex min-h-10 items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900"
+          className="mb-4 hidden min-h-10 items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900 md:inline-flex"
         >
           <FiArrowLeft />
           <span>All goals</span>

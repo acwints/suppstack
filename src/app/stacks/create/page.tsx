@@ -173,7 +173,7 @@ export default function CreateStackPage() {
       {/* Back Button */}
       <Link
         href="/profile"
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        className="mb-6 hidden items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 md:inline-flex"
       >
         <FiArrowLeft />
         <span>Back to My Stack</span>

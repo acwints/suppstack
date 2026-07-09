@@ -193,7 +193,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             ? `/supplement/${product.supplements.supplement_id}`
             : '/'
         }
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        className="mb-6 hidden items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 md:inline-flex"
       >
         <FaArrowLeft className="w-4 h-4" />
         Back to {product.supplements?.supplement_name || 'stack picks'}

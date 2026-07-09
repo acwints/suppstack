@@ -25,31 +25,34 @@ const TABS: TabItem[] = [
     href: '/',
     label: 'Shop',
     icon: FiShoppingBag,
-    match: ['/supplement', '/brands', '/products', '/health', '/search'],
+    match: ['/supplement', '/brands', '/products', '/health', '/search', '/saved'],
   },
   { href: '/stack', label: 'Stack', icon: FiLayers, match: [] },
-  { href: '/profile', label: 'You', icon: FiUser, match: ['/stacks', '/premium'] },
+  { href: '/profile', label: 'You', icon: FiUser, match: ['/stacks', '/premium', '/health/tracker'] },
 ];
 
 /** Routes where the tab bar yields to a route-specific bottom bar (e.g. the PDP buy bar). */
-const HIDDEN_PREFIXES = ['/product/', '/login'];
+const HIDDEN_PREFIXES = ['/product/', '/login', '/privacy', '/terms'];
+
+function matchingPrefix(tab: TabItem, pathname: string): string | null {
+  const prefixes = [tab.href, ...tab.match];
+  const match = prefixes.find((prefix) => {
+    if (prefix === '/') return pathname === '/';
+    return pathname === prefix || pathname.startsWith(`${prefix}/`);
+  });
+
+  return match ?? null;
+}
 
 function isTabActive(tab: TabItem, pathname: string): boolean {
-  if (tab.href === '/') {
-    return pathname === '/' || tab.match.some((prefix) => pathname.startsWith(prefix));
-  }
-  // Most specific tab wins: /health/tracker must not also light up /health.
-  const owns = [tab.href, ...tab.match];
-  if (!owns.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))) {
-    return false;
-  }
-  const moreSpecific = TABS.some(
-    (other) =>
-      other !== tab &&
-      other.href.length > tab.href.length &&
-      (pathname === other.href || pathname.startsWith(`${other.href}/`))
-  );
-  return !moreSpecific;
+  const ownPrefix = matchingPrefix(tab, pathname);
+  if (!ownPrefix) return false;
+
+  return TABS.every((other) => {
+    if (other === tab) return true;
+    const otherPrefix = matchingPrefix(other, pathname);
+    return !otherPrefix || ownPrefix.length >= otherPrefix.length;
+  });
 }
 
 export default function BottomTabBar() {

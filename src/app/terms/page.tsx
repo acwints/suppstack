@@ -32,7 +32,7 @@ export default function TermsOfService() {
         <h2 className="text-2xl font-semibold mt-6 mb-4">8. Contact Information</h2>
         <p>If you have any questions about these Terms, please contact us at support@suppstack.com.</p>
       </div>
-      <div className="mt-8">
+      <div className="mt-8 hidden md:block">
         <Link href="/" className="text-blue-500 hover:underline">Back to Home</Link>
       </div>
     </main>

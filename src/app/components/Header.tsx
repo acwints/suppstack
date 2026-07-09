@@ -5,7 +5,15 @@ import Link from 'next/link';
 import { useAuth } from '@/app/context/AuthContext';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { FiBookmark, FiChevronDown, FiCreditCard, FiLogOut, FiPackage, FiUser } from 'react-icons/fi';
+import {
+  FiArrowLeft,
+  FiBookmark,
+  FiChevronDown,
+  FiCreditCard,
+  FiLogOut,
+  FiPackage,
+  FiUser,
+} from 'react-icons/fi';
 import { cn } from '@/lib/design-system';
 
 /**
@@ -19,6 +27,14 @@ const NAV_LINKS = [
 ] as const;
 
 const SHOP_PREFIXES = ['/supplement', '/brands', '/products', '/health', '/search', '/product'];
+const LAST_APP_PATH_KEY = 'suppstack:last-app-path';
+
+interface MobileAppBarConfig {
+  title: string;
+  backHref?: string;
+  brandTitle?: boolean;
+  showSaved?: boolean;
+}
 
 function isNavActive(href: string, pathname: string): boolean {
   if (href === '/') {
@@ -30,12 +46,37 @@ function isNavActive(href: string, pathname: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function getMobileAppBarConfig(pathname: string): MobileAppBarConfig {
+  if (pathname === '/') return { title: 'SuppStack AI', brandTitle: true, showSaved: true };
+  if (pathname === '/stack') return { title: 'My Stack' };
+  if (pathname === '/profile') return { title: 'You' };
+  if (pathname === '/saved') return { title: 'Saved', backHref: '/', showSaved: false };
+  if (pathname === '/products') return { title: 'All Products', backHref: '/', showSaved: false };
+  if (pathname === '/brands') return { title: 'Brands', backHref: '/', showSaved: false };
+  if (pathname.startsWith('/brands/')) return { title: 'Brand', backHref: '/brands' };
+  if (pathname === '/health') return { title: 'Shop by Goal', backHref: '/' };
+  if (pathname === '/health/tracker') return { title: 'Apple Health', backHref: '/profile' };
+  if (pathname.startsWith('/health/')) return { title: 'Health Goal', backHref: '/health' };
+  if (pathname === '/search') return { title: 'Search', backHref: '/' };
+  if (pathname.startsWith('/supplement/')) return { title: 'Supplement', backHref: '/' };
+  if (pathname.startsWith('/product/')) return { title: 'Product', backHref: '/' };
+  if (pathname === '/premium') return { title: 'Premium', backHref: '/profile' };
+  if (pathname === '/stacks/create') return { title: 'Create Stack', backHref: '/profile' };
+  if (pathname.startsWith('/stacks/')) return { title: 'Stack', backHref: '/profile' };
+  if (pathname === '/privacy') return { title: 'Privacy', backHref: '/' };
+  if (pathname === '/terms') return { title: 'Terms', backHref: '/' };
+
+  return { title: 'SuppStack AI', brandTitle: true, showSaved: true };
+}
+
 export default function Header() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
+  const mobileAppBar = getMobileAppBarConfig(pathname);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [hasInAppBackTarget, setHasInAppBackTarget] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
 
   const displayName = String(
@@ -83,6 +124,18 @@ export default function Header() {
     setIsAccountMenuOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (isLoginPage) return;
+
+    try {
+      const lastPath = window.sessionStorage.getItem(LAST_APP_PATH_KEY);
+      setHasInAppBackTarget(Boolean(lastPath && lastPath !== pathname));
+      window.sessionStorage.setItem(LAST_APP_PATH_KEY, pathname);
+    } catch {
+      setHasInAppBackTarget(false);
+    }
+  }, [isLoginPage, pathname]);
+
   const handleSignIn = () => {
     router.push('/login');
   };
@@ -91,6 +144,15 @@ export default function Header() {
     setIsAccountMenuOpen(false);
     await logout();
     router.push('/');
+  };
+
+  const handleMobileBack = () => {
+    const fallback = mobileAppBar.backHref ?? '/';
+    if (hasInAppBackTarget) {
+      router.back();
+      return;
+    }
+    router.push(fallback);
   };
 
   const accountMenuLinkClass =
@@ -189,10 +251,60 @@ export default function Header() {
     </button>
   ) : null;
 
+  const savedProductsLink = (
+    <Link
+      href="/saved"
+      aria-label="Saved products"
+      className={cn(
+        'flex min-h-11 min-w-11 items-center justify-center rounded transition-colors',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900',
+        isNavActive('/saved', pathname)
+          ? 'text-gray-900'
+          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+      )}
+    >
+      <FiBookmark size={20} aria-hidden="true" />
+    </Link>
+  );
+
   return (
     <header className="app-header sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
       <div className="container-custom">
-        <div className="app-header-row flex items-center justify-between gap-3">
+        <div className="app-header-row flex items-center justify-between gap-3 md:hidden">
+          {mobileAppBar.backHref ? (
+            <>
+              <button
+                type="button"
+                onClick={handleMobileBack}
+                aria-label="Go back"
+                className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
+              >
+                <FiArrowLeft size={21} aria-hidden="true" />
+              </button>
+              <p className="min-w-0 flex-1 truncate text-center text-sm font-semibold text-gray-900">
+                {mobileAppBar.title}
+              </p>
+              {mobileAppBar.showSaved ? savedProductsLink : <span className="h-11 w-11 shrink-0" aria-hidden="true" />}
+            </>
+          ) : (
+            <>
+              {mobileAppBar.brandTitle ? (
+                <Link href="/" className="group min-w-0 flex-1">
+                  <span className="block truncate font-serif text-xl font-normal tracking-normal text-gray-900">
+                    {mobileAppBar.title}
+                  </span>
+                </Link>
+              ) : (
+                <p className="min-w-0 flex-1 truncate text-base font-semibold text-gray-900">
+                  {mobileAppBar.title}
+                </p>
+              )}
+              {mobileAppBar.showSaved ? savedProductsLink : <span className="h-11 w-11 shrink-0" aria-hidden="true" />}
+            </>
+          )}
+        </div>
+
+        <div className="app-header-row hidden items-center justify-between gap-3 md:flex">
           {/* Logo */}
           <Link href="/" className="group flex min-w-0 items-center">
             <span className="truncate font-serif text-xl font-normal tracking-normal text-gray-900 sm:text-2xl">
@@ -224,19 +336,7 @@ export default function Header() {
           </nav>
 
           <div className="flex shrink-0 items-center gap-1">
-            <Link
-              href="/saved"
-              aria-label="Saved products"
-              className={cn(
-                'flex min-h-11 min-w-11 items-center justify-center rounded transition-colors',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900',
-                isNavActive('/saved', pathname)
-                  ? 'text-gray-900'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-              )}
-            >
-              <FiBookmark size={20} aria-hidden="true" />
-            </Link>
+            {savedProductsLink}
             {/* Auth — desktop only; on mobile the tab bar's You tab covers it,
                 keeping a single avatar per screen. */}
             <div className="hidden shrink-0 items-center md:flex">{authControl}</div>
