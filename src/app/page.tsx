@@ -44,19 +44,18 @@ export default function Home() {
       {/* Filters */}
       <div className="sticky-under-header sticky z-40 border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 py-2.5">
-          <Inline justify="between" align="center" wrap gap={4}>
-            <CategoryFilter
-              supplements={supplements}
-              value={selectedCategory}
-              onChange={setSelectedCategory}
-            />
-            <Inline gap={4} align="center">
+          <div className="flex items-center gap-2 sm:max-w-md">
+            <div className="min-w-0 flex-[1.2]">
+              <CategoryFilter
+                supplements={supplements}
+                value={selectedCategory}
+                onChange={setSelectedCategory}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
               <SortFilter value={sortBy} onChange={setSortBy} />
-              <span className="text-sm text-gray-500">
-                {browseGroups.length} results
-              </span>
-            </Inline>
-          </Inline>
+            </div>
+          </div>
         </div>
       </div>
 

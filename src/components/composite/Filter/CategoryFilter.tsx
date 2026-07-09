@@ -1,6 +1,5 @@
 'use client';
 
-import { FaFilter } from 'react-icons/fa';
 import { Select } from '@/components/ui';
 import type { Supplement } from '@/types';
 import { SUPPLEMENT_CATEGORIES } from '@/types';
@@ -41,22 +40,19 @@ export function CategoryFilter({ supplements, value, onChange }: CategoryFilterP
     count: countForCategory(category.id),
   })).filter((category) => category.id === 'all' || category.count > 0);
 
+  // The "all" label stays short so it never truncates in the narrow trigger.
   const options = categories.map(cat => ({
     value: cat.id,
-    label: `${cat.name} (${cat.count})`,
+    label: cat.id === 'all' ? cat.name : `${cat.name} (${cat.count})`,
   }));
 
   return (
-    <div className="flex items-center gap-3">
-      <FaFilter className="text-gray-400" />
-      <Select
-        options={options}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        selectSize="md"
-        fullWidth={false}
-      />
-    </div>
+    <Select
+      options={options}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      selectSize="md"
+    />
   );
 }
 

@@ -20,7 +20,6 @@ export function SortFilter({ value, onChange }: SortFilterProps) {
       value={value}
       onChange={(e) => onChange(e.target.value)}
       selectSize="md"
-      fullWidth={false}
     />
   );
 }
