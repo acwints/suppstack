@@ -28,20 +28,20 @@ export function HealthGoalDirectory({ supplements }: HealthGoalDirectoryProps) {
   const goals = buildHealthGoalDirectory(supplements);
 
   return (
-    <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
+    <div className="scrollbar-hide -mx-3 flex snap-x snap-mandatory gap-4 overflow-x-auto px-3 pb-2 sm:-mx-6 sm:px-6 lg:gap-5">
       {goals.map((goal) => {
         return (
           <Link
             key={goal.id}
             href={healthGoalHref(goal.id)}
-            className="group flex flex-col rounded border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 hover:bg-gray-50"
+            className="group flex min-h-[210px] w-[min(86vw,28rem)] shrink-0 snap-start flex-col rounded border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300 hover:bg-gray-50 sm:w-[28rem] xl:w-[30rem]"
           >
             {/* One header row: icon, title, count + arrow. */}
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-gray-200 bg-white text-gray-700">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded border border-gray-200 bg-white text-gray-700">
                 {goalIcons[goal.id]}
               </span>
-              <h3 className="min-w-0 flex-1 truncate text-base font-semibold text-gray-900">
+              <h3 className="min-w-0 flex-1 text-lg font-semibold leading-6 text-gray-900">
                 {goal.title}
               </h3>
               <span className="flex shrink-0 items-center gap-1.5 text-sm text-gray-500">
@@ -50,7 +50,7 @@ export function HealthGoalDirectory({ supplements }: HealthGoalDirectoryProps) {
               </span>
             </div>
 
-            <div className="mt-3 grid grid-cols-4 gap-1.5">
+            <div className="mt-5 grid grid-cols-4 gap-2.5">
               {goal.supplements.slice(0, 4).map((supplement) => (
                 <div key={supplement.supplement_id} className="min-w-0">
                   <div className="relative aspect-square overflow-hidden rounded border border-gray-100 bg-white">
@@ -59,8 +59,8 @@ export function HealthGoalDirectory({ supplements }: HealthGoalDirectoryProps) {
                         src={supplement.image_url}
                         alt=""
                         fill
-                        className="object-contain p-1.5"
-                        sizes="80px"
+                        className="object-contain p-2"
+                        sizes="112px"
                       />
                     ) : (
                       <span className="flex h-full items-center justify-center text-xs font-semibold text-gray-300">
