@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { FiActivity, FiMoon, FiTrendingUp, FiZap } from 'react-icons/fi';
+import { FiActivity, FiArrowRight, FiMoon, FiTrendingUp, FiZap } from 'react-icons/fi';
 import { TbScaleOutline } from 'react-icons/tb';
 import {
   buildHealthGoalDirectory,
@@ -34,13 +34,21 @@ export function HealthGoalDirectory({ supplements }: HealthGoalDirectoryProps) {
           <Link
             key={goal.id}
             href={healthGoalHref(goal.id)}
-            className="group flex flex-col rounded border border-gray-200 bg-white p-4 text-center transition-colors hover:border-gray-300 hover:bg-gray-50"
+            className="group flex flex-col rounded border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 hover:bg-gray-50"
           >
-            <span className="mx-auto flex h-9 w-9 items-center justify-center rounded border border-gray-200 bg-white text-gray-700">
-              {goalIcons[goal.id]}
-            </span>
-
-            <h3 className="mt-2 text-base font-semibold text-gray-900">{goal.title}</h3>
+            {/* One header row: icon, title, count + arrow. */}
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-gray-200 bg-white text-gray-700">
+                {goalIcons[goal.id]}
+              </span>
+              <h3 className="min-w-0 flex-1 truncate text-base font-semibold text-gray-900">
+                {goal.title}
+              </h3>
+              <span className="flex shrink-0 items-center gap-1.5 text-sm text-gray-500">
+                {goal.productCount}
+                <FiArrowRight className="text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:text-gray-500" />
+              </span>
+            </div>
 
             <div className="mt-3 grid grid-cols-4 gap-1.5">
               {goal.supplements.slice(0, 4).map((supplement) => (
@@ -60,14 +68,12 @@ export function HealthGoalDirectory({ supplements }: HealthGoalDirectoryProps) {
                       </span>
                     )}
                   </div>
-                  <p className="mt-1 truncate text-xs text-gray-500">
+                  <p className="mt-1 truncate text-center text-xs text-gray-500">
                     {supplement.supplement_name}
                   </p>
                 </div>
               ))}
             </div>
-
-            <p className="mt-auto pt-3 text-sm text-gray-700">{goal.productCount} products</p>
           </Link>
         );
       })}
