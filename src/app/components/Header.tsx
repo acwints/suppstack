@@ -5,28 +5,30 @@ import Link from 'next/link';
 import { useAuth } from '@/app/context/AuthContext';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { FiBookmark, FiChevronDown, FiCreditCard, FiLogOut, FiPackage } from 'react-icons/fi';
+import { FiChevronDown, FiCreditCard, FiLogOut, FiPackage } from 'react-icons/fi';
 import { cn } from '@/lib/design-system';
 
+/**
+ * The same four destinations as the mobile tab bar — one IA everywhere.
+ * Discovery drill-ins (products, brands, health, search) belong to Shop.
+ */
 const NAV_LINKS = [
   { href: '/', label: 'Shop' },
-  { href: '/brands', label: 'Brands' },
-  { href: '/products', label: 'Products' },
-  { href: '/health', label: 'Health' },
-  { href: '/health/tracker', label: 'Tracker' },
   { href: '/log', label: 'Log' },
+  { href: '/saved', label: 'Saved' },
   { href: '/premium', label: 'Premium' },
 ] as const;
 
+const SHOP_PREFIXES = ['/supplement', '/brands', '/products', '/health', '/search', '/product'];
+
 function isNavActive(href: string, pathname: string): boolean {
-  if (href === '/') return pathname === '/';
-  if (pathname !== href && !pathname.startsWith(`${href}/`)) return false;
-  // Longest matching link wins so /health/tracker doesn't also mark /health.
-  return !NAV_LINKS.some(
-    (link) =>
-      link.href.length > href.length &&
-      (pathname === link.href || pathname.startsWith(`${link.href}/`))
-  );
+  if (href === '/') {
+    return (
+      pathname === '/' ||
+      SHOP_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
+    );
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 export default function Header() {
@@ -216,40 +218,11 @@ export default function Header() {
                 </Link>
               );
             })}
-            {user && (
-              <Link
-                href="/profile"
-                aria-current={isNavActive('/profile', pathname) ? 'page' : undefined}
-                className={cn(
-                  'rounded text-sm transition-colors hover:text-gray-900',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2',
-                  pathname === '/profile' || pathname.startsWith('/profile/')
-                    ? 'font-semibold text-gray-900 underline decoration-gray-900 underline-offset-8'
-                    : 'font-medium text-gray-600'
-                )}
-              >
-                My Stack
-              </Link>
-            )}
           </nav>
 
-          {/* Saved + Auth */}
-          <div className="flex shrink-0 items-center gap-1">
-            <Link
-              href="/saved"
-              aria-label="Saved products"
-              aria-current={pathname === '/saved' ? 'page' : undefined}
-              className={cn(
-                'flex min-h-11 min-w-11 items-center justify-center rounded transition-colors',
-                'hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2',
-                pathname === '/saved' ? 'text-gray-900' : 'text-gray-600'
-              )}
-            >
-              <FiBookmark size={20} className={pathname === '/saved' ? 'fill-current' : ''} aria-hidden="true" />
-            </Link>
-            {authControl}
-          </div>
+          {/* Auth — desktop only; on mobile the tab bar's You tab covers it,
+              keeping a single avatar per screen. */}
+          <div className="hidden shrink-0 items-center md:flex">{authControl}</div>
         </div>
       </div>
     </header>

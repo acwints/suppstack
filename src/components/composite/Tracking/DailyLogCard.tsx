@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FiCheck, FiClock, FiSun, FiSunset, FiMoon } from 'react-icons/fi';
 import { Card, Stack, Inline } from '@/components/ui';
 import { cn } from '@/lib/design-system/utils';
+import { getCurrentTimeOfDay } from '@/lib/utils';
 import { LogButton } from './LogButton';
 import type { RegimenItem, SupplementLog, TimeOfDay } from '@/types';
 import { TIME_OF_DAY_OPTIONS } from '@/types';
@@ -22,14 +23,6 @@ const timeOfDayIcons: Record<TimeOfDay, React.ReactNode> = {
   evening: <FiSunset className="text-purple-500" />,
   night: <FiMoon className="text-blue-500" />,
 };
-
-function getCurrentTimeOfDay(): TimeOfDay {
-  const hour = new Date().getHours();
-  if (hour >= 6 && hour < 12) return 'morning';
-  if (hour >= 12 && hour < 17) return 'afternoon';
-  if (hour >= 17 && hour < 21) return 'evening';
-  return 'night';
-}
 
 export function DailyLogCard({
   regimen,

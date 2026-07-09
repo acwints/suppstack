@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (typeof window !== 'undefined') {
           window.sessionStorage.removeItem('suppstack_post_login_path');
         }
-        router.push(nextPath || '/profile');
+        router.push(nextPath || '/log');
       }
     });
 
@@ -112,7 +112,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-  const startOAuth = async (provider: 'google' | 'apple', nextPath = '/profile') => {
+  const startOAuth = async (provider: 'google' | 'apple', nextPath = '/log') => {
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem('suppstack_post_login_path', nextPath);
     }
@@ -153,11 +153,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
-  const loginWithGoogle = async (nextPath = '/profile') => {
+  const loginWithGoogle = async (nextPath = '/log') => {
     await startOAuth('google', nextPath);
   };
 
-  const loginWithApple = async (nextPath = '/profile') => {
+  const loginWithApple = async (nextPath = '/log') => {
     await startOAuth('apple', nextPath);
   };
 

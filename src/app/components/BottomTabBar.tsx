@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { IconType } from 'react-icons';
-import { FiActivity, FiCheckCircle, FiSearch, FiShoppingBag, FiUser } from 'react-icons/fi';
+import { FiBookmark, FiCheckCircle, FiShoppingBag, FiUser } from 'react-icons/fi';
 import { cn } from '@/lib/design-system';
 
 interface TabItem {
@@ -14,12 +14,21 @@ interface TabItem {
   match: string[];
 }
 
+/**
+ * Four destinations, four jobs: discover (Shop), do the daily habit (Log),
+ * revisit saved products (Saved), manage yourself (You). Discovery drill-ins
+ * (products, brands, health shelves, search) all belong to Shop.
+ */
 const TABS: TabItem[] = [
-  { href: '/', label: 'Shop', icon: FiShoppingBag, match: ['/supplement', '/brands'] },
-  { href: '/products', label: 'Browse', icon: FiSearch, match: [] },
+  {
+    href: '/',
+    label: 'Shop',
+    icon: FiShoppingBag,
+    match: ['/supplement', '/brands', '/products', '/health', '/search'],
+  },
   { href: '/log', label: 'Log', icon: FiCheckCircle, match: [] },
-  { href: '/health', label: 'Health', icon: FiActivity, match: [] },
-  { href: '/profile', label: 'You', icon: FiUser, match: ['/stacks'] },
+  { href: '/saved', label: 'Saved', icon: FiBookmark, match: [] },
+  { href: '/profile', label: 'You', icon: FiUser, match: ['/stacks', '/premium'] },
 ];
 
 /** Routes where the tab bar yields to a route-specific bottom bar (e.g. the PDP buy bar). */
@@ -55,7 +64,7 @@ export default function BottomTabBar() {
       aria-label="Primary"
       className="app-tabbar fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white/95 backdrop-blur md:hidden"
     >
-      <div className="grid grid-cols-5">
+      <div className="grid grid-cols-4">
         {TABS.map((tab) => {
           const active = isTabActive(tab, pathname);
           const Icon = tab.icon;

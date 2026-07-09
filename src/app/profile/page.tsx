@@ -3,9 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  FiSettings,
   FiUser,
-  FiDollarSign,
   FiGlobe,
   FiTwitter,
   FiInstagram,
@@ -16,15 +14,12 @@ import {
   FiEye,
   FiLock,
   FiBookOpen,
-  FiPackage,
 } from 'react-icons/fi';
 import { useAuth } from '@/app/context/AuthContext';
 import { supabase } from '../supabase';
-import type { RegimenItem, UserSupplementSettingsInput } from '@/types';
-import { formatCurrency, formatDate, feetInchesToCm, cmToFeetInches, lbsToKg, kgToLbs } from '@/lib/utils';
-import { useRegimenCost, useSupplementLogs, useSupplementSettings, useStacks } from '@/hooks';
+import { formatDate, feetInchesToCm, cmToFeetInches, lbsToKg, kgToLbs } from '@/lib/utils';
+import { useSupplementLogs, useStacks } from '@/hooks';
 import { getOrCreateUserProfile, type AccountProfile } from '@/lib/account/profile';
-import { fetchUserProductLinks } from '@/lib/account/user-products';
 import Link from 'next/link';
 import {
   Button,
@@ -42,7 +37,6 @@ import {
   ConfirmDialog,
 } from '@/components/ui';
 import {
-  SupplementSettingsModal,
   WellnessTrends,
   EfficacyInsights,
   RestockReminders,
@@ -51,14 +45,15 @@ import { HealthIntelligencePanel } from '@/components/composite/Health';
 import { PremiumGate } from '@/components/composite/Billing';
 import { FiActivity } from 'react-icons/fi';
 
-type TabType = 'stack' | 'insights' | 'journal' | 'stacks' | 'profile';
+// The current stack lives on the Log tab (it's what you log); Profile is
+// identity, analytics, history, shared stacks, and account settings.
+type TabType = 'insights' | 'journal' | 'stacks' | 'profile';
 
 const tabItems: { id: TabType; label: string; icon?: React.ReactNode }[] = [
-  { id: 'stack', label: 'My Stack', icon: <FiPackage size={16} /> },
   { id: 'insights', label: 'Insights', icon: <FiActivity size={16} /> },
   { id: 'journal', label: 'Journal', icon: <FiBookOpen size={16} /> },
   { id: 'stacks', label: 'My Stacks', icon: <FiLayers size={16} /> },
-  { id: 'profile', label: 'Profile', icon: <FiUser size={16} /> },
+  { id: 'profile', label: 'Settings', icon: <FiUser size={16} /> },
 ];
 
 export default function Profile() {
@@ -67,7 +62,7 @@ export default function Profile() {
   const toast = useToast();
 
   // Active tab
-  const [activeTab, setActiveTab] = useState<TabType>('stack');
+  const [activeTab, setActiveTab] = useState<TabType>('insights');
 
   // Profile form state
   const [dateOfBirth, setDateOfBirth] = useState('');
@@ -84,13 +79,7 @@ export default function Profile() {
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState<AccountProfile | null>(null);
 
-  // Current stack state
-  const [regimen, setRegimen] = useState<RegimenItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Settings modal
-  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<{ id: string; name: string } | null>(null);
 
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState<{ stackId: string; stackName: string } | null>(
@@ -104,8 +93,6 @@ export default function Profile() {
   // Journal logs
   const { logs, isLoading: logsLoading } = useSupplementLogs();
 
-  const { settings, getSettings, createSettings } = useSupplementSettings();
-
   // Stacks hook
   const {
     stacks: myStacks,
@@ -113,53 +100,6 @@ export default function Profile() {
     deleteStack,
     refetch: refetchStacks,
   } = useStacks({ filter: 'my_stacks' });
-
-  // Calculate costs
-  const regimenItems = regimen.map((item) => ({
-    product_price: item.products.product_price,
-    servings_per_container: item.products.servings_per_container,
-    servings_per_day: item.products.servings_per_day,
-  }));
-  const { totalDailyCost, totalMonthlyCost, totalAnnualCost, itemCount } = useRegimenCost(regimenItems);
-
-  const fetchRegimen = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      const currentProfile = await getOrCreateUserProfile(user);
-      setProfile(currentProfile);
-
-      const data = await fetchUserProductLinks<any>(
-        user,
-        `
-          product_id,
-          products (
-            product_name, product_description, product_price,
-            servings_per_container, servings_per_day,
-            brands (brand_name),
-            supplements (supplement_name)
-          )
-        `
-      );
-
-      const mappedData = (data || []).map((item: any) => ({
-        product_id: item.product_id,
-        products: {
-          product_name: item.products?.product_name || '',
-          product_description: item.products?.product_description || '',
-          product_price: item.products?.product_price || 0,
-          servings_per_container: item.products?.servings_per_container || 0,
-          servings_per_day: item.products?.servings_per_day || 0,
-          brands: { brand_name: item.products?.brands?.brand_name || '' },
-          supplements: { supplement_name: item.products?.supplements?.supplement_name || '' },
-        },
-      }));
-
-      setRegimen(mappedData);
-    } catch (error) {
-      console.error('Error fetching regimen:', error);
-    }
-  }, [user]);
 
   const fetchUserProfile = useCallback(async () => {
     if (!user) return;
@@ -199,8 +139,8 @@ export default function Profile() {
     }
 
     setIsLoading(true);
-    Promise.all([fetchRegimen(), fetchUserProfile()]).finally(() => setIsLoading(false));
-  }, [user, authLoading, router, fetchRegimen, fetchUserProfile]);
+    fetchUserProfile().finally(() => setIsLoading(false));
+  }, [user, authLoading, router, fetchUserProfile]);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -238,15 +178,6 @@ export default function Profile() {
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleOpenSettings = (productId: string, productName: string) => {
-    setSelectedProduct({ id: productId, name: productName });
-    setSettingsModalOpen(true);
-  };
-
-  const handleSaveSettings = async (settingsInput: UserSupplementSettingsInput) => {
-    await createSettings(settingsInput);
   };
 
   const handleDeleteStack = async () => {
@@ -341,28 +272,17 @@ export default function Profile() {
                 {bio && <p className="text-gray-600 mt-3 max-w-md">{bio}</p>}
               </div>
             </div>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                await logout?.();
+                router.replace('/login');
+              }}
+            >
+              Sign out
+            </Button>
           </Inline>
         </header>
-
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12 pb-8 border-b border-gray-100">
-          <div>
-            <p className="text-3xl font-serif text-gray-900">{itemCount}</p>
-            <p className="text-sm text-gray-500 mt-1">Supplements</p>
-          </div>
-          <div>
-            <p className="text-3xl font-serif text-gray-900">{formatCurrency(totalDailyCost)}</p>
-            <p className="text-sm text-gray-500 mt-1">Daily Cost</p>
-          </div>
-          <div>
-            <p className="text-3xl font-serif text-gray-900">{formatCurrency(totalMonthlyCost)}</p>
-            <p className="text-sm text-gray-500 mt-1">Monthly Cost</p>
-          </div>
-          <div>
-            <p className="text-3xl font-serif text-gray-900">{formatCurrency(totalAnnualCost)}</p>
-            <p className="text-sm text-gray-500 mt-1">Annual Cost</p>
-          </div>
-        </div>
 
         {/* Tab Navigation */}
         <Tabs.List variant="underline" className="mb-10">
@@ -379,94 +299,6 @@ export default function Profile() {
         </Tabs.List>
 
         {/* Tab Content */}
-        {activeTab === 'stack' && (
-          <section>
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <h2 className="text-2xl font-serif text-gray-900">My Stack</h2>
-                <p className="text-gray-500 mt-1">Supplements you&apos;re currently taking</p>
-              </div>
-              <Button variant="primary" onClick={() => router.push('/')}>
-                Add Supplements
-              </Button>
-            </div>
-
-            {regimen.length === 0 ? (
-              <EmptyState
-                icon={<FiPackage size={32} className="text-gray-400" />}
-                title="No supplements yet"
-                description="Start building your stack to track what you're taking."
-                action={
-                  <Button variant="primary" onClick={() => router.push('/')}>
-                    Browse Supplements
-                  </Button>
-                }
-                variant="card"
-                size="lg"
-              />
-            ) : (
-              <div className="space-y-4">
-                {regimen.map((item) => {
-                  const pricePerServing =
-                    item.products.servings_per_container > 0
-                      ? item.products.product_price / item.products.servings_per_container
-                      : 0;
-                  const costPerMonth = pricePerServing * item.products.servings_per_day * 30.437;
-                  const productSettings = getSettings(item.product_id);
-
-                  return (
-                    <div
-                      key={item.product_id}
-                      className="flex items-center justify-between py-4 border-b border-gray-100 last:border-0"
-                    >
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{item.products.product_name}</h4>
-                        <p className="text-sm text-gray-500 mt-0.5">
-                          {item.products.supplements.supplement_name} &middot;{' '}
-                          {item.products.brands.brand_name}
-                        </p>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                          {costPerMonth > 0 && <span>{formatCurrency(costPerMonth)}/mo</span>}
-                          {productSettings?.custom_dosage && (
-                            <span>&middot; {productSettings.custom_dosage}</span>
-                          )}
-                          {productSettings?.goal && (
-                            <span className="text-accent-600">&middot; {productSettings.goal}</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {productSettings?.status === 'paused' && (
-                          <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
-                            Paused
-                          </span>
-                        )}
-                        <button
-                          onClick={() =>
-                            handleOpenSettings(item.product_id, item.products.product_name)
-                          }
-                          aria-label={`Settings for ${item.products.product_name}`}
-                          className="flex min-h-11 min-w-11 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 active:bg-gray-100"
-                        >
-                          <FiSettings size={18} aria-hidden="true" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* Total Cost Summary */}
-                <div className="flex items-center justify-between pt-6 mt-4 border-t border-gray-200">
-                  <span className="font-medium text-gray-700">Total Monthly Cost</span>
-                  <span className="text-xl font-serif text-gray-900">
-                    {formatCurrency(totalMonthlyCost)}
-                  </span>
-                </div>
-              </div>
-            )}
-          </section>
-        )}
-
         {activeTab === 'insights' && (
           <section>
             <div className="mb-8">
@@ -829,21 +661,6 @@ export default function Profile() {
               </div>
             </div>
           </section>
-        )}
-
-        {/* Settings Modal */}
-        {selectedProduct && (
-          <SupplementSettingsModal
-            isOpen={settingsModalOpen}
-            onClose={() => {
-              setSettingsModalOpen(false);
-              setSelectedProduct(null);
-            }}
-            productId={selectedProduct.id}
-            productName={selectedProduct.name}
-            existingSettings={getSettings(selectedProduct.id)}
-            onSave={handleSaveSettings}
-          />
         )}
 
         {/* Delete Confirmation Dialog */}

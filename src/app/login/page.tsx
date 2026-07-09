@@ -43,7 +43,7 @@ export default function Login() {
   const { user, loading, loginWithApple, loginWithGoogle } = useAuth();
   const router = useRouter();
   const toast = useToast();
-  const [nextPath, setNextPath] = useState('/profile');
+  const [nextPath, setNextPath] = useState('/log');
   const [pendingProvider, setPendingProvider] = useState<'apple' | 'google' | null>(null);
 
   useEffect(() => {

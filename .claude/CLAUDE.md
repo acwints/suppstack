@@ -5,7 +5,6 @@
 - **Language**: TypeScript 5 (strict mode)
 - **Styling**: Tailwind CSS 3.4 with custom design system
 - **Backend**: Supabase (PostgreSQL, Auth, Storage)
-- **External APIs**: Amazon Product Advertising API, OpenFDA
 
 ## Key Commands
 ```bash
@@ -30,13 +29,12 @@ src/
 │       ├── Supplement/    # Supplement display components
 │       ├── Stack/         # Stack cards and views
 │       └── Tracking/      # Daily logging, wellness tracking
-├── hooks/                 # Custom React hooks (14 total)
-│   ├── useSupabaseQuery.ts      # Generic Supabase queries
+├── hooks/                 # Custom React hooks
 │   ├── useSupplements.ts        # Supplement fetching
+│   ├── useRegimen.ts            # The user's current stack
 │   ├── useSupplementLogs.ts     # Daily tracking logs
 │   └── useSupplementSettings.ts # User supplement settings
 ├── lib/
-│   ├── api/               # External API integrations
 │   ├── design-system/     # cn() class-merging utility
 │   └── utils/             # Formatting/price/rating helpers (single source)
 ├── types/

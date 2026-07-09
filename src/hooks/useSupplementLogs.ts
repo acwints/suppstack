@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/supabase';
+import { getCurrentTimeOfDay } from '@/lib/utils';
 import { useAuth } from '@/app/context/AuthContext';
 import type {
   SupplementLog,
@@ -38,14 +39,6 @@ export interface UseSupplementLogsResult {
 function getLocalDateString(date: Date = new Date()): string {
   const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
   return localDate.toISOString().split('T')[0];
-}
-
-function getCurrentTimeOfDay(): TimeOfDay {
-  const hour = new Date().getHours();
-  if (hour >= 6 && hour < 12) return 'morning';
-  if (hour >= 12 && hour < 17) return 'afternoon';
-  if (hour >= 17 && hour < 21) return 'evening';
-  return 'night';
 }
 
 export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSupplementLogsResult {
