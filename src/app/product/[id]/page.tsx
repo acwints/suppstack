@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft, FaShoppingCart, FaCheck, FaExternalLinkAlt } from 'react-icons/fa';
 import { FiActivity, FiBookmark, FiClock, FiCpu, FiMoon, FiShield, FiTarget } from 'react-icons/fi';
-import { supabase } from '../../supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSavedProducts } from '../../context/SavedProductsContext';
 import { useReviews } from '@/hooks/useReviews';
@@ -14,6 +13,7 @@ import { recordProductView } from '@/hooks/useRecentlyViewed';
 import {
   useHealthExperiments,
   useHealthSnapshots,
+  useProduct,
   useProductInStack,
   usePriceCalculations,
 } from '@/hooks';
@@ -36,7 +36,6 @@ import { ReviewList } from '@/components/composite/Review/ReviewList';
 import { EmbeddedCheckout } from '@/components/composite/Commerce';
 import { BrandLogo } from '@/components/composite/Brand';
 import type { ReviewSortBy } from '@/hooks/useReviews';
-import { findCatalogProductById } from '@/lib/catalog/supplement-catalog';
 import { resolveDatabaseProductId } from '@/lib/catalog/supplement-sync';
 import {
   canPurchase,
@@ -63,9 +62,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
   const router = useRouter();
   const toast = useToast();
-  const [product, setProduct] = useState<Product | null>(null);
+  const { product, isLoading } = useProduct(params.id);
   const [productImageSrc, setProductImageSrc] = useState(PRODUCT_IMAGE_FALLBACK);
-  const [isLoading, setIsLoading] = useState(true);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [sortBy, setSortBy] = useState<ReviewSortBy>('newest');
   const isLocalCatalogProductId = params.id.startsWith('catalog-') || params.id.startsWith('real-');
@@ -116,34 +114,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     product?.servings_per_container || 0,
     product?.servings_per_day || 1
   );
-
-  useEffect(() => {
-    async function fetchProduct() {
-      setIsLoading(true);
-
-      const catalogProduct = findCatalogProductById(params.id);
-      if (catalogProduct) {
-        setProduct(catalogProduct);
-        setIsLoading(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('products')
-        .select('*, brands(brand_name), supplements(supplement_id, supplement_name)')
-        .eq('product_id', params.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching product:', error);
-      } else {
-        setProduct(data);
-      }
-      setIsLoading(false);
-    }
-
-    fetchProduct();
-  }, [params.id]);
 
   useEffect(() => {
     setProductImageSrc(getProductImageSrc(product?.product_image));

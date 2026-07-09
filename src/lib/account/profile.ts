@@ -96,3 +96,34 @@ export async function getOrCreateUserProfile(user: User): Promise<AccountProfile
 
   return retry[0] as AccountProfile;
 }
+
+export interface UpdateUserProfileInput {
+  date_of_birth: string | null;
+  gender: string | null;
+  height: number | null;
+  weight: number | null;
+  display_name: string | null;
+  bio: string | null;
+  website: string | null;
+  twitter_handle: string | null;
+  instagram_handle: string | null;
+  youtube_channel: string | null;
+}
+
+/** Upsert the user's editable profile fields, keyed by profile_id. */
+export async function updateUserProfile(
+  user: User,
+  profile: AccountProfile,
+  input: UpdateUserProfileInput
+): Promise<void> {
+  const { error } = await supabase.from('user_profiles').upsert(
+    {
+      profile_id: profile.profile_id,
+      user_id: user.id,
+      username: profile.username,
+      ...input,
+    },
+    { onConflict: 'profile_id' }
+  );
+  if (error) throw error;
+}

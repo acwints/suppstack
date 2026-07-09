@@ -16,10 +16,9 @@ import {
   FiBookOpen,
 } from 'react-icons/fi';
 import { useAuth } from '@/app/context/AuthContext';
-import { supabase } from '../supabase';
 import { formatDate, feetInchesToCm, cmToFeetInches, lbsToKg, kgToLbs } from '@/lib/utils';
 import { useSupplementLogs, useStacks } from '@/hooks';
-import { getOrCreateUserProfile, type AccountProfile } from '@/lib/account/profile';
+import { getOrCreateUserProfile, updateUserProfile, type AccountProfile } from '@/lib/account/profile';
 import Link from 'next/link';
 import {
   Button,
@@ -152,11 +151,8 @@ export default function Profile() {
     const weightKg = weight ? lbsToKg(Number(weight)) : null;
 
     try {
-      const currentProfile = profile || await getOrCreateUserProfile(user);
-      const { error } = await supabase.from('user_profiles').upsert({
-        profile_id: currentProfile.profile_id,
-        user_id: user.id,
-        username: currentProfile.username,
+      const currentProfile = profile || (await getOrCreateUserProfile(user));
+      await updateUserProfile(user, currentProfile, {
         date_of_birth: dateOfBirth || null,
         gender: gender || null,
         height: heightCm,
@@ -167,9 +163,7 @@ export default function Profile() {
         twitter_handle: twitterHandle || null,
         instagram_handle: instagramHandle || null,
         youtube_channel: youtubeChannel || null,
-      }, { onConflict: 'profile_id' });
-
-      if (error) throw error;
+      });
       toast.success('Profile updated');
     } catch (error) {
       console.error('Error updating profile:', error);

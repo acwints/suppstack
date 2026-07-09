@@ -10,6 +10,8 @@ export { usePriceCalculations, useRegimenCost } from './usePriceCalculations';
 export { useCommerceCheckout } from './useCommerceCheckout';
 export { useDebounce } from './useDebounce';
 export { useRegimen } from './useRegimen';
+export { useProduct } from './useProduct';
+export { useProductRatingStats } from './useProductRatingStats';
 
 
 export { useReviews } from './useReviews';

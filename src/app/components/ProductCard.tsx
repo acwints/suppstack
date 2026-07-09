@@ -9,14 +9,13 @@ import { FiBookmark } from 'react-icons/fi';
 import type { Product, ProductRatingStats } from '@/types';
 import { useAuth } from '../context/AuthContext';
 import { useSavedProducts } from '../context/SavedProductsContext';
-import { useProductInStack, usePriceCalculations } from '@/hooks';
+import { useProductInStack, usePriceCalculations, useProductRatingStats } from '@/hooks';
 import { useCommerceCheckout } from '@/hooks';
 import { formatPrice } from '@/lib/utils';
 import { Button, Badge, useToast } from '@/components/ui';
 import { Rating } from '@/components/composite/Rating';
 import { EmbeddedCheckout } from '@/components/composite/Commerce';
 import { BrandLogo } from '@/components/composite/Brand';
-import { supabase } from '../supabase';
 import type { ProductSignalMatch } from '@/lib/catalog/product-match';
 import {
   canPurchase,
@@ -44,7 +43,6 @@ export default function ProductCard({
   signalMatch,
 }: ProductCardProps) {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [ratingStats, setRatingStats] = useState<ProductRatingStats | null>(initialStats || null);
   const { user } = useAuth();
   const router = useRouter();
   const toast = useToast();
@@ -52,6 +50,8 @@ export default function ProductCard({
   const [imageSrc, setImageSrc] = useState<string | null>(() =>
     getProductImageSrc(product.product_image)
   );
+
+  const ratingStats = useProductRatingStats(productId, initialStats);
 
   // Use custom hook for stack management
   const { isInStack, isUpdating, addToStack } = useProductInStack(product);
@@ -65,22 +65,6 @@ export default function ProductCard({
     product.servings_per_container,
     product.servings_per_day
   );
-
-  // Fetch real ratings from database if not provided
-  useEffect(() => {
-    if (initialStats !== undefined || productId.startsWith('catalog-') || productId.startsWith('real-')) return;
-
-    async function fetchRatings() {
-      const { data } = await supabase
-        .from('product_rating_stats')
-        .select('*')
-        .eq('product_id', productId)
-        .limit(1);
-
-      if (data?.[0]) setRatingStats(data[0]);
-    }
-    fetchRatings();
-  }, [productId, initialStats]);
 
   useEffect(() => {
     setImageSrc(getProductImageSrc(product.product_image));

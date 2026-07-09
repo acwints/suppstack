@@ -1,18 +1,21 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FiArrowUpRight, FiSearch, FiShoppingBag } from 'react-icons/fi';
+import { FiArrowUpRight, FiShoppingBag } from 'react-icons/fi';
 import { useSupplements } from '@/hooks';
 import { brandSlug, buildBrandDiscovery } from '@/lib/catalog/brand-discovery';
 import { getPreferredPurchaseUrl } from '@/lib/commerce/shopify-ucp';
 import { formatCurrency } from '@/lib/utils';
 import { Spinner } from '@/components/ui';
 import { BrandLogo } from '@/components/composite/Brand';
+import { EnhancedSearchBar } from '@/components/composite/Search';
 import { getProductImageSrc, isRemoteImageSrc } from '@/lib/catalog/product-image';
 
 export default function BrandsPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const { supplements, isLoading } = useSupplements({ sortBy: 'popular' });
 
@@ -48,13 +51,12 @@ export default function BrandsPage() {
             </p>
           </div>
 
-          <div className="relative mt-8 max-w-xl">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
+          <div className="mt-8 max-w-xl">
+            <EnhancedSearchBar
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={setSearchTerm}
+              onSubmit={(term) => router.push(`/search?q=${encodeURIComponent(term)}`)}
               placeholder="Search supplements and brands..."
-              className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
             />
           </div>
         </div>
