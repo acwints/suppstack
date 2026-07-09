@@ -37,6 +37,7 @@ import { EmbeddedCheckout } from '@/components/composite/Commerce';
 import { BrandLogo } from '@/components/composite/Brand';
 import type { ReviewSortBy } from '@/hooks/useReviews';
 import { findCatalogProductById } from '@/lib/catalog/supplement-catalog';
+import { resolveDatabaseProductId } from '@/lib/catalog/supplement-sync';
 import {
   canPurchase,
   getInventoryLabel,
@@ -69,6 +70,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [sortBy, setSortBy] = useState<ReviewSortBy>('newest');
   const isLocalCatalogProductId = params.id.startsWith('catalog-') || params.id.startsWith('real-');
 
+  // Reviews are keyed by database product ids. Catalog products resolve
+  // (and lazily materialize) their database identity so reviews and ratings
+  // work for every product, not just database-native ones.
+  const [reviewProductId, setReviewProductId] = useState<string | null>(
+    isLocalCatalogProductId ? null : params.id
+  );
+
   // Review system hook
   const {
     reviews,
@@ -82,9 +90,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     deleteReview,
     voteHelpful,
   } = useReviews({
-    productId: params.id,
+    productId: reviewProductId ?? '',
     sortBy,
-    enabled: !!params.id && !isLocalCatalogProductId,
+    enabled: !!reviewProductId,
   });
 
   // Stack management
@@ -145,6 +153,22 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     if (product) recordProductView(product);
   }, [product]);
+
+  // Resolve the database identity for catalog products (creates the products
+  // row on first visit, idempotent by product_url) so reviews attach to it.
+  useEffect(() => {
+    if (!product || !isLocalCatalogProductId) return;
+    let cancelled = false;
+    resolveDatabaseProductId(product)
+      .then((id) => {
+        if (!cancelled) setReviewProductId(String(id));
+      })
+      .catch((error) => console.error('Could not resolve review identity:', error));
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.product_id, isLocalCatalogProductId]);
 
   const productDirectory = useMemo(() => buildProductDirectory(), []);
   const directoryProduct = useMemo(() => {
@@ -620,10 +644,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       </div>
 
       {/* Reviews Section */}
-      {!isCatalogProduct && (
+      {reviewProductId && (
         <div className="border-t border-gray-200 pt-12">
           <ReviewList
-            productId={params.id}
+            productId={reviewProductId}
             productName={product.product_name}
             reviews={reviews}
             stats={stats}

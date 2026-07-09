@@ -41,7 +41,6 @@ import {
   EfficacyInsights,
   RestockReminders,
 } from '@/components/composite/Tracking';
-import { HealthIntelligencePanel } from '@/components/composite/Health';
 import { PremiumGate } from '@/components/composite/Billing';
 import { FiActivity } from 'react-icons/fi';
 
@@ -308,14 +307,18 @@ export default function Profile() {
               </p>
             </div>
 
-            <div className="mb-6">
-              <PremiumGate
-                feature="Health intelligence"
-                description="Connect Apple Health and turn sleep, body, and activity trends into supplement opportunities."
-              >
-                <HealthIntelligencePanel />
-              </PremiumGate>
-            </div>
+            {/* The full health-intelligence tool lives once, on /health/tracker;
+                Insights stays focused on analytics built from your own logs. */}
+            <Link
+              href="/health/tracker"
+              className="mb-6 flex items-center justify-between rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm transition-colors hover:border-gray-300 hover:bg-gray-100"
+            >
+              <span className="text-gray-700">
+                <span className="font-medium text-gray-900">Health intelligence</span> — connect
+                Apple Health and shop by your own signals
+              </span>
+              <span className="shrink-0 font-medium text-gray-900">Open →</span>
+            </Link>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <PremiumGate
