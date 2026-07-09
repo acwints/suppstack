@@ -21,6 +21,10 @@ export interface SupplementCardProps {
 export function SupplementCard({ group }: SupplementCardProps) {
   const { flagship } = group;
   const isResearch = flagship.research_only ?? false;
+  const hasMultipleOptions =
+    !isResearch && typeof group.productCount === 'number' && group.productCount > 1;
+  const displayName = hasMultipleOptions ? `${group.name} (${group.productCount})` : group.name;
+  const metaText = group.isFamily ? `${group.members.length} forms` : flagship.category ?? '';
 
   return (
     <Link href={`/supplement/${flagship.supplement_id}`} className="block h-full">
@@ -50,7 +54,7 @@ export function SupplementCard({ group }: SupplementCardProps) {
 
         <div className="flex flex-1 flex-col border-t border-gray-100 p-3">
           <h3 className="text-sm font-medium leading-5 text-gray-900 line-clamp-2 group-hover:underline">
-            {group.name}
+            {displayName}
           </h3>
           <div className="mt-auto pt-2">
             {isResearch ? (
@@ -61,22 +65,14 @@ export function SupplementCard({ group }: SupplementCardProps) {
             ) : (
               <>
                 {typeof group.priceFrom === 'number' && (
-                  <span className="text-lg font-semibold text-gray-900">
+                  <span className="text-sm font-semibold leading-5 text-gray-900">
                     {(group.productCount ?? 0) > 1 && (
                       <span className="text-xs font-normal text-gray-500">From </span>
                     )}
                     ${formatPrice(group.priceFrom)}
                   </span>
                 )}
-                <p className="text-xs text-gray-500">
-                  {typeof group.productCount === 'number' &&
-                    `${group.productCount} option${group.productCount === 1 ? '' : 's'}`}
-                  {group.isFamily
-                    ? ` · ${group.members.length} forms`
-                    : typeof group.productCount === 'number' && flagship.category
-                      ? ` · ${flagship.category}`
-                      : flagship.category ?? ''}
-                </p>
+                {metaText && <p className="text-xs text-gray-500">{metaText}</p>}
               </>
             )}
           </div>

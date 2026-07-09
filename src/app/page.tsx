@@ -7,7 +7,7 @@ import { useSupplements } from '@/hooks';
 import { brandSlug, buildBrandDiscovery } from '@/lib/catalog/brand-discovery';
 import { SkeletonGrid, SkeletonCard, EmptyState, Inline, Stack } from '@/components/ui';
 import { EnhancedSearchBar } from '@/components/composite/Search';
-import { CategoryFilter, SortFilter } from '@/components/composite/Filter';
+import { CategoryFilter, SortFilter, type SortFilterValue } from '@/components/composite/Filter';
 import { RecentlyViewedRow } from '@/components/composite/Product/RecentlyViewedRow';
 import { SupplementGrid, HealthGoalDirectory } from '@/components/composite/Supplement';
 import { BrandLogo } from '@/components/composite/Brand';
@@ -16,16 +16,17 @@ export default function Home() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('name');
+  const [sortBy, setSortBy] = useState<SortFilterValue>('name');
 
-  const { supplements, browseGroups, isLoading } = useSupplements({
+  const { supplements: catalogSupplements, isLoading } = useSupplements();
+  const { browseGroups: productBrowseGroups } = useSupplements({
     searchTerm,
     categoryId: selectedCategory,
-    sortBy: sortBy as 'name' | 'popular',
+    sortBy,
   });
   const brandHighlights = useMemo(
-    () => buildBrandDiscovery(supplements).slice(0, 6),
-    [supplements]
+    () => buildBrandDiscovery(catalogSupplements).slice(0, 6),
+    [catalogSupplements]
   );
 
   return (
@@ -41,46 +42,9 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="sticky-under-header sticky z-40 border-b border-gray-100 bg-white">
-        <div className="mx-auto max-w-7xl px-3 sm:px-6 py-2.5">
-          <div className="flex items-center gap-2 sm:max-w-md">
-            <div className="min-w-0 flex-[1.2]">
-              <CategoryFilter
-                supplements={supplements}
-                value={selectedCategory}
-                onChange={setSelectedCategory}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <SortFilter value={sortBy} onChange={setSortBy} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Products first */}
       <div className="mx-auto max-w-7xl px-3 sm:px-6 py-6">
         {isLoading ? (
           <SkeletonGrid count={15} CardComponent={SkeletonCard} />
-        ) : browseGroups.length === 0 ? (
-          <EmptyState
-            title="No products match"
-            description="Try a different search term or category."
-            action={
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory('all');
-                }}
-                className="inline-flex min-h-11 items-center justify-center rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
-              >
-                Clear filters
-              </button>
-            }
-            size="lg"
-          />
         ) : (
           <Stack gap={10}>
             <RecentlyViewedRow />
@@ -92,7 +56,7 @@ export default function Home() {
                   View all
                 </Link>
               </Inline>
-              <HealthGoalDirectory supplements={supplements} />
+              <HealthGoalDirectory supplements={catalogSupplements} />
             </section>
 
             <section>
@@ -102,7 +66,44 @@ export default function Home() {
                   View all
                 </Link>
               </Inline>
-              <SupplementGrid groups={browseGroups} />
+
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <div className="min-w-0 flex-[1_1_210px] sm:max-w-xs">
+                  <CategoryFilter
+                    supplements={catalogSupplements}
+                    value={selectedCategory}
+                    onChange={setSelectedCategory}
+                  />
+                </div>
+                <div className="min-w-0 flex-[1_1_150px] sm:max-w-44">
+                  <SortFilter value={sortBy} onChange={setSortBy} />
+                </div>
+                <p className="text-sm text-gray-500">
+                  {productBrowseGroups.length} result{productBrowseGroups.length === 1 ? '' : 's'}
+                </p>
+              </div>
+
+              {productBrowseGroups.length === 0 ? (
+                <EmptyState
+                  title="No products match"
+                  description="Try a different search term or category."
+                  action={
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchTerm('');
+                        setSelectedCategory('all');
+                      }}
+                      className="inline-flex min-h-11 items-center justify-center rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
+                    >
+                      Clear filters
+                    </button>
+                  }
+                  size="lg"
+                />
+              ) : (
+                <SupplementGrid groups={productBrowseGroups} />
+              )}
             </section>
 
             <section>

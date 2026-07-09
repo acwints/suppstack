@@ -2,15 +2,16 @@
 
 import { Select } from '@/components/ui';
 
+export type SortFilterValue = 'name' | 'popular';
+
 export interface SortFilterProps {
-  value: string;
-  onChange: (value: string) => void;
+  value: SortFilterValue;
+  onChange: (value: SortFilterValue) => void;
 }
 
 const sortOptions = [
   { value: 'name', label: 'Sort by Name' },
   { value: 'popular', label: 'Most Popular' },
-  { value: 'newest', label: 'Newest First' },
 ];
 
 export function SortFilter({ value, onChange }: SortFilterProps) {
@@ -18,7 +19,7 @@ export function SortFilter({ value, onChange }: SortFilterProps) {
     <Select
       options={sortOptions}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => onChange(e.target.value as SortFilterValue)}
       selectSize="md"
     />
   );
