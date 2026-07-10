@@ -107,6 +107,9 @@ const STORES = [
   { domain: 'bronsonvitamins.com', brandId: 'bronson', brandName: 'Bronson' },
   { domain: 'nusapure.com', brandId: 'nusapure', brandName: 'NusaPure' },
   { domain: 'purebulk.com', brandId: 'purebulk', brandName: 'PureBulk' },
+  { domain: 'www.onnit.com', brandId: 'onnit', brandName: 'Onnit' },
+  { domain: 'im8health.com', brandId: 'im8', brandName: 'IM8' },
+  { domain: 'www.livemomentous.com', brandId: 'momentous', brandName: 'Momentous' },
 ];
 
 const STORES_BY_DOMAIN = new Map(STORES.map((store) => [store.domain, store]));
@@ -265,6 +268,10 @@ const SUPPLEMENTS = [
   },
   { name: 'Hemp Seed Oil', searchTerms: ['hemp seed oil softgels', 'hemp seed oil'] },
   { name: 'MCT Oil', searchTerms: ['mct oil'] },
+  { name: 'Greens Powder', searchTerms: ['greens powder', 'daily greens', 'super greens', 'all in one greens'] },
+  { name: 'Nootropic Formula', searchTerms: ['alpha brain', 'nootropic formula', 'focus formula'] },
+  { name: 'Magnesium L-Threonate', searchTerms: ['magnesium l threonate', 'magnesium threonate', 'magtein'] },
+  { name: 'Longevity Blend', searchTerms: ['longevity supplement', 'healthy aging', 'cellular health'] },
   { name: 'Green Tea Extract', searchTerms: ['green tea extract', 'egcg'] },
   { name: 'Quercetin', searchTerms: ['quercetin'] },
   { name: 'Elderberry', searchTerms: ['elderberry'] },

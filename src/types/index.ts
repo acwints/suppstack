@@ -62,7 +62,14 @@ export interface Product {
   subscriptions_available?: boolean;
   supplement_facts?: SupplementFacts;
   last_api_sync?: string;
-  data_source?: 'manual' | 'amazon_api' | 'openfda' | 'shopify_ucp' | 'catalog_fallback';
+  data_source?:
+    | 'manual'
+    | 'amazon_api'
+    | 'openfda'
+    | 'shopify_ucp'
+    | 'official_page'
+    | 'official_api'
+    | 'catalog_fallback';
 }
 
 export interface SupplementFacts {

@@ -13,6 +13,22 @@ const products = getCuratedCatalogProducts();
 let failures = 0;
 let researchEntries = 0;
 
+const verifiedImageHosts = new Set([
+  'cdn.shopify.com',
+  'cdn.sanity.io',
+  'd1vo8zfysxy97v.cloudfront.net',
+  'im8health.com',
+]);
+
+function isVerifiedMerchantImageUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && verifiedImageHosts.has(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 for (const s of supplementCatalog) {
   const issues: string[] = [];
 
@@ -33,7 +49,7 @@ for (const s of supplementCatalog) {
   } else {
     const prods = products.filter((p: Product) => p.supplement_id === s.supplement_id);
     if (!s.image_url) issues.push('no image');
-    else if (!s.image_url.startsWith('https://cdn.shopify.com')) issues.push(`non-shopify image: ${s.image_url}`);
+    else if (!isVerifiedMerchantImageUrl(s.image_url)) issues.push(`unverified image host: ${s.image_url}`);
     if (typeof s.average_price !== 'number' || !(s.average_price > 0)) issues.push('no price');
     if (typeof s.product_count !== 'number' || s.product_count < 1) issues.push('no product count');
     if (prods.length === 0) issues.push('no curated products');
