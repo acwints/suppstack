@@ -8,6 +8,9 @@ export type { SupplementGridProps } from './SupplementGrid';
 export { HealthGoalDirectory } from './HealthGoalDirectory';
 export type { HealthGoalDirectoryProps } from './HealthGoalDirectory';
 
+export { PeptideReferenceShelf } from './PeptideReferenceShelf';
+export type { PeptideReferenceShelfProps } from './PeptideReferenceShelf';
+
 export { CompareProducts } from './CompareProducts';
 export type { CompareProductsProps } from './CompareProducts';
 

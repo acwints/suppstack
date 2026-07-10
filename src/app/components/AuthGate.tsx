@@ -16,6 +16,7 @@ const WEB_PUBLIC_PATHS = [
   '/brands',
   '/health',
   '/login',
+  '/peptides',
   '/premium',
   '/privacy',
   '/products',

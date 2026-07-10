@@ -112,7 +112,9 @@ export function findCatalogBrandBySlug(slug: string) {
   const resolvedSlug = BRAND_SLUG_ALIASES[slug] ?? slug;
 
   return (
-    buildCatalogBrandDiscovery().find((brand) => brandSlug(brand.brandName) === resolvedSlug) ??
+    buildCatalogBrandDiscovery({ includeCatalogFallback: true }).find(
+      (brand) => brandSlug(brand.brandName) === resolvedSlug
+    ) ??
     null
   );
 }

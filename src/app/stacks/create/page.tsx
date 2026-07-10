@@ -22,9 +22,17 @@ import { useAuth } from '@/app/context/AuthContext';
 import { useStacks, useSupplements, useDebounce } from '@/hooks';
 import { Button, Input, Badge, Spinner, Card, Stack, Inline, Grid } from '@/components/ui';
 import type { StackSupplementInput, Stack as StackType } from '@/types';
+import { findCatalogSupplementById } from '@/lib/catalog/supplement-catalog';
 
 interface SupplementEntry extends StackSupplementInput {
   supplement_name: string;
+  research_only?: boolean;
+}
+
+interface StackableSupplement {
+  supplement_id: number;
+  supplement_name: string;
+  research_only?: boolean;
 }
 
 const sourceTypes: { value: StackType['source_type']; label: string; icon: JSX.Element }[] = [
@@ -34,6 +42,25 @@ const sourceTypes: { value: StackType['source_type']; label: string; icon: JSX.E
   { value: 'interview', label: 'Interview', icon: <FiMic /> },
   { value: 'website', label: 'Website', icon: <FiGlobe /> },
 ];
+
+function createSupplementEntry(
+  supplement: StackableSupplement,
+  orderIndex: number
+): SupplementEntry {
+  return {
+    supplement_id: supplement.supplement_id,
+    supplement_name: supplement.supplement_name,
+    research_only: supplement.research_only,
+    dosage: '',
+    frequency: '',
+    timing: '',
+    notes: supplement.research_only
+      ? 'Reference only; not purchasable through SuppStack.'
+      : '',
+    is_core: true,
+    order_index: orderIndex,
+  };
+}
 
 export default function CreateStackPage() {
   const router = useRouter();
@@ -67,28 +94,44 @@ export default function CreateStackPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login');
+      const nextPath =
+        typeof window !== 'undefined'
+          ? `${window.location.pathname}${window.location.search}`
+          : '/stacks/create';
+      router.push(`/login?next=${encodeURIComponent(nextPath)}`);
     }
   }, [authLoading, router, user]);
 
-  const addSupplement = (supplement: { supplement_id: number; supplement_name: string }) => {
-    if (supplements.some((s) => s.supplement_id === supplement.supplement_id)) {
-      return;
-    }
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
 
-    setSupplements([
-      ...supplements,
-      {
-        supplement_id: supplement.supplement_id,
-        supplement_name: supplement.supplement_name,
-        dosage: '',
-        frequency: '',
-        timing: '',
-        notes: '',
-        is_core: true,
-        order_index: supplements.length,
-      },
-    ]);
+    const supplementParam = new URLSearchParams(window.location.search).get('supplement');
+    if (!supplementParam) return;
+
+    const preselectedId = Number(supplementParam);
+    if (!Number.isFinite(preselectedId)) return;
+
+    const catalogSupplement = findCatalogSupplementById(preselectedId);
+    if (!catalogSupplement) return;
+
+    setSupplements((current) => {
+      if (current.some((item) => item.supplement_id === catalogSupplement.supplement_id)) {
+        return current;
+      }
+
+      return [...current, createSupplementEntry(catalogSupplement, current.length)];
+    });
+  }, []);
+
+  const addSupplement = (supplement: StackableSupplement) => {
+    setSupplements((current) => {
+      if (current.some((s) => s.supplement_id === supplement.supplement_id)) {
+        return current;
+      }
+
+      return [...current, createSupplementEntry(supplement, current.length)];
+    });
+
     setSearchTerm('');
     setShowSupplementPicker(false);
   };
@@ -144,7 +187,7 @@ export default function CreateStackPage() {
         source_url: sourceUrl.trim() || undefined,
         source_type: sourceType || undefined,
         source_date: sourceDate || undefined,
-        supplements: supplements.map(({ supplement_name, ...rest }) => rest),
+        supplements: supplements.map(({ supplement_name, research_only, ...rest }) => rest),
       });
 
       router.push(`/stacks/${stack.stack_id}`);
@@ -281,7 +324,14 @@ export default function CreateStackPage() {
                           </button>
                         </Stack>
                         <div>
-                          <h4 className="font-medium text-gray-900">{supplement.supplement_name}</h4>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h4 className="font-medium text-gray-900">{supplement.supplement_name}</h4>
+                            {supplement.research_only && (
+                              <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                                Reference
+                              </span>
+                            )}
+                          </div>
                           <button
                             type="button"
                             onClick={() =>
@@ -398,7 +448,12 @@ export default function CreateStackPage() {
                           className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
                         >
                           <FiPlus className="text-gray-400" size={14} />
-                          <span>{supplement.supplement_name}</span>
+                          <span className="min-w-0 flex-1 truncate">{supplement.supplement_name}</span>
+                          {supplement.research_only && (
+                            <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                              Reference
+                            </span>
+                          )}
                         </button>
                       ))}
                       {availableSupplements.length > 10 && (

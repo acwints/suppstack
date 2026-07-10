@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { FiArrowLeft } from 'react-icons/fi';
+import { FiArrowLeft, FiPlus } from 'react-icons/fi';
 import { supabase } from '../../supabase';
 import ProductCard from '../../components/ProductCard';
 import type { Supplement, Product, ProductFilters, ProductSortBy } from '@/types';
@@ -275,6 +275,18 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
               medical advice. Talk to a licensed healthcare professional before
               considering anything described here.
             </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Link
+                href={`/stacks/create?supplement=${supplement.supplement_id}`}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+              >
+                <FiPlus />
+                Add to stack
+              </Link>
+              <p className="text-xs font-medium text-amber-800">
+                Stack planning only; no checkout path is provided.
+              </p>
+            </div>
           </div>
         ) : (
           <>

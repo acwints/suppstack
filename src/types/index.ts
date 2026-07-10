@@ -451,7 +451,7 @@ export const SUPPLEMENT_CATEGORIES: SupplementCategory[] = [
   { id: 'beauty', name: 'Beauty', icon: 'beauty', keywords: ['collagen', 'biotin', 'hyaluronic', 'keratin', 'silica'] },
   { id: 'longevity', name: 'Longevity', icon: 'longevity', keywords: ['resveratrol', 'nad', 'nmn', 'nr', 'spermidine', 'coq10', 'pqq'] },
   { id: 'metabolic', name: 'Metabolic', icon: 'metabolic', keywords: ['berberine', 'chromium', 'cinnamon', 'inositol', 'fiber', 'psyllium', 'glucomannan'] },
-  { id: 'peptides', name: 'Peptides', icon: 'peptides', keywords: ['peptide', 'bpc-157', 'bpc157', 'tb-500', 'thymosin', 'retatrutide', 'tirzepatide', 'semaglutide', 'ipamorelin', 'cjc-1295', 'ghk-cu', 'ghk copper', 'glp-1', 'secretagogue'] },
+  { id: 'peptides', name: 'Peptides', icon: 'peptides', keywords: ['bpc-157', 'bpc157', 'tb-500', 'thymosin', 'retatrutide', 'tirzepatide', 'semaglutide', 'ipamorelin', 'cjc-1295', 'ghk-cu', 'ghk copper', 'glp-1', 'secretagogue'] },
 ];
 
 export const USAGE_DURATION_OPTIONS = [

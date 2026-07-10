@@ -9,7 +9,11 @@ import { SkeletonGrid, SkeletonCard, EmptyState, Inline, Stack } from '@/compone
 import { EnhancedSearchBar } from '@/components/composite/Search';
 import { CategoryFilter, SortFilter, type SortFilterValue } from '@/components/composite/Filter';
 import { RecentlyViewedRow } from '@/components/composite/Product/RecentlyViewedRow';
-import { SupplementGrid, HealthGoalDirectory } from '@/components/composite/Supplement';
+import {
+  SupplementGrid,
+  HealthGoalDirectory,
+  PeptideReferenceShelf,
+} from '@/components/composite/Supplement';
 import { BrandLogo } from '@/components/composite/Brand';
 
 export default function Home() {
@@ -24,6 +28,22 @@ export default function Home() {
     categoryId: selectedCategory,
     sortBy,
   });
+  const purchasableSupplements = useMemo(
+    () => catalogSupplements.filter((supplement) => !supplement.research_only),
+    [catalogSupplements]
+  );
+  const peptideSupplements = useMemo(
+    () =>
+      catalogSupplements.filter(
+        (supplement) =>
+          supplement.research_only || supplement.category?.toLowerCase() === 'peptides'
+      ),
+    [catalogSupplements]
+  );
+  const purchasableBrowseGroups = useMemo(
+    () => productBrowseGroups.filter((group) => !group.flagship.research_only),
+    [productBrowseGroups]
+  );
   const brandHighlights = useMemo(
     () => buildBrandDiscovery(catalogSupplements).slice(0, 6),
     [catalogSupplements]
@@ -59,6 +79,22 @@ export default function Home() {
               <HealthGoalDirectory supplements={catalogSupplements} />
             </section>
 
+            {peptideSupplements.length > 0 && (
+              <section>
+                <Inline justify="between" align="end" className="section-header">
+                  <h2>Peptides</h2>
+                  <Link href="/peptides" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                    View all
+                  </Link>
+                </Inline>
+                <p className="mb-4 max-w-2xl text-sm leading-6 text-gray-600">
+                  Reference profiles only. Add them to a stack for planning; SuppStack does not
+                  sell or route purchase for peptides.
+                </p>
+                <PeptideReferenceShelf supplements={peptideSupplements} />
+              </section>
+            )}
+
             <section>
               <Inline justify="between" align="end" className="section-header">
                 <h2>All Products</h2>
@@ -70,7 +106,7 @@ export default function Home() {
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <div className="min-w-0 flex-[1_1_210px] sm:max-w-xs">
                   <CategoryFilter
-                    supplements={catalogSupplements}
+                    supplements={purchasableSupplements}
                     value={selectedCategory}
                     onChange={setSelectedCategory}
                   />
@@ -79,11 +115,11 @@ export default function Home() {
                   <SortFilter value={sortBy} onChange={setSortBy} />
                 </div>
                 <p className="text-sm text-gray-500">
-                  {productBrowseGroups.length} result{productBrowseGroups.length === 1 ? '' : 's'}
+                  {purchasableBrowseGroups.length} result{purchasableBrowseGroups.length === 1 ? '' : 's'}
                 </p>
               </div>
 
-              {productBrowseGroups.length === 0 ? (
+              {purchasableBrowseGroups.length === 0 ? (
                 <EmptyState
                   title="No products match"
                   description="Try a different search term or category."
@@ -102,7 +138,7 @@ export default function Home() {
                   size="lg"
                 />
               ) : (
-                <SupplementGrid groups={productBrowseGroups} />
+                <SupplementGrid groups={purchasableBrowseGroups} />
               )}
             </section>
 

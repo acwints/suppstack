@@ -2,12 +2,13 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { FaSearch, FaTimes, FaHistory, FaArrowRight } from 'react-icons/fa';
-import { FiActivity, FiPackage, FiHash } from 'react-icons/fi';
+import { FiActivity, FiPackage, FiHash, FiTag } from 'react-icons/fi';
 import Link from 'next/link';
 import { useDebounce } from '@/hooks';
 import { cn } from '@/lib/design-system/utils';
 import { allCuratedProductSeeds, supplementCatalog } from '@/lib/catalog/supplement-catalog';
 import { HEALTH_GOAL_DEFINITIONS, healthGoalHref } from '@/lib/catalog/health-goal-directory';
+import { brandSlug, buildCatalogBrandDiscovery } from '@/lib/catalog/brand-discovery';
 
 export interface EnhancedSearchBarProps {
   value: string;
@@ -19,7 +20,7 @@ export interface EnhancedSearchBarProps {
 }
 
 interface SearchSuggestion {
-  type: 'supplement' | 'product' | 'category';
+  type: 'supplement' | 'product' | 'category' | 'brand';
   id: string | number;
   name: string;
   subtitle?: string;
@@ -28,6 +29,7 @@ interface SearchSuggestion {
 
 const MAX_RECENT_SEARCHES = 5;
 const RECENT_SEARCHES_KEY = 'suppstack_recent_searches';
+const searchableBrands = buildCatalogBrandDiscovery({ includeCatalogFallback: true });
 
 function getRecentSearches(): string[] {
   if (typeof window === 'undefined') return [];
@@ -129,6 +131,23 @@ export function EnhancedSearchBar({
         href: `/supplement/${s.supplement_id}`,
       }));
 
+    const brandSuggestions: SearchSuggestion[] = searchableBrands
+      .filter(
+        (brand) =>
+          brand.brandName.toLowerCase().includes(term) ||
+          brand.categories.some((category) => category.toLowerCase().includes(term)) ||
+          brand.storeDomains.some((domain) => domain.toLowerCase().includes(term)) ||
+          brand.products.some((product) => product.product_name.toLowerCase().includes(term))
+      )
+      .slice(0, 4)
+      .map((brand) => ({
+        type: 'brand' as const,
+        id: brandSlug(brand.brandName),
+        name: brand.brandName,
+        subtitle: `${brand.productCount} product${brand.productCount === 1 ? '' : 's'}`,
+        href: `/brands/${brandSlug(brand.brandName)}`,
+      }));
+
     const productSuggestions: SearchSuggestion[] = allCuratedProductSeeds
       .filter(
         (p) =>
@@ -144,7 +163,12 @@ export function EnhancedSearchBar({
         href: `/product/${p.product_id}`,
       }));
 
-    setSuggestions([...categorySuggestions, ...supplementSuggestions, ...productSuggestions]);
+    setSuggestions([
+      ...categorySuggestions,
+      ...supplementSuggestions,
+      ...brandSuggestions,
+      ...productSuggestions,
+    ]);
     setIsSearching(false);
   }, [debouncedValue]);
 
@@ -227,6 +251,13 @@ export function EnhancedSearchBar({
     (value.length >= 2 && (suggestions.length > 0 || isSearching)) ||
     (!value && recentSearches.length > 0)
   );
+  const categorySuggestions = suggestions.filter(s => s.type === 'category');
+  const supplementSuggestions = suggestions.filter(s => s.type === 'supplement');
+  const brandSuggestions = suggestions.filter(s => s.type === 'brand');
+  const productSuggestions = suggestions.filter(s => s.type === 'product');
+  const supplementOffset = categorySuggestions.length;
+  const brandOffset = supplementOffset + supplementSuggestions.length;
+  const productOffset = brandOffset + brandSuggestions.length;
 
   return (
     <div className={cn('relative', className)}>
@@ -332,14 +363,12 @@ export function EnhancedSearchBar({
               {suggestions.length > 0 && (
                 <>
                   {/* Health goal results */}
-                  {suggestions.filter(s => s.type === 'category').length > 0 && (
+                  {categorySuggestions.length > 0 && (
                     <div className="mb-2">
                       <span className="text-xs font-medium text-gray-500 uppercase tracking-wider px-2">
                         Health Goals
                       </span>
-                      {suggestions
-                        .filter(s => s.type === 'category')
-                        .map((suggestion, i) => (
+                      {categorySuggestions.map((suggestion, i) => (
                           <Link
                             key={`${suggestion.type}-${suggestion.id}`}
                             href={suggestion.href}
@@ -368,20 +397,18 @@ export function EnhancedSearchBar({
                             </div>
                             <FaArrowRight className="text-gray-300 shrink-0" size={10} />
                           </Link>
-                        ))}
+                      ))}
                     </div>
                   )}
 
                   {/* Supplement results */}
-                  {suggestions.filter(s => s.type === 'supplement').length > 0 && (
+                  {supplementSuggestions.length > 0 && (
                     <div className="mb-2">
                       <span className="text-xs font-medium text-gray-500 uppercase tracking-wider px-2">
                         Supplements
                       </span>
-                      {suggestions
-                        .filter(s => s.type === 'supplement')
-                        .map((suggestion, i) => {
-                          const globalIndex = suggestions.filter(s => s.type === 'category').length + i;
+                      {supplementSuggestions.map((suggestion, i) => {
+                          const globalIndex = supplementOffset + i;
                           return (
                             <Link
                               key={`${suggestion.type}-${suggestion.id}`}
@@ -416,19 +443,56 @@ export function EnhancedSearchBar({
                     </div>
                   )}
 
+                  {/* Brand results */}
+                  {brandSuggestions.length > 0 && (
+                    <div className="mb-2">
+                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wider px-2">
+                        Brands
+                      </span>
+                      {brandSuggestions.map((suggestion, i) => {
+                        const globalIndex = brandOffset + i;
+                        return (
+                          <Link
+                            key={`${suggestion.type}-${suggestion.id}`}
+                            href={suggestion.href}
+                            onClick={() => handleSelectSuggestion(suggestion)}
+                            className={cn(
+                              'flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-left transition-colors mt-1',
+                              highlightedIndex === globalIndex
+                                ? 'bg-gray-100'
+                                : 'hover:bg-gray-50'
+                            )}
+                            role="option"
+                            aria-selected={highlightedIndex === globalIndex}
+                          >
+                            <div className="p-1.5 bg-gray-100 rounded-md">
+                              <FiTag className="text-gray-500" size={14} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {suggestion.name}
+                              </p>
+                              {suggestion.subtitle && (
+                                <p className="text-xs text-gray-500 truncate">
+                                  {suggestion.subtitle}
+                                </p>
+                              )}
+                            </div>
+                            <FaArrowRight className="text-gray-300 shrink-0" size={10} />
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+
                   {/* Product results */}
-                  {suggestions.filter(s => s.type === 'product').length > 0 && (
+                  {productSuggestions.length > 0 && (
                     <div>
                       <span className="text-xs font-medium text-gray-500 uppercase tracking-wider px-2">
                         Products
                       </span>
-                      {suggestions
-                        .filter(s => s.type === 'product')
-                        .map((suggestion, i) => {
-                          const globalIndex =
-                            suggestions.filter(s => s.type === 'category').length +
-                            suggestions.filter(s => s.type === 'supplement').length +
-                            i;
+                      {productSuggestions.map((suggestion, i) => {
+                          const globalIndex = productOffset + i;
                           return (
                             <Link
                               key={`${suggestion.type}-${suggestion.id}`}

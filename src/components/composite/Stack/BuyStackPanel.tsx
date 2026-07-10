@@ -32,6 +32,7 @@ interface StackProduct {
   supplement_id: number;
   dosage?: string;
   is_core: boolean;
+  researchOnly: boolean;
   products: Product[];
   selectedProduct: Product | null;
 }
@@ -79,6 +80,7 @@ export function BuyStackPanel({
               supplement_description: catalogSupplement?.supplement_description ?? '',
               category: catalogSupplement?.category,
               aliases: catalogSupplement?.aliases,
+              research_only: catalogSupplement?.research_only,
             },
             databaseForSupplement
           )
@@ -89,6 +91,7 @@ export function BuyStackPanel({
           supplement_id: s.supplement_id,
           dosage: s.dosage,
           is_core: s.is_core,
+          researchOnly: catalogSupplement?.research_only === true,
           products: prods,
           selectedProduct: prods[0] || null,
         };
@@ -247,7 +250,16 @@ export function BuyStackPanel({
                     </div>
 
                     {item.products.length === 0 ? (
-                      <p className="text-xs text-gray-400">No products available</p>
+                      <p
+                        className={cn(
+                          'text-xs',
+                          item.researchOnly ? 'text-amber-700' : 'text-gray-400'
+                        )}
+                      >
+                        {item.researchOnly
+                          ? 'Reference only; no purchase path'
+                          : 'No products available'}
+                      </p>
                     ) : (
                       <select
                         value={item.selectedProduct?.product_id || ''}
