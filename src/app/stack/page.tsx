@@ -3,8 +3,13 @@
 import { useCallback } from 'react';
 import { useSupplementLogs } from '@/hooks/useSupplementLogs';
 import { useRegimen } from '@/hooks/useRegimen';
-import { Spinner, Stack, useToast } from '@/components/ui';
-import { DailyLogCard, DailyWellnessCard, WeeklyCalendar } from '@/components/composite/Tracking';
+import { EmptyState, Spinner, Stack, useToast } from '@/components/ui';
+import {
+  DailyLogCard,
+  DailyWellnessCard,
+  RestockReminders,
+  WeeklyCalendar,
+} from '@/components/composite/Tracking';
 import { MyStackSection } from '@/components/composite/Stack/MyStackSection';
 import type { DailyWellnessInput, TimeOfDay } from '@/types';
 
@@ -14,7 +19,7 @@ import type { DailyWellnessInput, TimeOfDay } from '@/types';
  */
 export default function StackPage() {
   const toast = useToast();
-  const { regimen, isLoading: isRegimenLoading } = useRegimen();
+  const { regimen, activeRegimen, isLoading: isRegimenLoading } = useRegimen();
 
   const {
     logs,
@@ -88,22 +93,31 @@ export default function StackPage() {
       <p className="mb-6 text-sm text-gray-500">{todayLabel}</p>
 
       <Stack gap={8}>
-        {regimen.length > 0 && (
+        {activeRegimen.length > 0 ? (
           <>
             <DailyLogCard
-              regimen={regimen}
+              regimen={activeRegimen}
               todayLogs={todayLogs}
               onLog={handleLog}
               onUnlog={handleUnlog}
               isLoading={isLogsLoading}
             />
-            <WeeklyCalendar logs={logs} plannedCount={regimen.length} />
+            <WeeklyCalendar logs={logs} plannedCount={activeRegimen.length} />
             <DailyWellnessCard
               dailySummary={dailySummary}
               onSave={handleSaveWellness}
               isLoading={isLogsLoading}
             />
           </>
+        ) : regimen.length > 0 ? (
+          <EmptyState
+            title="No active supplements today"
+            description="Paused products stay in your stack, but they don't count toward today's completion."
+            variant="card"
+          />
+        ) : null}
+        {regimen.length > 0 && (
+          <RestockReminders />
         )}
         <MyStackSection regimen={regimen} />
       </Stack>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { SupplementBrowseGroup } from '@/lib/catalog/supplement-families';
 import { formatPrice } from '@/lib/utils';
+import { isRemoteImageSrc } from '@/lib/catalog/product-image';
 
 export interface SupplementCardProps {
   group: SupplementBrowseGroup;
@@ -42,6 +43,7 @@ export function SupplementCard({ group }: SupplementCardProps) {
               fill
               className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.04]"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+              unoptimized={isRemoteImageSrc(flagship.image_url)}
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-gray-50">

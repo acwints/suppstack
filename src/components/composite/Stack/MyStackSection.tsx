@@ -22,11 +22,13 @@ export function MyStackSection({ regimen }: MyStackSectionProps) {
   const [selectedProduct, setSelectedProduct] = useState<{ id: string; name: string } | null>(null);
 
   const { totalMonthlyCost } = useRegimenCost(
-    regimen.map((item) => ({
-      product_price: item.products.product_price,
-      servings_per_container: item.products.servings_per_container,
-      servings_per_day: item.products.servings_per_day,
-    }))
+    regimen
+      .filter((item) => (item.settings?.status ?? 'active') === 'active')
+      .map((item) => ({
+        product_price: item.products.product_price,
+        servings_per_container: item.products.servings_per_container,
+        servings_per_day: item.products.servings_per_day,
+      }))
   );
 
   const handleSaveSettings = async (settingsInput: UserSupplementSettingsInput) => {
@@ -65,7 +67,7 @@ export function MyStackSection({ regimen }: MyStackSectionProps) {
                 ? item.products.product_price / item.products.servings_per_container
                 : 0;
             const costPerMonth = pricePerServing * item.products.servings_per_day * 30.437;
-            const productSettings = getSettings(item.product_id);
+            const productSettings = item.settings ?? getSettings(item.product_id);
 
             return (
               <div

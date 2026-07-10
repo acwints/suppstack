@@ -119,6 +119,13 @@ export interface RegimenItem {
     brands: { brand_name: string };
     supplements: { supplement_name: string };
   };
+  settings?: {
+    servings_per_day: number;
+    schedule_days?: number[];
+    status: SupplementStatus;
+    goal?: string;
+    custom_dosage?: string;
+  };
 }
 
 // ============================================================================

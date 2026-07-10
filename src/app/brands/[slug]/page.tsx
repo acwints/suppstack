@@ -1,10 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { FiArrowLeft, FiExternalLink, FiShoppingBag } from 'react-icons/fi';
+import { FiArrowLeft } from 'react-icons/fi';
 import ProductCard from '@/app/components/ProductCard';
 import { formatCurrency } from '@/lib/utils';
-import { buildShopifyCartGroups, getPreferredPurchaseUrl } from '@/lib/commerce/shopify-ucp';
 import { compareProductsByCommerceSource } from '@/lib/commerce/product-source';
 import { findCatalogBrandBySlug } from '@/lib/catalog/brand-discovery';
 import { BrandLogo } from '@/components/composite/Brand';
@@ -42,8 +41,6 @@ export default function BrandDetailPage({ params }: { params: { slug: string } }
   }
 
   const products = [...brand.products].sort(compareProductsByCommerceSource);
-  const cartGroups = buildShopifyCartGroups(products);
-  const heroProduct = products[0] ?? brand.heroProduct;
 
   return (
     <main className="min-h-screen bg-white">
@@ -69,8 +66,8 @@ export default function BrandDetailPage({ params }: { params: { slug: string } }
                 </h1>
               </div>
               <p className="mt-5 text-lg text-gray-600">
-                Shop {brand.brandName} products across {brand.categories.join(', ')} with
-                serving-cost context and verified checkout in one place.
+                Compare {brand.brandName} products across {brand.categories.join(', ')} with
+                serving-cost context before adding them to your stack.
               </p>
             </div>
 
@@ -113,59 +110,7 @@ export default function BrandDetailPage({ params }: { params: { slug: string } }
         </div>
       </section>
 
-      <section className="container-custom py-8">
-        {cartGroups.length > 0 ? (
-          <div className="border border-orange-200 bg-orange-50 p-5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-                  <FiShoppingBag className="text-orange-600" />
-                  One-click brand cart
-                </div>
-                <p className="mt-1 text-sm text-gray-700">
-                  Add in-stock {brand.brandName} picks to the brand store cart in one step.
-                </p>
-              </div>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                {cartGroups.map((group) => (
-                  <a
-                    key={group.storeDomain}
-                    href={group.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
-                  >
-                    Cart at {group.storeDomain}
-                    <FiExternalLink />
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="border border-gray-200 p-5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Official product path</p>
-                <p className="mt-1 text-sm text-gray-600">
-                  This brand has product pages ready, but not one-click cart checkout yet.
-                </p>
-              </div>
-              <a
-                href={getPreferredPurchaseUrl(heroProduct)}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-10 items-center justify-center gap-2 rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
-              >
-                Shop {brand.brandName}
-                <FiExternalLink />
-              </a>
-            </div>
-          </div>
-        )}
-      </section>
-
-      <section className="container-custom pb-14">
+      <section className="container-custom py-8 pb-14">
         <div className="section-header">
           <h2>{brand.brandName} Product Shelf</h2>
         </div>

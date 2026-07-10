@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { FiSearch, FiX } from 'react-icons/fi';
 import ProductCard from '@/app/components/ProductCard';
 import { Button } from '@/components/ui';
@@ -11,12 +12,17 @@ import type {
 } from '@/lib/catalog/product-directory';
 import type { HealthGoalId } from '@/lib/catalog/health-goal-directory';
 import { formatPrice } from '@/lib/utils';
+import { productMatchesCatalogQuery } from '@/lib/catalog/catalog-search';
 
 export interface ProductDirectoryClientProps {
   products: ProductDirectoryProduct[];
   healthGoals: ProductDirectoryGoalFilter[];
   commerceShelves: ProductDirectoryShelf[];
   initialGoalId?: string;
+  initialSearchTerm?: string;
+  initialCategory?: string;
+  initialBrand?: string;
+  initialSortBy?: string;
 }
 
 type ProductSort = 'featured' | 'price_asc' | 'price_desc' | 'name';
@@ -30,14 +36,24 @@ export function ProductDirectoryClient({
   healthGoals,
   commerceShelves,
   initialGoalId,
+  initialSearchTerm,
+  initialCategory,
+  initialBrand,
+  initialSortBy,
 }: ProductDirectoryClientProps) {
+  const pathname = usePathname();
   const initialGoal =
     initialGoalId && healthGoals.some((goal) => goal.id === initialGoalId) ? initialGoalId : 'all';
-  const [searchTerm, setSearchTerm] = useState('');
+  const initialSort: ProductSort = ['featured', 'price_asc', 'price_desc', 'name'].includes(
+    initialSortBy ?? ''
+  )
+    ? (initialSortBy as ProductSort)
+    : 'featured';
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm ?? '');
   const [goalId, setGoalId] = useState(initialGoal);
-  const [category, setCategory] = useState('all');
-  const [brand, setBrand] = useState('all');
-  const [sortBy, setSortBy] = useState<ProductSort>('featured');
+  const [category, setCategory] = useState(initialCategory ?? 'all');
+  const [brand, setBrand] = useState(initialBrand ?? 'all');
+  const [sortBy, setSortBy] = useState<ProductSort>(initialSort);
 
   const categories = useMemo(
     () => Array.from(new Set(products.map((product) => product.directory_category))).sort(),
@@ -57,22 +73,12 @@ export function ProductDirectoryClient({
   );
 
   const filteredProducts = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
+    const term = searchTerm.trim();
 
     const result = products.filter((product) => {
       const brandName = product.brands?.brand_name ?? product.shopify_store_domain ?? '';
-      const searchable = [
-        product.product_name,
-        product.product_description,
-        product.directory_supplement_name,
-        product.directory_category,
-        brandName,
-        ...(product.quality_badges ?? []),
-      ]
-        .join(' ')
-        .toLowerCase();
 
-      if (term && !searchable.includes(term)) return false;
+      if (term && !productMatchesCatalogQuery(product, term)) return false;
       if (goalId !== 'all' && !product.health_goal_ids.includes(goalId as HealthGoalId)) {
         return false;
       }
@@ -108,12 +114,71 @@ export function ProductDirectoryClient({
     brand !== 'all',
   ].filter(Boolean).length;
 
+  const replaceDirectoryUrl = (next: {
+    searchTerm?: string;
+    goalId?: string;
+    category?: string;
+    brand?: string;
+    sortBy?: ProductSort;
+  }) => {
+    const values = {
+      searchTerm,
+      goalId,
+      category,
+      brand,
+      sortBy,
+      ...next,
+    };
+    const params = new URLSearchParams();
+    if (values.searchTerm.trim()) params.set('q', values.searchTerm.trim());
+    if (values.goalId !== 'all') params.set('goal', values.goalId);
+    if (values.category !== 'all') params.set('category', values.category);
+    if (values.brand !== 'all') params.set('brand', values.brand);
+    if (values.sortBy !== 'featured') params.set('sort', values.sortBy);
+
+    const queryString = params.toString();
+    const nextUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    window.history.replaceState(null, '', nextUrl);
+  };
+
   const clearFilters = () => {
     setSearchTerm('');
     setGoalId('all');
     setCategory('all');
     setBrand('all');
     setSortBy('featured');
+    replaceDirectoryUrl({
+      searchTerm: '',
+      goalId: 'all',
+      category: 'all',
+      brand: 'all',
+      sortBy: 'featured',
+    });
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    replaceDirectoryUrl({ searchTerm: value });
+  };
+
+  const handleGoalChange = (value: string) => {
+    setGoalId(value);
+    replaceDirectoryUrl({ goalId: value });
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setCategory(value);
+    replaceDirectoryUrl({ category: value });
+  };
+
+  const handleBrandChange = (value: string) => {
+    setBrand(value);
+    replaceDirectoryUrl({ brand: value });
+  };
+
+  const handleSortChange = (value: ProductSort) => {
+    setSortBy(value);
+    replaceDirectoryUrl({ sortBy: value });
   };
 
   return (
@@ -127,7 +192,7 @@ export function ProductDirectoryClient({
               key={shelf.id}
               type="button"
               aria-pressed={isActive}
-              onClick={() => setGoalId(isActive ? 'all' : shelf.id)}
+              onClick={() => handleGoalChange(isActive ? 'all' : shelf.id)}
               className={[
                 'rounded border p-4 text-left transition-colors',
                 isActive
@@ -163,7 +228,7 @@ export function ProductDirectoryClient({
             <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(event) => handleSearchChange(event.target.value)}
               placeholder={`Search ${products.length} products...`}
               className="h-11 w-full rounded border border-gray-300 bg-white pl-10 pr-3 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-100"
             />
@@ -174,7 +239,7 @@ export function ProductDirectoryClient({
           <span className="sr-only">Goal</span>
           <select
             value={goalId}
-            onChange={(event) => setGoalId(event.target.value)}
+            onChange={(event) => handleGoalChange(event.target.value)}
             className="h-11 w-full rounded border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-100"
           >
             <option value="all">All goals</option>
@@ -190,7 +255,7 @@ export function ProductDirectoryClient({
           <span className="sr-only">Category</span>
           <select
             value={category}
-            onChange={(event) => setCategory(event.target.value)}
+            onChange={(event) => handleCategoryChange(event.target.value)}
             className="h-11 w-full rounded border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-100"
           >
             <option value="all">All categories</option>
@@ -206,7 +271,7 @@ export function ProductDirectoryClient({
           <span className="sr-only">Brand</span>
           <select
             value={brand}
-            onChange={(event) => setBrand(event.target.value)}
+            onChange={(event) => handleBrandChange(event.target.value)}
             className="h-11 w-full rounded border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-100"
           >
             <option value="all">All brands</option>
@@ -223,7 +288,7 @@ export function ProductDirectoryClient({
           <select
             value={sortBy}
             aria-label="Sort products"
-            onChange={(event) => setSortBy(event.target.value as ProductSort)}
+            onChange={(event) => handleSortChange(event.target.value as ProductSort)}
             className="h-11 w-full rounded border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-100"
           >
             <option value="featured">Featured</option>
@@ -248,18 +313,18 @@ export function ProductDirectoryClient({
       {activeFilterCount > 0 && (
         <div className="flex flex-wrap gap-2" aria-label="Active filters">
           {searchTerm.trim() && (
-            <FilterChip label={`"${searchTerm.trim()}"`} onRemove={() => setSearchTerm('')} />
+            <FilterChip label={`"${searchTerm.trim()}"`} onRemove={() => handleSearchChange('')} />
           )}
           {goalId !== 'all' && (
             <FilterChip
               label={healthGoals.find((goal) => goal.id === goalId)?.title ?? goalId}
-              onRemove={() => setGoalId('all')}
+              onRemove={() => handleGoalChange('all')}
             />
           )}
           {category !== 'all' && (
-            <FilterChip label={category} onRemove={() => setCategory('all')} />
+            <FilterChip label={category} onRemove={() => handleCategoryChange('all')} />
           )}
-          {brand !== 'all' && <FilterChip label={brand} onRemove={() => setBrand('all')} />}
+          {brand !== 'all' && <FilterChip label={brand} onRemove={() => handleBrandChange('all')} />}
         </div>
       )}
 

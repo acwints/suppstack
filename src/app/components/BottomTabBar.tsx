@@ -25,7 +25,7 @@ const TABS: TabItem[] = [
     href: '/',
     label: 'Shop',
     icon: FiShoppingBag,
-    match: ['/supplement', '/brands', '/products', '/health', '/search', '/saved'],
+    match: ['/supplement', '/brands', '/products', '/health', '/search', '/saved', '/peptides'],
   },
   { href: '/stack', label: 'Stack', icon: FiLayers, match: [] },
   { href: '/profile', label: 'You', icon: FiUser, match: ['/stacks', '/premium', '/health/tracker'] },

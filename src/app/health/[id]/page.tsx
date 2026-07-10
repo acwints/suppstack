@@ -7,6 +7,7 @@ import {
   HEALTH_GOAL_DEFINITIONS,
   findHealthGoalDirectoryItem,
 } from '@/lib/catalog/health-goal-directory';
+import { isRemoteImageSrc } from '@/lib/catalog/product-image';
 import { formatPrice } from '@/lib/utils';
 
 export function generateStaticParams() {
@@ -68,6 +69,7 @@ export default function HealthGoalPage({ params }: { params: { id: string } }) {
                         fill
                         className="object-contain p-1.5"
                         sizes="64px"
+                        unoptimized={isRemoteImageSrc(supplement.image_url)}
                       />
                     )}
                   </span>

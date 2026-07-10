@@ -17,6 +17,7 @@ export interface UseProductInStackResult {
 }
 
 const UNIQUE_VIOLATION = '23505';
+const DEFAULT_SCHEDULE_DAYS = [1, 2, 3, 4, 5, 6, 7];
 
 async function findUserProductLink(userId: string, productId: number | string) {
   const { data, error } = await supabase
@@ -37,9 +38,46 @@ async function insertUserProductLink(userId: string, productId: number | string)
   if (error && error.code !== UNIQUE_VIOLATION) throw error;
 }
 
+async function upsertDefaultProductSettings(
+  userId: string,
+  productId: number | string,
+  product: Product
+) {
+  const servingsPerDay =
+    product.servings_per_day && product.servings_per_day > 0 ? product.servings_per_day : 1;
+
+  const { error } = await supabase
+    .from('user_supplement_settings')
+    .upsert(
+      {
+        user_id: userId,
+        product_id: productId,
+        servings_per_day: servingsPerDay,
+        schedule_days: DEFAULT_SCHEDULE_DAYS,
+        status: 'active',
+        reminders_enabled: false,
+        start_date: new Date().toISOString().split('T')[0],
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id,product_id' }
+    );
+
+  if (error) throw error;
+}
+
 async function deleteUserProductLink(userId: string, productId: number | string) {
   const { error } = await supabase
     .from('users_products')
+    .delete()
+    .eq('user_id', userId)
+    .eq('product_id', productId);
+
+  if (error) throw error;
+}
+
+async function deleteUserProductSettings(userId: string, productId: number | string) {
+  const { error } = await supabase
+    .from('user_supplement_settings')
     .delete()
     .eq('user_id', userId)
     .eq('product_id', productId);
@@ -112,6 +150,7 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
     try {
       const databaseProductId = await resolveDatabaseProductId(product);
       await insertUserProductLink(user.id, databaseProductId);
+      await upsertDefaultProductSettings(user.id, databaseProductId, product);
 
       setIsInStack(true);
     } catch (err) {
@@ -143,6 +182,7 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
       }
 
       await deleteUserProductLink(user.id, databaseProductId);
+      await deleteUserProductSettings(user.id, databaseProductId);
 
       setIsInStack(false);
     } catch (err) {

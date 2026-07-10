@@ -4,7 +4,13 @@ import { buildProductDirectory } from '@/lib/catalog/product-directory';
 export default function ProductsPage({
   searchParams,
 }: {
-  searchParams?: { goal?: string };
+  searchParams?: {
+    q?: string;
+    goal?: string;
+    category?: string;
+    brand?: string;
+    sort?: string;
+  };
 }) {
   const directory = buildProductDirectory();
 
@@ -21,7 +27,11 @@ export default function ProductsPage({
           products={directory.products}
           healthGoals={directory.healthGoals}
           commerceShelves={directory.commerceShelves}
+          initialSearchTerm={searchParams?.q}
           initialGoalId={searchParams?.goal}
+          initialCategory={searchParams?.category}
+          initialBrand={searchParams?.brand}
+          initialSortBy={searchParams?.sort}
         />
       </section>
     </main>

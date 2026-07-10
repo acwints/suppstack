@@ -95,7 +95,11 @@ In Xcode:
 | App Privacy (data collection) | Contact info (email, name), user content (supplement routines), and optional health/fitness data (sleep, weight, body fat, activity summaries), linked to identity, not used for tracking or advertising |
 | Age rating | 17+ is not needed; answer the questionnaire honestly (no objectionable content) - expect 4+ |
 | Export compliance | `ITSAppUsesNonExemptEncryption=false` is already set in Info.plist |
-| Screenshots | 6.9" (iPhone 16 Pro Max) and 6.5" (iPhone 11 Pro Max) sizes; capture home, health intelligence, a supplement page, the checkout sheet, and profile |
+| Screenshots | 6.9" (iPhone 16 Pro Max) and 6.5" (iPhone 11 Pro Max) sizes; current asset set covers Shop by Goal, catalog search, brand pages, product detail, peptides reference, and account entry |
+
+Generated screenshot assets live in `assets/app-store/`. Run
+`npm run app-store:assets` with the local web app running to refresh the
+6.9-inch, 6.5-inch, source capture, icon, and contact sheet files.
 
 ## Review risk: Guideline 4.2 (Minimum Functionality)
 

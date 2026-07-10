@@ -114,8 +114,8 @@ export function RestockReminders({ className }: RestockRemindersProps) {
 
           const setting = settingsMap.get(item.product_id);
 
-          // Skip stopped supplements
-          if (setting?.status === 'stopped') return null;
+          // Only active products generate restock estimates.
+          if (setting?.status && setting.status !== 'active') return null;
 
           // Days-supply math needs a verified container size; skip products
           // whose merchant listing doesn't state one rather than firing

@@ -26,7 +26,15 @@ const NAV_LINKS = [
   { href: '/premium', label: 'Premium' },
 ] as const;
 
-const SHOP_PREFIXES = ['/supplement', '/brands', '/products', '/health', '/search', '/product'];
+const SHOP_PREFIXES = [
+  '/supplement',
+  '/brands',
+  '/products',
+  '/health',
+  '/search',
+  '/product',
+  '/peptides',
+];
 const LAST_APP_PATH_KEY = 'suppstack:last-app-path';
 
 interface MobileAppBarConfig {
@@ -54,6 +62,8 @@ function getMobileAppBarConfig(pathname: string): MobileAppBarConfig {
   if (pathname === '/products') return { title: 'All Products', backHref: '/', showSaved: false };
   if (pathname === '/brands') return { title: 'Brands', backHref: '/', showSaved: false };
   if (pathname.startsWith('/brands/')) return { title: 'Brand', backHref: '/brands' };
+  if (pathname === '/peptides') return { title: 'Peptides', backHref: '/', showSaved: false };
+  if (pathname.startsWith('/peptides/')) return { title: 'Peptide', backHref: '/peptides' };
   if (pathname === '/health') return { title: 'Shop by Goal', backHref: '/' };
   if (pathname === '/health/tracker') return { title: 'Apple Health', backHref: '/profile' };
   if (pathname.startsWith('/health/')) return { title: 'Health Goal', backHref: '/health' };

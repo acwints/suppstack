@@ -51,7 +51,7 @@
   /* Typography - Editorial style */
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif text-gray-900;
-    letter-spacing: -0.025em;
+    letter-spacing: 0;
   }
 
   h1 {
@@ -110,7 +110,7 @@
 
   .app-shell {
     --app-header-height: 57px;
-    --app-tabbar-height: 56px;
+    --app-tabbar-height: 64px;
     min-height: 100dvh;
     /* Clear the fixed bottom tab bar (and route-specific bottom bars) on mobile. */
     padding-bottom: calc(var(--app-tabbar-height) + env(safe-area-inset-bottom));

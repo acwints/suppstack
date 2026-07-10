@@ -29,11 +29,9 @@ interface SupplementCorrelation {
   sleep_impact: number;
 }
 
-function computeImpactLabel(impact: number): { label: string; color: string } {
-  if (impact > 0.5) return { label: 'Positive', color: 'text-green-600' };
-  if (impact > 0.2) return { label: 'Slight positive', color: 'text-green-500' };
-  if (impact < -0.5) return { label: 'Negative', color: 'text-red-600' };
-  if (impact < -0.2) return { label: 'Slight negative', color: 'text-red-500' };
+function computeImpactLabel(impact: number): { label: 'Positive' | 'Neutral' | 'Negative'; color: string } {
+  if (impact > 0.2) return { label: 'Positive', color: 'text-green-600' };
+  if (impact < -0.2) return { label: 'Negative', color: 'text-red-600' };
   return { label: 'Neutral', color: 'text-gray-500' };
 }
 
@@ -42,6 +40,7 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
   const [insights, setInsights] = useState<SupplementCorrelation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasEnoughData, setHasEnoughData] = useState(true);
+  const [hasEnoughContrast, setHasEnoughContrast] = useState(true);
 
   const fetchInsights = useCallback(async () => {
     if (!user) return;
@@ -76,14 +75,22 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
       const logs = logsResult.data || [];
       const summaries = summariesResult.data || [];
 
-      if (summaries.length < 7 || products.length === 0) {
+      if (summaries.length < 14) {
         setHasEnoughData(false);
+        setHasEnoughContrast(true);
         setInsights([]);
         setIsLoading(false);
         return;
       }
 
       setHasEnoughData(true);
+      setHasEnoughContrast(true);
+
+      if (products.length === 0) {
+        setInsights([]);
+        setIsLoading(false);
+        return;
+      }
 
       // Build a map of dates to wellness metrics
       const wellnessMap = new Map<string, { mood: number | null; energy: number | null; sleep: number | null }>();
@@ -162,14 +169,25 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
         };
       });
 
-      // Sort by highest total positive impact
-      correlations.sort(
+      const qualifiedCorrelations = correlations.filter(
+        (correlation) => correlation.days_taken >= 3 && correlation.days_skipped >= 3
+      );
+
+      if (qualifiedCorrelations.length === 0) {
+        setHasEnoughContrast(false);
+        setInsights([]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Sort by strongest directional correlation.
+      qualifiedCorrelations.sort(
         (a, b) =>
           Math.abs(b.mood_impact) + Math.abs(b.energy_impact) + Math.abs(b.sleep_impact) -
           (Math.abs(a.mood_impact) + Math.abs(a.energy_impact) + Math.abs(a.sleep_impact))
       );
 
-      setInsights(correlations);
+      setInsights(qualifiedCorrelations);
     } catch (err) {
       console.error('Error computing efficacy insights:', err);
     } finally {
@@ -190,8 +208,7 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
         <div className="group relative">
           <FiInfo className="text-gray-400 cursor-help" size={16} />
           <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 hidden group-hover:block z-10">
-            Compares your wellness scores on days you took each supplement vs. days
-            you didn&apos;t. More data points improve accuracy.
+            Correlates wellness entries with taken and skipped days. This does not imply causation.
           </div>
         </div>
       </div>
@@ -203,10 +220,19 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
       ) : !hasEnoughData ? (
         <div className="text-center py-8">
           <p className="text-gray-500 text-sm">
-            Need at least 7 days of wellness data to generate insights.
+            Need at least 14 days of wellness data to generate insights.
           </p>
           <p className="text-gray-400 text-xs mt-1">
             Keep logging your mood, energy, and sleep daily.
+          </p>
+        </div>
+      ) : !hasEnoughContrast ? (
+        <div className="text-center py-8">
+          <p className="text-gray-500 text-sm">
+            Not enough taken and skipped days to show product correlations yet.
+          </p>
+          <p className="text-gray-400 text-xs mt-1">
+            Each product needs at least 3 taken days and 3 skipped days.
           </p>
         </div>
       ) : insights.length === 0 ? (
@@ -235,7 +261,7 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
                     </p>
                   </div>
                   <Badge variant="secondary" size="sm">
-                    {insight.days_taken} days taken
+                    {insight.days_taken} taken / {insight.days_skipped} skipped
                   </Badge>
                 </div>
 
@@ -253,8 +279,7 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
                       <span className="text-xs font-medium text-gray-600">Mood</span>
                     </div>
                     <p className={cn('text-xs font-medium', moodImpact.color)}>
-                      {insight.mood_impact > 0 ? '+' : ''}
-                      {insight.mood_impact.toFixed(1)}
+                      {moodImpact.label}
                     </p>
                   </div>
 
@@ -271,8 +296,7 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
                       <span className="text-xs font-medium text-gray-600">Energy</span>
                     </div>
                     <p className={cn('text-xs font-medium', energyImpact.color)}>
-                      {insight.energy_impact > 0 ? '+' : ''}
-                      {insight.energy_impact.toFixed(1)}
+                      {energyImpact.label}
                     </p>
                   </div>
 
@@ -289,8 +313,7 @@ export function EfficacyInsights({ className }: EfficacyInsightsProps) {
                       <span className="text-xs font-medium text-gray-600">Sleep</span>
                     </div>
                     <p className={cn('text-xs font-medium', sleepImpact.color)}>
-                      {insight.sleep_impact > 0 ? '+' : ''}
-                      {insight.sleep_impact.toFixed(1)}
+                      {sleepImpact.label}
                     </p>
                   </div>
                 </div>

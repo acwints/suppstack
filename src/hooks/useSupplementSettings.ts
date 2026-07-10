@@ -73,7 +73,7 @@ export function useSupplementSettings(): UseSupplementSettingsResult {
 
   // Get settings for a specific product
   const getSettings = useCallback((productId: string): UserSupplementSettings | undefined => {
-    return settings.find(s => s.product_id === productId);
+    return settings.find(s => String(s.product_id) === String(productId));
   }, [settings]);
 
   // Create new settings
@@ -120,7 +120,7 @@ export function useSupplementSettings(): UseSupplementSettingsResult {
 
     // Update local state
     setSettings(prev => {
-      const existing = prev.findIndex(s => s.product_id === input.product_id);
+      const existing = prev.findIndex(s => String(s.product_id) === String(input.product_id));
       if (existing >= 0) {
         const updated = [...prev];
         updated[existing] = data;
@@ -150,7 +150,7 @@ export function useSupplementSettings(): UseSupplementSettingsResult {
 
     // Update local state
     setSettings(prev => prev.map(s =>
-      s.product_id === productId ? { ...s, ...updates } : s
+      String(s.product_id) === String(productId) ? { ...s, ...updates } : s
     ));
   }, [user]);
 
@@ -179,7 +179,7 @@ export function useSupplementSettings(): UseSupplementSettingsResult {
     }
 
     // Update local state
-    setSettings(prev => prev.filter(s => s.product_id !== productId));
+    setSettings(prev => prev.filter(s => String(s.product_id) !== String(productId)));
   }, [user]);
 
   // Filter active settings

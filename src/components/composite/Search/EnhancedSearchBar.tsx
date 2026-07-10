@@ -6,9 +6,11 @@ import { FiActivity, FiPackage, FiHash, FiTag } from 'react-icons/fi';
 import Link from 'next/link';
 import { useDebounce } from '@/hooks';
 import { cn } from '@/lib/design-system/utils';
-import { allCuratedProductSeeds, supplementCatalog } from '@/lib/catalog/supplement-catalog';
-import { HEALTH_GOAL_DEFINITIONS, healthGoalHref } from '@/lib/catalog/health-goal-directory';
-import { brandSlug, buildCatalogBrandDiscovery } from '@/lib/catalog/brand-discovery';
+import {
+  buildCatalogSearchIndex,
+  searchCatalog,
+  type CatalogSearchResultType,
+} from '@/lib/catalog/catalog-search';
 
 export interface EnhancedSearchBarProps {
   value: string;
@@ -20,7 +22,7 @@ export interface EnhancedSearchBarProps {
 }
 
 interface SearchSuggestion {
-  type: 'supplement' | 'product' | 'category' | 'brand';
+  type: CatalogSearchResultType;
   id: string | number;
   name: string;
   subtitle?: string;
@@ -29,7 +31,7 @@ interface SearchSuggestion {
 
 const MAX_RECENT_SEARCHES = 5;
 const RECENT_SEARCHES_KEY = 'suppstack_recent_searches';
-const searchableBrands = buildCatalogBrandDiscovery({ includeCatalogFallback: true });
+const catalogSearchIndex = buildCatalogSearchIndex();
 
 function getRecentSearches(): string[] {
   if (typeof window === 'undefined') return [];
@@ -96,79 +98,20 @@ export function EnhancedSearchBar({
       return;
     }
 
-    const term = debouncedValue.toLowerCase();
-
-    const categorySuggestions: SearchSuggestion[] = HEALTH_GOAL_DEFINITIONS
-      .filter(
-        (goal) =>
-          goal.title.toLowerCase().includes(term) ||
-          goal.shortTitle.toLowerCase().includes(term) ||
-          goal.description.toLowerCase().includes(term) ||
-          goal.signalLabel.toLowerCase().includes(term) ||
-          goal.supplementNames.some((name) => name.toLowerCase().includes(term))
-      )
-      .slice(0, 3)
-      .map((goal) => ({
-          type: 'category' as const,
-          id: goal.id,
-          name: goal.title,
-          subtitle: goal.signalLabel,
-          href: healthGoalHref(goal.id),
-      }));
-
-    const supplementSuggestions: SearchSuggestion[] = supplementCatalog
-      .filter(
-        (s) =>
-          s.supplement_name.toLowerCase().includes(term) ||
-          (s.aliases ?? []).some((alias) => alias.toLowerCase().includes(term))
-      )
-      .slice(0, 5)
-      .map((s) => ({
-        type: 'supplement' as const,
-        id: s.supplement_id,
-        name: s.supplement_name,
-        subtitle: s.category || 'Supplement',
-        href: `/supplement/${s.supplement_id}`,
-      }));
-
-    const brandSuggestions: SearchSuggestion[] = searchableBrands
-      .filter(
-        (brand) =>
-          brand.brandName.toLowerCase().includes(term) ||
-          brand.categories.some((category) => category.toLowerCase().includes(term)) ||
-          brand.storeDomains.some((domain) => domain.toLowerCase().includes(term)) ||
-          brand.products.some((product) => product.product_name.toLowerCase().includes(term))
-      )
-      .slice(0, 4)
-      .map((brand) => ({
-        type: 'brand' as const,
-        id: brandSlug(brand.brandName),
-        name: brand.brandName,
-        subtitle: `${brand.productCount} product${brand.productCount === 1 ? '' : 's'}`,
-        href: `/brands/${brandSlug(brand.brandName)}`,
-      }));
-
-    const productSuggestions: SearchSuggestion[] = allCuratedProductSeeds
-      .filter(
-        (p) =>
-          p.product_name.toLowerCase().includes(term) ||
-          (p.brands?.brand_name ?? '').toLowerCase().includes(term)
-      )
-      .slice(0, 5)
-      .map((p) => ({
-        type: 'product' as const,
-        id: p.product_id,
-        name: p.product_name,
-        subtitle: p.brands?.brand_name || p.supplement_name,
-        href: `/product/${p.product_id}`,
-      }));
-
-    setSuggestions([
-      ...categorySuggestions,
-      ...supplementSuggestions,
-      ...brandSuggestions,
-      ...productSuggestions,
-    ]);
+    setSuggestions(
+      searchCatalog(debouncedValue, catalogSearchIndex, {
+        goalLimit: 3,
+        supplementLimit: 5,
+        brandLimit: 4,
+        productLimit: 5,
+      }).map((result) => ({
+        type: result.type,
+        id: result.id,
+        name: result.name,
+        subtitle: result.subtitle,
+        href: result.href,
+      }))
+    );
     setIsSearching(false);
   }, [debouncedValue]);
 
@@ -251,8 +194,8 @@ export function EnhancedSearchBar({
     (value.length >= 2 && (suggestions.length > 0 || isSearching)) ||
     (!value && recentSearches.length > 0)
   );
-  const categorySuggestions = suggestions.filter(s => s.type === 'category');
-  const supplementSuggestions = suggestions.filter(s => s.type === 'supplement');
+  const categorySuggestions = suggestions.filter(s => s.type === 'goal');
+  const supplementSuggestions = suggestions.filter(s => s.type === 'supplement' || s.type === 'peptide');
   const brandSuggestions = suggestions.filter(s => s.type === 'brand');
   const productSuggestions = suggestions.filter(s => s.type === 'product');
   const supplementOffset = categorySuggestions.length;
@@ -278,10 +221,10 @@ export function EnhancedSearchBar({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className={cn(
-              'w-full pl-12 pr-10 py-4 text-base md:text-lg',
+              'w-full pl-12 pr-10 py-3.5 text-sm sm:text-base md:py-4',
               'border border-gray-300 rounded-full',
               'focus:ring-2 focus:ring-gray-200 focus:border-gray-400',
-              'bg-white text-gray-900 placeholder-gray-500 placeholder:text-[15px] md:placeholder:text-lg',
+              'bg-white text-gray-900 placeholder-gray-500 placeholder:text-sm sm:placeholder:text-base',
               'focus:outline-none transition-all duration-300',
               'shadow-sm hover:shadow-md',
             )}

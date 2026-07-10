@@ -4,12 +4,10 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FiArrowUpRight, FiShoppingBag } from 'react-icons/fi';
-import { useSupplements } from '@/hooks';
-import { brandSlug, buildBrandDiscovery } from '@/lib/catalog/brand-discovery';
-import { getPreferredPurchaseUrl } from '@/lib/commerce/shopify-ucp';
+import { FiArrowRight } from 'react-icons/fi';
+import { brandSlug, buildCatalogBrandDiscovery } from '@/lib/catalog/brand-discovery';
+import { brandMatchesCatalogQuery } from '@/lib/catalog/catalog-search';
 import { formatCurrency } from '@/lib/utils';
-import { Spinner } from '@/components/ui';
 import { BrandLogo } from '@/components/composite/Brand';
 import { EnhancedSearchBar } from '@/components/composite/Search';
 import { getProductImageSrc, isRemoteImageSrc } from '@/lib/catalog/product-image';
@@ -17,41 +15,35 @@ import { getProductImageSrc, isRemoteImageSrc } from '@/lib/catalog/product-imag
 export default function BrandsPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
-  const { supplements, isLoading } = useSupplements({ sortBy: 'popular' });
 
   const brands = useMemo(
-    () => buildBrandDiscovery(supplements, { includeCatalogFallback: true }),
-    [supplements]
+    () => buildCatalogBrandDiscovery({ includeCatalogFallback: true }),
+    []
   );
   const filteredBrands = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
+    const term = searchTerm.trim();
     if (!term) return brands;
 
-    return brands.filter((brand) =>
-      brand.brandName.toLowerCase().includes(term) ||
-      brand.categories.some((category) => category.toLowerCase().includes(term)) ||
-      brand.products.some((product) => product.product_name.toLowerCase().includes(term))
-    );
+    return brands.filter((brand) => brandMatchesCatalogQuery(brand, term));
   }, [brands, searchTerm]);
 
   return (
     <main className="min-h-screen bg-white">
       <section className="border-b border-gray-200">
-        <div className="container-custom py-12 lg:py-16">
+        <div className="container-custom py-6 sm:py-8">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-3">
               Brand Shop
             </p>
-            <h1 className="text-4xl lg:text-5xl font-serif text-gray-900">
-              Compare supplement brands by price, quality, and checkout path.
+            <h1 className="text-3xl font-serif text-gray-900">
+              Shop Brands
             </h1>
-            <p className="text-lg text-gray-600 mt-5">
-              Browse vitamins, protein, herbs, and everyday wellness brands by category, price,
-              and checkout options.
+            <p className="mt-3 text-sm leading-6 text-gray-600">
+              Find brands by name, product, category, or official store domain.
             </p>
           </div>
 
-          <div className="mt-8 max-w-xl">
+          <div className="mt-6 max-w-xl">
             <EnhancedSearchBar
               value={searchTerm}
               onChange={setSearchTerm}
@@ -63,11 +55,7 @@ export default function BrandsPage() {
       </section>
 
       <section className="container-custom py-10">
-        {isLoading ? (
-          <div className="flex justify-center py-16">
-            <Spinner size="lg" />
-          </div>
-        ) : filteredBrands.length === 0 ? (
+        {filteredBrands.length === 0 ? (
           <div className="rounded border border-gray-200 bg-gray-50 p-10 text-center">
             <p className="text-base font-medium text-gray-900">
               No brands match &ldquo;{searchTerm}&rdquo;
@@ -123,7 +111,7 @@ export default function BrandsPage() {
                         </p>
                       </div>
                     </div>
-                    <FiShoppingBag className="text-gray-400 shrink-0" />
+                    <FiArrowRight className="text-gray-400 shrink-0" />
                   </div>
 
                   <div className="flex flex-wrap gap-2 mt-4">
@@ -144,15 +132,6 @@ export default function BrandsPage() {
                     >
                       View Brand Shelf
                     </Link>
-                    <a
-                      href={getPreferredPurchaseUrl(brand.heroProduct)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex h-10 w-10 items-center justify-center border border-gray-200 rounded hover:bg-gray-50"
-                      aria-label={`Shop ${brand.brandName}`}
-                    >
-                      <FiArrowUpRight />
-                    </a>
                   </div>
                 </div>
               </article>

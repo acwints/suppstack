@@ -4,11 +4,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { useSupplements } from '@/hooks';
-import { brandSlug, buildBrandDiscovery } from '@/lib/catalog/brand-discovery';
+import { brandSlug, buildCatalogBrandDiscovery } from '@/lib/catalog/brand-discovery';
 import { SkeletonGrid, SkeletonCard, EmptyState, Inline, Stack } from '@/components/ui';
 import { EnhancedSearchBar } from '@/components/composite/Search';
 import { CategoryFilter, SortFilter, type SortFilterValue } from '@/components/composite/Filter';
-import { RecentlyViewedRow } from '@/components/composite/Product/RecentlyViewedRow';
 import {
   SupplementGrid,
   HealthGoalDirectory,
@@ -45,8 +44,8 @@ export default function Home() {
     [productBrowseGroups]
   );
   const brandHighlights = useMemo(
-    () => buildBrandDiscovery(catalogSupplements).slice(0, 6),
-    [catalogSupplements]
+    () => buildCatalogBrandDiscovery({ includeCatalogFallback: true }).slice(0, 6),
+    []
   );
 
   return (
@@ -67,8 +66,6 @@ export default function Home() {
           <SkeletonGrid count={15} CardComponent={SkeletonCard} />
         ) : (
           <Stack gap={10}>
-            <RecentlyViewedRow />
-
             <section>
               <Inline justify="between" align="end" className="section-header">
                 <h2>Shop by Goal</h2>
@@ -78,22 +75,6 @@ export default function Home() {
               </Inline>
               <HealthGoalDirectory supplements={catalogSupplements} />
             </section>
-
-            {peptideSupplements.length > 0 && (
-              <section>
-                <Inline justify="between" align="end" className="section-header">
-                  <h2>Peptides</h2>
-                  <Link href="/peptides" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                    View all
-                  </Link>
-                </Inline>
-                <p className="mb-4 max-w-2xl text-sm leading-6 text-gray-600">
-                  Reference profiles only. Add them to a stack for planning; SuppStack does not
-                  sell or route purchase for peptides.
-                </p>
-                <PeptideReferenceShelf supplements={peptideSupplements} />
-              </section>
-            )}
 
             <section>
               <Inline justify="between" align="end" className="section-header">
@@ -168,6 +149,22 @@ export default function Home() {
                 ))}
               </div>
             </section>
+
+            {peptideSupplements.length > 0 && (
+              <section>
+                <Inline justify="between" align="end" className="section-header">
+                  <h2>Peptides Reference</h2>
+                  <Link href="/peptides" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                    View all
+                  </Link>
+                </Inline>
+                <p className="mb-4 max-w-2xl text-sm leading-6 text-gray-600">
+                  Research profiles only. Add peptides to planning stacks; SuppStack does not sell
+                  peptides or route purchase paths for them.
+                </p>
+                <PeptideReferenceShelf supplements={peptideSupplements} />
+              </section>
+            )}
           </Stack>
         )}
       </div>

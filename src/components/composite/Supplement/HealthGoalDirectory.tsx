@@ -10,6 +10,7 @@ import {
   healthGoalHref,
   type HealthGoalId,
 } from '@/lib/catalog/health-goal-directory';
+import { isRemoteImageSrc } from '@/lib/catalog/product-image';
 import type { Supplement } from '@/types';
 
 export interface HealthGoalDirectoryProps {
@@ -61,6 +62,7 @@ export function HealthGoalDirectory({ supplements }: HealthGoalDirectoryProps) {
                         fill
                         className="object-contain p-2"
                         sizes="112px"
+                        unoptimized={isRemoteImageSrc(supplement.image_url)}
                       />
                     ) : (
                       <span className="flex h-full items-center justify-center text-xs font-semibold text-gray-300">

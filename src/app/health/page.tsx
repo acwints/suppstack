@@ -8,6 +8,7 @@ import {
   healthGoalHref,
   type HealthGoalId,
 } from '@/lib/catalog/health-goal-directory';
+import { isRemoteImageSrc } from '@/lib/catalog/product-image';
 import { formatPrice } from '@/lib/utils';
 
 const goalIcons: Record<HealthGoalId, JSX.Element> = {
@@ -57,6 +58,7 @@ export default function HealthDirectoryPage() {
                         fill
                         className="object-contain p-1.5"
                         sizes="80px"
+                        unoptimized={isRemoteImageSrc(supplement.image_url)}
                       />
                     )}
                   </span>

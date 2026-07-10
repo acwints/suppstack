@@ -34,10 +34,16 @@ export function DailyLogCard({
   const [activeTimeFilter, setActiveTimeFilter] = useState<TimeOfDay | 'all'>('all');
 
   const currentTime = getCurrentTimeOfDay();
+  const regimenProductIds = new Set(regimen.map((item) => item.product_id));
   const loggedProductIds = new Set(todayLogs.map((log) => log.product_id));
+  const loggedRegimenProductIds = new Set(
+    todayLogs
+      .filter((log) => regimenProductIds.has(log.product_id))
+      .map((log) => log.product_id)
+  );
   const logsComplete =
     regimen.length > 0 && regimen.every((item) => loggedProductIds.has(item.product_id));
-  const progress = regimen.length > 0 ? (loggedProductIds.size / regimen.length) * 100 : 0;
+  const progress = regimen.length > 0 ? (loggedRegimenProductIds.size / regimen.length) * 100 : 0;
 
   // Filter regimen by time of day based on when supplements were logged
   const filteredRegimen = activeTimeFilter === 'all'
@@ -101,7 +107,7 @@ export function DailyLogCard({
           <div>
             <Inline justify="between" className="text-xs sm:text-sm mb-1.5">
               <span className="text-gray-600">
-                {loggedProductIds.size}/{regimen.length} logged
+                {loggedRegimenProductIds.size}/{regimen.length} logged
               </span>
               <span className="font-medium text-gray-900">{Math.round(progress)}%</span>
             </Inline>
