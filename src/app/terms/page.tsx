@@ -6,7 +6,7 @@ export default function TermsOfService() {
     <main className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-blue-600">Terms of Service</h1>
       <div className="prose max-w-none">
-        <p>Last updated: {new Date().toLocaleDateString()}</p>
+        <p>Last updated: July 5, 2026</p>
         
         <h2 className="text-2xl font-semibold mt-6 mb-4">1. Acceptance of Terms</h2>
         <p>By accessing or using SuppStack, you agree to be bound by these Terms of Service.</p>

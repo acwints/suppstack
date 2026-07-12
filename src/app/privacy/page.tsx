@@ -3,6 +3,9 @@ import Link from 'next/link';
 
 export const metadata = {
   title: 'Privacy Policy - SuppStack',
+  alternates: {
+    canonical: '/privacy',
+  },
 };
 
 export default function PrivacyPolicy() {

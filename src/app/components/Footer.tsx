@@ -17,7 +17,7 @@ export default function Footer() {
   if (pathname === '/login' || isNative) return null;
 
   return (
-    <footer className="mt-auto hidden border-t border-gray-200 bg-white p-8 text-gray-600 md:block">
+    <footer className="mt-auto border-t border-gray-200 bg-white px-4 py-6 text-gray-600 md:p-8">
       <div className="container-custom">
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="text-center md:text-left">
@@ -27,7 +27,7 @@ export default function Footer() {
             </p>
           </div>
           
-          <div className="flex items-center space-x-6 text-sm">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm">
             <a href="/premium" className="hover:text-gray-900 transition-colors duration-200">Premium</a>
             <a href="/privacy" className="hover:text-gray-900 transition-colors duration-200">Privacy</a>
             <a href="/terms" className="hover:text-gray-900 transition-colors duration-200">Terms</a>
