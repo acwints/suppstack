@@ -168,7 +168,7 @@ export function useReviews({
     fetchReviews(0, false);
     fetchStats();
     fetchUserReview();
-  }, [productId, sortBy]);
+  }, [fetchReviews, fetchStats, fetchUserReview]);
 
   // Load more reviews
   const loadMore = useCallback(async () => {

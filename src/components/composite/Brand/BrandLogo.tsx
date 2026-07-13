@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { cn } from '@/lib/design-system';
 import { getBrandLogoUrl } from '@/lib/catalog/brand-logos';
 
@@ -16,6 +17,12 @@ const sizeStyles: Record<NonNullable<BrandLogoProps['size']>, string> = {
   sm: 'h-4 w-4 text-[9px]',
   md: 'h-7 w-7 text-xs',
   lg: 'h-12 w-12 text-lg',
+};
+
+const imageDimensions: Record<NonNullable<BrandLogoProps['size']>, number> = {
+  sm: 16,
+  md: 28,
+  lg: 48,
 };
 
 /**
@@ -42,13 +49,13 @@ export function BrandLogo({ domain, brandName, size = 'md', className }: BrandLo
     );
   }
 
-  // Plain <img>: logos can be ICO/SVG which the Next image optimizer rejects,
-  // and the proxy route already handles caching.
-  // eslint-disable-next-line @next/next/no-img-element
   return (
-    <img
+    <Image
       src={logoUrl}
       alt={`${brandName} logo`}
+      width={imageDimensions[size]}
+      height={imageDimensions[size]}
+      unoptimized
       loading="lazy"
       onError={() => setFailed(true)}
       className={cn(
