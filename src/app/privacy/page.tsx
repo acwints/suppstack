@@ -60,13 +60,12 @@ export default function PrivacyPolicy() {
         </ul>
 
         <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">
-          4. Apple Health and AI Summaries
+          4. Apple Health and Health Context
         </h2>
         <p>
-          Apple Health data is used to create wellness trends, supplement opportunity rankings, and
-          optional coach summaries inside SuppStack. If an AI coach summary is enabled, the summary
-          request may process the health snapshot and related opportunity rankings with our AI
-          provider. Health data is not sent to merchants, used to target ads, or sold.
+          Apple Health data is used to show connected health context and supplement opportunity
+          rankings inside SuppStack. Health data is not sent to merchants, used to target ads, or
+          sold.
         </p>
 
         <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">

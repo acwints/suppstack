@@ -143,11 +143,6 @@ export interface SupplementLog {
   log_date: string;
   time_of_day: TimeOfDay;
   servings_taken: number;
-  notes?: string;
-  mood_before?: number;
-  mood_after?: number;
-  energy_level?: number;
-  side_effects?: string;
   created_at: string;
   // Relations
   products?: Product;
@@ -157,11 +152,6 @@ export interface SupplementLogInput {
   product_id: string;
   time_of_day?: TimeOfDay;
   servings_taken?: number;
-  notes?: string;
-  mood_before?: number;
-  mood_after?: number;
-  energy_level?: number;
-  side_effects?: string;
 }
 
 export interface UserSupplementSettings {
@@ -208,21 +198,8 @@ export interface DailyTrackingSummary {
   supplements_taken: number;
   completion_percentage: number;
   current_streak: number;
-  overall_energy?: number;
-  overall_mood?: number;
-  sleep_quality?: number;
-  sleep_hours?: number;
-  daily_notes?: string;
   created_at: string;
   updated_at: string;
-}
-
-export interface DailyWellnessInput {
-  overall_energy?: number;
-  overall_mood?: number;
-  sleep_quality?: number;
-  sleep_hours?: number;
-  daily_notes?: string;
 }
 
 export interface TrackingStats {
@@ -480,10 +457,10 @@ export const DEFAULT_PAGE_SIZE = 20;
 export const DAYS_PER_MONTH = 30.437; // Average days per month
 
 export const TIME_OF_DAY_OPTIONS = [
-  { value: 'morning', label: 'Morning', icon: '🌅', timeRange: '6am - 12pm' },
-  { value: 'afternoon', label: 'Afternoon', icon: '☀️', timeRange: '12pm - 5pm' },
-  { value: 'evening', label: 'Evening', icon: '🌆', timeRange: '5pm - 9pm' },
-  { value: 'night', label: 'Night', icon: '🌙', timeRange: '9pm - 6am' },
+  { value: 'morning', label: 'Morning', timeRange: '6am - 12pm' },
+  { value: 'afternoon', label: 'Afternoon', timeRange: '12pm - 5pm' },
+  { value: 'evening', label: 'Evening', timeRange: '5pm - 9pm' },
+  { value: 'night', label: 'Night', timeRange: '9pm - 6am' },
 ] as const;
 
 export const SUPPLEMENT_STATUS_OPTIONS = [

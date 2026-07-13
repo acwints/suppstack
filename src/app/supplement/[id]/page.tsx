@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { FiArrowLeft, FiPlus } from 'react-icons/fi';
+import { FiArrowLeft, FiPackage, FiPlus } from 'react-icons/fi';
 import { supabase } from '../../supabase';
 import ProductCard from '../../components/ProductCard';
 import type { Supplement, Product, ProductFilters, ProductSortBy } from '@/types';
@@ -302,7 +302,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
 
             {filteredProducts.length === 0 ? (
               <EmptyState
-                icon="📦"
+                icon={<FiPackage size={32} className="text-gray-400" />}
                 title={products.length === 0 ? "No products found" : "No products match your filters"}
                 description={
                   products.length === 0

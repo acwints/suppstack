@@ -6,12 +6,11 @@ import { useRegimen } from '@/hooks/useRegimen';
 import { EmptyState, Spinner, Stack, useToast } from '@/components/ui';
 import {
   DailyLogCard,
-  DailyWellnessCard,
   RestockReminders,
   WeeklyCalendar,
 } from '@/components/composite/Tracking';
 import { MyStackSection } from '@/components/composite/Stack/MyStackSection';
-import type { DailyWellnessInput, TimeOfDay } from '@/types';
+import type { TimeOfDay } from '@/types';
 
 /**
  * The stack screen: check off today's supplements, see the week, and manage
@@ -24,11 +23,9 @@ export default function StackPage() {
   const {
     logs,
     todayLogs,
-    dailySummary,
     isLoading: isLogsLoading,
     logSupplement,
     unlogSupplement,
-    saveWellnessData,
   } = useSupplementLogs();
 
   const handleLog = useCallback(
@@ -55,20 +52,6 @@ export default function StackPage() {
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [unlogSupplement]
-  );
-
-  const handleSaveWellness = useCallback(
-    async (data: DailyWellnessInput) => {
-      try {
-        await saveWellnessData(data);
-        toast.success('Check-in saved');
-      } catch (error) {
-        console.error('Failed to save wellness data:', error);
-        toast.error('Could not save your check-in. Try again.');
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [saveWellnessData]
   );
 
   const todayLabel = new Date().toLocaleDateString(undefined, {
@@ -103,11 +86,6 @@ export default function StackPage() {
               isLoading={isLogsLoading}
             />
             <WeeklyCalendar logs={logs} plannedCount={activeRegimen.length} />
-            <DailyWellnessCard
-              dailySummary={dailySummary}
-              onSave={handleSaveWellness}
-              isLoading={isLogsLoading}
-            />
           </>
         ) : regimen.length > 0 ? (
           <EmptyState

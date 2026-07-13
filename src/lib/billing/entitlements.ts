@@ -62,20 +62,16 @@ export function premiumCheckoutUrl(userId: string): string | null {
 /** What the premium tier includes — single source for paywall/pricing copy. */
 export const PREMIUM_FEATURES = [
   {
-    name: 'Wellness trends',
-    description: 'Charts of energy, sleep, and mood over time from your daily logs.',
-  },
-  {
-    name: 'Efficacy insights',
-    description: 'See which supplements correlate with how you actually feel.',
-  },
-  {
-    name: 'Restock reminders',
-    description: 'Know when each container runs out based on your logging pace.',
+    name: 'Stack adherence trends',
+    description: 'Weekly and monthly completion patterns from your supplement logs.',
   },
   {
     name: 'Cost analytics',
     description: 'Monthly and annual spend breakdowns across your whole regimen.',
+  },
+  {
+    name: 'Restock reminders',
+    description: 'Know when each container runs out based on your logging pace.',
   },
 ] as const;
 

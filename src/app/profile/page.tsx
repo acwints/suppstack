@@ -13,18 +13,17 @@ import {
   FiTrash2,
   FiEye,
   FiLock,
-  FiBookOpen,
+  FiActivity,
 } from 'react-icons/fi';
 import { useAuth } from '@/app/context/AuthContext';
-import { formatDate, feetInchesToCm, cmToFeetInches, lbsToKg, kgToLbs } from '@/lib/utils';
-import { useSupplementLogs, useStacks } from '@/hooks';
+import { feetInchesToCm, cmToFeetInches, lbsToKg, kgToLbs } from '@/lib/utils';
+import { useStacks } from '@/hooks';
 import { getOrCreateUserProfile, updateUserProfile, type AccountProfile } from '@/lib/account/profile';
 import Link from 'next/link';
 import {
   Button,
   Input,
   Select,
-  Card,
   Spinner,
   Avatar,
   Tabs,
@@ -35,21 +34,15 @@ import {
   useToast,
   ConfirmDialog,
 } from '@/components/ui';
-import {
-  WellnessTrends,
-  EfficacyInsights,
-  RestockReminders,
-} from '@/components/composite/Tracking';
+import { RestockReminders } from '@/components/composite/Tracking';
 import { PremiumGate } from '@/components/composite/Billing';
-import { FiActivity } from 'react-icons/fi';
 
 // The current stack lives on the Stack tab; Profile is identity, analytics,
 // history, shared stacks, and account settings.
-type TabType = 'insights' | 'journal' | 'stacks' | 'profile';
+type TabType = 'insights' | 'stacks' | 'profile';
 
 const tabItems: { id: TabType; label: string; icon?: React.ReactNode }[] = [
   { id: 'insights', label: 'Insights', icon: <FiActivity size={16} /> },
-  { id: 'journal', label: 'Journal', icon: <FiBookOpen size={16} /> },
   { id: 'stacks', label: 'My Stacks', icon: <FiLayers size={16} /> },
   { id: 'profile', label: 'Settings', icon: <FiUser size={16} /> },
 ];
@@ -87,9 +80,6 @@ export default function Profile() {
   const [accountDeleteOpen, setAccountDeleteOpen] = useState(false);
   const [accountDeleteInput, setAccountDeleteInput] = useState('');
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-
-  // Journal logs
-  const { logs, isLoading: logsLoading } = useSupplementLogs();
 
   // Stacks hook
   const {
@@ -295,7 +285,10 @@ export default function Profile() {
         {activeTab === 'insights' && (
           <section>
             <div className="mb-8">
-              <h2 className="text-2xl font-serif text-gray-900">Insights</h2>
+              <h2 className="text-2xl font-serif text-gray-900">Stack Insights</h2>
+              <p className="mt-1 text-gray-500">
+                Supplement adherence, restock timing, and connected health context.
+              </p>
             </div>
 
             <Link
@@ -306,79 +299,12 @@ export default function Profile() {
               <span className="shrink-0 font-medium text-gray-900">Open →</span>
             </Link>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PremiumGate
-                feature="Wellness trends"
-                description="Charts of energy, sleep, and mood over time, built from your daily logs."
-              >
-                <WellnessTrends />
-              </PremiumGate>
-              <div className="space-y-6">
-                <PremiumGate
-                  feature="Efficacy insights"
-                  description="See which supplements correlate with how you actually feel."
-                >
-                  <EfficacyInsights />
-                </PremiumGate>
-                <PremiumGate
-                  feature="Restock reminders"
-                  description="Know when each container runs out based on your logging pace."
-                >
-                  <RestockReminders />
-                </PremiumGate>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {activeTab === 'journal' && (
-          <section>
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <h2 className="text-2xl font-serif text-gray-900">Journal</h2>
-                <p className="text-gray-500 mt-1">Notes and observations about your supplements</p>
-              </div>
-            </div>
-
-            {logsLoading ? (
-              <div className="flex justify-center py-12">
-                <Spinner size="lg" />
-              </div>
-            ) : logs.length === 0 ? (
-              <EmptyState
-                icon={<FiBookOpen size={32} className="text-gray-400" />}
-                title="No journal entries"
-                description="Log notes about how supplements are working for you."
-                variant="card"
-                size="lg"
-              />
-            ) : (
-              <div className="space-y-6">
-                {logs.slice(0, 20).map((log) => (
-                  <div key={log.log_id} className="py-4 border-b border-gray-100 last:border-0">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm text-gray-500">{formatDate(log.logged_at)}</p>
-                        <h4 className="font-medium text-gray-900 mt-1">
-                          {log.products?.product_name || 'Supplement'}
-                        </h4>
-                        {log.notes && <p className="text-gray-600 mt-2">{log.notes}</p>}
-                        {(log.mood_before || log.mood_after || log.energy_level) && (
-                          <div className="flex gap-4 mt-2 text-sm text-gray-500">
-                            {log.energy_level && <span>Energy: {log.energy_level}/5</span>}
-                            {log.mood_before && <span>Mood before: {log.mood_before}</span>}
-                            {log.mood_after && <span>Mood after: {log.mood_after}</span>}
-                          </div>
-                        )}
-                      </div>
-                      {log.time_of_day && (
-                        <span className="text-xs text-gray-400 capitalize">{log.time_of_day}</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <PremiumGate
+              feature="Restock reminders"
+              description="Know when each container runs out based on your supplement logs."
+            >
+              <RestockReminders />
+            </PremiumGate>
           </section>
         )}
 

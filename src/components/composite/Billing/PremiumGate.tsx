@@ -8,7 +8,7 @@ import { PREMIUM_PRICE_LABEL } from '@/lib/billing/entitlements';
 import { Card, Skeleton } from '@/components/ui';
 
 export interface PremiumGateProps {
-  /** Feature name shown in the upsell card (e.g. "Wellness trends"). */
+  /** Feature name shown in the upsell card (e.g. "Restock reminders"). */
   feature: string;
   /** One-line description of what the member gets. */
   description?: string;

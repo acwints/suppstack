@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FiCheck, FiClock, FiSun, FiSunset, FiMoon } from 'react-icons/fi';
+import { FiCheck, FiClock, FiPackage, FiSun, FiSunset, FiMoon } from 'react-icons/fi';
 import { Card, Stack, Inline } from '@/components/ui';
 import { cn } from '@/lib/design-system/utils';
 import { getCurrentTimeOfDay } from '@/lib/utils';
@@ -69,7 +69,7 @@ export function DailyLogCard({
     return (
       <Card variant="modern" className="p-6">
         <div className="text-center py-8">
-          <div className="text-4xl mb-4">📋</div>
+          <FiPackage size={32} className="mx-auto mb-4 text-gray-400" aria-hidden="true" />
           <h3 className="text-lg font-semibold text-gray-800 mb-2">No Supplements Yet</h3>
           <p className="text-gray-600">Add supplements to your stack to start tracking</p>
         </div>

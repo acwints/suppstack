@@ -4,7 +4,7 @@ import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/lib/design-system';
 
 export interface EmptyStateProps extends HTMLAttributes<HTMLDivElement> {
-  /** Icon or emoji to display */
+  /** Icon to display */
   icon?: ReactNode;
   /** Main heading */
   title: string;
@@ -50,7 +50,7 @@ const variantStyles = {
  *
  * @example
  * <EmptyState
- *   icon="📚"
+ *   icon={<FiLayers />}
  *   title="No stacks yet"
  *   description="Create your first stack to get started"
  *   action={<Button>Create Stack</Button>}

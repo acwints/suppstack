@@ -7,8 +7,6 @@ import { useAuth } from '@/app/context/AuthContext';
 import type {
   SupplementLog,
   SupplementLogInput,
-  DailyTrackingSummary,
-  DailyWellnessInput,
   TrackingStats,
   TimeOfDay,
 } from '@/types';
@@ -23,14 +21,11 @@ export interface UseSupplementLogsOptions {
 export interface UseSupplementLogsResult {
   logs: SupplementLog[];
   todayLogs: SupplementLog[];
-  dailySummary: DailyTrackingSummary | null;
   stats: TrackingStats | null;
   isLoading: boolean;
   error: Error | null;
   logSupplement: (input: SupplementLogInput) => Promise<SupplementLog>;
   unlogSupplement: (logId: string) => Promise<void>;
-  updateLog: (logId: string, updates: Partial<SupplementLogInput>) => Promise<void>;
-  saveWellnessData: (data: DailyWellnessInput) => Promise<void>;
   isLoggedToday: (productId: string, timeOfDay?: TimeOfDay) => boolean;
   getLogsForDate: (date: string) => SupplementLog[];
   refreshLogs: () => Promise<void>;
@@ -44,7 +39,6 @@ function getLocalDateString(date: Date = new Date()): string {
 export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSupplementLogsResult {
   const { user } = useAuth();
   const [logs, setLogs] = useState<SupplementLog[]>([]);
-  const [dailySummary, setDailySummary] = useState<DailyTrackingSummary | null>(null);
   const [stats, setStats] = useState<TrackingStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -106,28 +100,6 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
     }
   }, [user, options.productId, options.date, options.startDate, options.endDate]);
 
-  // Fetch daily summary
-  const fetchDailySummary = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      const { data, error: queryError } = await supabase
-        .from('daily_tracking_summary')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('summary_date', today)
-        .limit(1);
-
-      if (queryError) {
-        throw queryError;
-      }
-
-      setDailySummary(((data || [])[0] as DailyTrackingSummary | undefined) || null);
-    } catch (err) {
-      console.error('Error fetching daily summary:', err);
-    }
-  }, [user, today]);
-
   // Fetch tracking stats
   const fetchStats = useCallback(async () => {
     if (!user) return;
@@ -185,9 +157,8 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
   // Initial fetch
   useEffect(() => {
     fetchLogs();
-    fetchDailySummary();
     fetchStats();
-  }, [fetchLogs, fetchDailySummary, fetchStats]);
+  }, [fetchLogs, fetchStats]);
 
   // Log a supplement
   const logSupplement = useCallback(async (input: SupplementLogInput): Promise<SupplementLog> => {
@@ -202,11 +173,6 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
       logged_at: new Date().toISOString(),
       time_of_day: input.time_of_day || getCurrentTimeOfDay(),
       servings_taken: input.servings_taken || 1,
-      notes: input.notes || null,
-      mood_before: input.mood_before || null,
-      mood_after: input.mood_after || null,
-      energy_level: input.energy_level || null,
-      side_effects: input.side_effects || null,
     };
 
     const { data, error: insertError } = await supabase
@@ -230,12 +196,11 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
     // Update local state
     setLogs(prev => [data, ...prev]);
 
-    // Refresh summary and stats
-    fetchDailySummary();
+    // Refresh stats
     fetchStats();
 
     return data;
-  }, [user, today, fetchDailySummary, fetchStats]);
+  }, [user, today, fetchStats]);
 
   // Unlog a supplement
   const unlogSupplement = useCallback(async (logId: string): Promise<void> => {
@@ -256,32 +221,9 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
     // Update local state
     setLogs(prev => prev.filter(log => log.log_id !== logId));
 
-    // Refresh summary and stats
-    fetchDailySummary();
+    // Refresh stats
     fetchStats();
-  }, [user, fetchDailySummary, fetchStats]);
-
-  // Update a log
-  const updateLog = useCallback(async (logId: string, updates: Partial<SupplementLogInput>): Promise<void> => {
-    if (!user) {
-      throw new Error('Please log in to manage supplements');
-    }
-
-    const { error: updateError } = await supabase
-      .from('supplement_logs')
-      .update(updates)
-      .eq('log_id', logId)
-      .eq('user_id', user.id);
-
-    if (updateError) {
-      throw updateError;
-    }
-
-    // Update local state
-    setLogs(prev => prev.map(log =>
-      log.log_id === logId ? { ...log, ...updates } : log
-    ));
-  }, [user]);
+  }, [user, fetchStats]);
 
   // Check if product is logged today
   const isLoggedToday = useCallback((productId: string, timeOfDay?: TimeOfDay): boolean => {
@@ -300,76 +242,19 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
   // Get today's logs
   const todayLogs = logs.filter(log => log.log_date === today);
 
-  // Save wellness data (mood, energy, sleep)
-  const saveWellnessData = useCallback(async (data: DailyWellnessInput): Promise<void> => {
-    if (!user) {
-      throw new Error('Please log in to save wellness data');
-    }
-
-    const wellnessData = {
-      user_id: user.id,
-      summary_date: today,
-      overall_mood: data.overall_mood || null,
-      overall_energy: data.overall_energy || null,
-      sleep_quality: data.sleep_quality || null,
-      sleep_hours: data.sleep_hours || null,
-      daily_notes: data.daily_notes || null,
-    };
-
-    // Check if summary exists for today
-    const { data: existingRows, error: existingError } = await supabase
-      .from('daily_tracking_summary')
-      .select('summary_id')
-      .eq('user_id', user.id)
-      .eq('summary_date', today)
-      .limit(1);
-
-    if (existingError) throw existingError;
-    const existing = (existingRows || [])[0] as { summary_id: string } | undefined;
-
-    if (existing) {
-      // Update existing
-      const { error: updateError } = await supabase
-        .from('daily_tracking_summary')
-        .update({
-          overall_mood: wellnessData.overall_mood,
-          overall_energy: wellnessData.overall_energy,
-          sleep_quality: wellnessData.sleep_quality,
-          sleep_hours: wellnessData.sleep_hours,
-          daily_notes: wellnessData.daily_notes,
-        })
-        .eq('summary_id', existing.summary_id);
-
-      if (updateError) throw updateError;
-    } else {
-      // Insert new
-      const { error: insertError } = await supabase
-        .from('daily_tracking_summary')
-        .insert(wellnessData);
-
-      if (insertError) throw insertError;
-    }
-
-    // Refresh summary
-    await fetchDailySummary();
-  }, [user, today, fetchDailySummary]);
-
   // Refresh function
   const refreshLogs = useCallback(async () => {
-    await Promise.all([fetchLogs(), fetchDailySummary(), fetchStats()]);
-  }, [fetchLogs, fetchDailySummary, fetchStats]);
+    await Promise.all([fetchLogs(), fetchStats()]);
+  }, [fetchLogs, fetchStats]);
 
   return {
     logs,
     todayLogs,
-    dailySummary,
     stats,
     isLoading,
     error,
     logSupplement,
     unlogSupplement,
-    updateLog,
-    saveWellnessData,
     isLoggedToday,
     getLogsForDate,
     refreshLogs,

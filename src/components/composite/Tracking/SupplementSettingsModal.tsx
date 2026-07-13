@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { FiX, FiClock, FiTarget, FiCalendar, FiBell } from 'react-icons/fi';
-import { Modal, Button, Input, Select } from '@/components/ui';
+import { Modal, Button, Input } from '@/components/ui';
 import type { UserSupplementSettings, UserSupplementSettingsInput, SupplementStatus } from '@/types';
-import { SUPPLEMENT_STATUS_OPTIONS, DAYS_OF_WEEK, TIME_OF_DAY_OPTIONS } from '@/types';
+import { SUPPLEMENT_STATUS_OPTIONS, DAYS_OF_WEEK } from '@/types';
 
 export interface SupplementSettingsModalProps {
   isOpen: boolean;
@@ -294,7 +294,7 @@ export function SupplementSettingsModal({
           <textarea
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
-            placeholder="e.g., Improve sleep quality, Build muscle..."
+            placeholder="e.g., Build muscle, support focus..."
             rows={2}
             className="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900 resize-none"
           />

@@ -15,7 +15,7 @@ const FREE_FEATURES = [
   'Browse and compare every supplement and product',
   'Verified merchant checkout',
   'Build and share stacks',
-  'Daily supplement logging and journal',
+  'Daily supplement logging',
 ];
 
 export default function PremiumPage() {
@@ -32,8 +32,8 @@ export default function PremiumPage() {
         <h1 className="text-3xl font-serif text-gray-900">SuppStack Premium</h1>
         <p className="mx-auto mt-3 max-w-xl text-gray-600">
           The marketplace and knowledge base stay free. Premium adds the
-          personal layer: trends, insights, and reminders built from your own
-          logs.
+          operational layer: adherence, cost, and restock tools built from your
+          supplement logs.
         </p>
       </div>
 

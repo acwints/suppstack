@@ -1,8 +1,8 @@
 # Premium subscriptions (RevenueCat)
 
-SuppStack Premium gates the personal analytics layer (wellness trends,
-efficacy insights, restock reminders, cost analytics) behind a subscription.
-The marketplace, wiki, stacks, and daily logging stay free.
+SuppStack Premium gates the operational stack layer (adherence trends,
+restock reminders, and cost analytics) behind a subscription. The marketplace,
+wiki, stacks, and daily supplement logging stay free.
 
 ## Architecture
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { FaThumbsUp, FaThumbsDown, FaCheckCircle, FaFlag } from 'react-icons/fa';
+import { FaThumbsUp, FaThumbsDown, FaCheckCircle, FaTimesCircle, FaFlag } from 'react-icons/fa';
 import type { Review } from '@/types';
 import { formatRelativeTime, getInitials } from '@/lib/utils/format';
 import { getRatingLabel } from '@/lib/utils/rating';
@@ -162,8 +162,18 @@ export function ReviewCard({
 
       {/* Recommendation */}
       {review.would_recommend !== undefined && (
-        <p className={cn('text-sm font-medium mb-4', review.would_recommend ? 'text-green-600' : 'text-red-600')}>
-          {review.would_recommend ? '✓ Would recommend' : '✗ Would not recommend'}
+        <p
+          className={cn(
+            'mb-4 flex items-center gap-1.5 text-sm font-medium',
+            review.would_recommend ? 'text-green-600' : 'text-red-600'
+          )}
+        >
+          {review.would_recommend ? (
+            <FaCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
+          ) : (
+            <FaTimesCircle className="h-3.5 w-3.5" aria-hidden="true" />
+          )}
+          {review.would_recommend ? 'Would recommend' : 'Would not recommend'}
         </p>
       )}
 
