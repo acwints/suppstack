@@ -21,12 +21,26 @@ DROP TABLE IF EXISTS shopify_merchant_capabilities;
 
 -- 2. users_products: single owner, membership-only ---------------------------
 
--- Backfill user_id from profile ownership before dropping profile_id.
-UPDATE users_products up
-SET user_id = p.user_id
-FROM user_profiles p
-WHERE up.user_id IS NULL
-  AND up.profile_id = p.profile_id;
+-- Backfill user_id from profile ownership before dropping profile_id. Some
+-- hosted databases already had the single-owner shape before this migration
+-- was recorded, so guard the legacy-column read.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'users_products'
+      AND column_name = 'profile_id'
+  ) THEN
+    UPDATE users_products up
+    SET user_id = p.user_id
+    FROM user_profiles p
+    WHERE up.user_id IS NULL
+      AND up.profile_id = p.profile_id;
+  END IF;
+END;
+$$;
 
 -- Rows with no resolvable owner are unreachable by any user; remove them.
 DELETE FROM users_products WHERE user_id IS NULL;

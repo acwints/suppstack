@@ -4,6 +4,15 @@
 -- supplement categories needed to classify them cleanly.
 -- ============================================================================
 
+ALTER TABLE brands
+  ADD COLUMN IF NOT EXISTS brand_website VARCHAR(500);
+
+CREATE UNIQUE INDEX IF NOT EXISTS brands_brand_name_key
+  ON brands (brand_name);
+
+ALTER TABLE supplements
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
 INSERT INTO brands (brand_name, brand_website)
 VALUES
   ('Onnit', 'https://www.onnit.com'),
