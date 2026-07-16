@@ -17,6 +17,7 @@ const verifiedImageHosts = new Set([
   'cdn.shopify.com',
   'cdn.sanity.io',
   'd1vo8zfysxy97v.cloudfront.net',
+  'images.ctfassets.net',
   'im8health.com',
   'shop.heartandsoil.co',
 ]);
