@@ -28,12 +28,17 @@ function mapDbRow(row: any): ProductContainingIngredient | null {
 
 /**
  * Reverse lookup for the ingredient page: every product (curated catalog +
- * database) whose composition includes `ingredientSupplementId`, deduped on
- * the underlying product while preserving each winner's edge
+ * database) whose composition includes the ingredient named `ingredientName`,
+ * deduped on the underlying product while preserving each winner's edge
  * (`amount`/`unit`/`is_primary`).
+ *
+ * Keyed on the ingredient NAME rather than an id: the route id is a catalog id
+ * (9000+) on catalog routes but a DB SERIAL id on DB routes, so an id-keyed
+ * lookup misses one source. Resolving the name to DB supplement id(s) here
+ * lets both the catalog and DB sides match regardless of the route's id space.
  */
 export function useProductsWithIngredient(
-  ingredientSupplementId: number
+  ingredientName: string
 ): UseProductsWithIngredientResult {
   const [products, setProducts] = useState<ProductContainingIngredient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,18 +51,34 @@ export function useProductsWithIngredient(
       setIsLoading(true);
       setError(null);
       try {
-        const catalogMatches = curatedProductsContainingIngredient(ingredientSupplementId);
+        const catalogMatches = curatedProductsContainingIngredient(ingredientName);
 
-        const { data, error: dbError } = await supabase
-          .from('product_ingredients')
-          .select(DB_SELECT)
-          .eq('ingredient_supplement_id', ingredientSupplementId);
+        // Resolve the ingredient name to DB supplement id(s) so the DB reverse
+        // query keys on the same natural key as the catalog side.
+        const { data: supplementRows, error: supplementError } = await supabase
+          .from('supplements')
+          .select('supplement_id')
+          .eq('supplement_name', ingredientName);
 
-        if (dbError) throw dbError;
+        if (supplementError) throw supplementError;
 
-        const dbMatches = ((data ?? []) as any[])
-          .map(mapDbRow)
-          .filter((match): match is ProductContainingIngredient => match !== null);
+        const dbSupplementIds = (supplementRows ?? [])
+          .map((row: any) => row.supplement_id)
+          .filter((id: unknown): id is number => typeof id === 'number');
+
+        let dbMatches: ProductContainingIngredient[] = [];
+        if (dbSupplementIds.length > 0) {
+          const { data, error: dbError } = await supabase
+            .from('product_ingredients')
+            .select(DB_SELECT)
+            .in('ingredient_supplement_id', dbSupplementIds);
+
+          if (dbError) throw dbError;
+
+          dbMatches = ((data ?? []) as any[])
+            .map(mapDbRow)
+            .filter((match): match is ProductContainingIngredient => match !== null);
+        }
 
         // Dedupe on the underlying product (catalog preferred as primary),
         // carrying each winner's edge — mirrors `mergeProductSources`
@@ -88,7 +109,7 @@ export function useProductsWithIngredient(
     return () => {
       cancelled = true;
     };
-  }, [ingredientSupplementId]);
+  }, [ingredientName]);
 
   return { products, isLoading, error };
 }

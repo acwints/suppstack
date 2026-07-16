@@ -4679,7 +4679,13 @@ export function getCuratedCatalogProducts() {
 
 /**
  * Reverse lookup for the ingredient page: every curated product whose
- * composition (or single-supplement fallback) includes `ingredientSupplementId`.
+ * composition (or single-supplement fallback) includes the ingredient named
+ * `ingredientName`.
+ *
+ * Keyed on the ingredient NAME (not `supplement_id`) so the lookup is stable
+ * across the catalog-id (9000+) vs DB-SERIAL-id namespace split — the route id
+ * lives in a different id space depending on whether the page is catalog- or
+ * DB-backed.
  *
  * Products are deduped by the underlying `Product` via `mergeProductSources`
  * (the same helper the forward product listing uses), and each surviving
@@ -4687,11 +4693,13 @@ export function getCuratedCatalogProducts() {
  * ingredient.
  */
 export function curatedProductsContainingIngredient(
-  ingredientSupplementId: number
+  ingredientName: string
 ): ProductContainingIngredient[] {
+  const normalizedName = ingredientName.trim().toLowerCase();
+
   const matches = getCuratedCatalogProducts().flatMap((product) => {
     const edge = (product.ingredients ?? []).find(
-      (ingredient) => ingredient.supplement_id === ingredientSupplementId
+      (ingredient) => ingredient.supplement_name.trim().toLowerCase() === normalizedName
     );
     return edge ? [{ product, edge }] : [];
   });

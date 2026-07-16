@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/app/context/AuthContext';
 import { supabase } from '@/app/supabase';
 import { fetchUserProductLinks } from '@/lib/account/user-products';
+import { mapEmbeddedIngredient } from '@/lib/catalog/product-ingredient-embed';
 import {
   computeStackIntake,
   normalizeIngredientName,
@@ -12,17 +13,18 @@ import {
   type StackIntakeItem,
 } from '@/lib/ingredients';
 import { toIngredientInputs } from '@/lib/ingredients/mapProductIngredients';
-import type { IngredientUnit, ProductIngredient } from '@/types';
 
 /**
  * Composition-aware stack fetch: each linked product carries its ingredient
  * edges (via `product_ingredients`), each edge referencing a catalog
- * supplement (2-tier model).
+ * supplement (2-tier model). `product_url` is a stable natural key used to
+ * mark "in your stack" across the catalog-id / DB-id namespace split.
  */
 const STACK_INGREDIENTS_SELECT = `
   product_id,
   products (
     product_name,
+    product_url,
     servings_per_day,
     brands (brand_name),
     product_ingredients (
@@ -32,24 +34,26 @@ const STACK_INGREDIENTS_SELECT = `
   )
 `;
 
+/** Normalize a product_url into a stable comparison key. */
+function normalizeProductUrl(url: unknown): string | null {
+  if (typeof url !== 'string') return null;
+  const cleaned = url.trim().toLowerCase();
+  return cleaned === '' ? null : cleaned;
+}
+
 export interface UseStackIngredientsResult {
   intake: StackIntake;
   /** Set of NORMALIZED ingredient names in the active stack (overlap key). */
   ingredientNames: Set<string>;
+  /**
+   * Normalized `product_url` for EVERY linked product (active or not) — the
+   * natural key for the "is this product in my stack" marker, robust to the
+   * catalog-id vs DB-SERIAL-id namespace split.
+   */
+  stackProductUrls: Set<string>;
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
-}
-
-/** Map a nested `product_ingredients` embed row into the DB/catalog `ProductIngredient` shape. */
-function mapEmbedRow(row: any): ProductIngredient {
-  return {
-    supplement_id: row.supplements?.supplement_id,
-    supplement_name: row.supplements?.supplement_name ?? '',
-    amount: row.amount ?? null,
-    unit: (row.unit ?? null) as IngredientUnit | null,
-    order_index: row.order_index ?? undefined,
-  };
 }
 
 /**
@@ -60,12 +64,14 @@ function mapEmbedRow(row: any): ProductIngredient {
 export function useStackIngredients(): UseStackIngredientsResult {
   const { user } = useAuth();
   const [intake, setIntake] = useState<StackIntake>(EMPTY_STACK_INTAKE);
+  const [stackProductUrls, setStackProductUrls] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     if (!user) {
       setIntake(EMPTY_STACK_INTAKE);
+      setStackProductUrls(new Set());
       setIsLoading(false);
       return;
     }
@@ -86,35 +92,40 @@ export function useStackIngredients(): UseStackIngredientsResult {
         (settingsResult.data ?? []).map((setting: any) => [String(setting.product_id), setting])
       );
 
-      const items: StackIntakeItem[] = (data || [])
-        .map((item: any) => {
-          const setting = settingsByProductId.get(String(item.product_id));
-          const status = setting?.status ?? 'active';
-          const servingsPerDay =
-            setting?.servings_per_day ?? item.products?.servings_per_day ?? 1;
-          const ingredients = ((item.products?.product_ingredients ?? []) as any[]).map(
-            mapEmbedRow
-          );
+      // Single pass: collect ALL linked product urls (the in-stack marker)
+      // and the ACTIVE items fed to the intake computation.
+      const productUrls = new Set<string>();
+      const items: StackIntakeItem[] = [];
 
-          return {
-            status,
-            item: {
-              productId: String(item.product_id),
-              productName: item.products?.product_name || '',
-              brandName: item.products?.brands?.brand_name || undefined,
-              servingsPerDay: servingsPerDay || 1,
-              ingredients: toIngredientInputs(ingredients),
-            } satisfies StackIntakeItem,
-          };
-        })
-        .filter((entry: { status: string }) => entry.status === 'active')
-        .map((entry: { item: StackIntakeItem }) => entry.item);
+      for (const item of (data || []) as any[]) {
+        const url = normalizeProductUrl(item.products?.product_url);
+        if (url) productUrls.add(url);
 
+        const setting = settingsByProductId.get(String(item.product_id));
+        const status = setting?.status ?? 'active';
+        if (status !== 'active') continue;
+
+        const servingsPerDay = setting?.servings_per_day ?? item.products?.servings_per_day ?? 1;
+        const ingredients = ((item.products?.product_ingredients ?? []) as any[]).map(
+          mapEmbeddedIngredient
+        );
+
+        items.push({
+          productId: String(item.product_id),
+          productName: item.products?.product_name || '',
+          brandName: item.products?.brands?.brand_name || undefined,
+          servingsPerDay: servingsPerDay || 1,
+          ingredients: toIngredientInputs(ingredients),
+        });
+      }
+
+      setStackProductUrls(productUrls);
       setIntake(computeStackIntake({ items }));
     } catch (err) {
       console.error('Error fetching stack ingredients:', err);
       setError('Could not load your stack ingredients.');
       setIntake(EMPTY_STACK_INTAKE);
+      setStackProductUrls(new Set());
     } finally {
       setIsLoading(false);
     }
@@ -130,5 +141,5 @@ export function useStackIngredients(): UseStackIngredientsResult {
     [intake]
   );
 
-  return { intake, ingredientNames, isLoading, error, refetch };
+  return { intake, ingredientNames, stackProductUrls, isLoading, error, refetch };
 }

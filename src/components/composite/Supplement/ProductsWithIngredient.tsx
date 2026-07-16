@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import Link from 'next/link';
 import { FiCheck } from 'react-icons/fi';
 import type { ProductContainingIngredient } from '@/types';
@@ -13,8 +12,15 @@ import { formatNumber } from '@/lib/utils';
 import { cn } from '@/lib/design-system';
 
 export interface ProductsWithIngredientProps {
-  ingredientSupplementId: number;
+  ingredientName: string;
   className?: string;
+}
+
+/** Normalize a product_url into the same stable key `useStackIngredients` uses. */
+function normalizeProductUrl(url: unknown): string | null {
+  if (typeof url !== 'string') return null;
+  const cleaned = url.trim().toLowerCase();
+  return cleaned === '' ? null : cleaned;
 }
 
 /** Per-serving amount, right-aligned. Unquantified edges render nothing. */
@@ -56,22 +62,18 @@ function MultiChip({ count }: { count: number }) {
  * grid to match the mobile/desktop mockups.
  */
 export function ProductsWithIngredient({
-  ingredientSupplementId,
+  ingredientName,
   className,
 }: ProductsWithIngredientProps) {
-  const { products, isLoading, error } = useProductsWithIngredient(ingredientSupplementId);
-  const { intake } = useStackIngredientsContext();
+  const { products, isLoading, error } = useProductsWithIngredient(ingredientName);
+  const { stackProductUrls } = useStackIngredientsContext();
 
-  // Product ids currently in the stack (best-effort overlap signal).
-  const stackProductIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const ingredient of intake.ingredients) {
-      for (const contributor of ingredient.contributors) {
-        ids.add(String(contributor.productId));
-      }
-    }
-    return ids;
-  }, [intake]);
+  // "In your stack" is keyed on the product's stable `product_url`, robust to
+  // the catalog-id vs DB-id namespace split.
+  const isInStack = (product: ProductContainingIngredient['product']) => {
+    const url = normalizeProductUrl(product.product_url);
+    return url != null && stackProductUrls.has(url);
+  };
 
   if (isLoading) {
     return (
@@ -86,7 +88,7 @@ export function ProductsWithIngredient({
   // Silent when there's nothing to show — this is a supplementary section.
   if (error || products.length === 0) return null;
 
-  const inStackCount = products.filter((p) => stackProductIds.has(String(p.product.product_id))).length;
+  const inStackCount = products.filter((p) => isInStack(p.product)).length;
 
   const renderMeta = (entry: ProductContainingIngredient, inStack: boolean) => {
     const ingredientCount = entry.product.ingredients?.length ?? 0;
@@ -123,7 +125,7 @@ export function ProductsWithIngredient({
       <ul className="mt-2 md:hidden">
         {products.map((entry) => {
           const product = entry.product;
-          const inStack = stackProductIds.has(String(product.product_id));
+          const inStack = isInStack(product);
           return (
             <li key={product.product_id}>
               <Link
@@ -172,7 +174,7 @@ export function ProductsWithIngredient({
       <div className="mt-5 hidden grid-cols-2 gap-5 md:grid lg:grid-cols-4">
         {products.map((entry) => {
           const product = entry.product;
-          const inStack = stackProductIds.has(String(product.product_id));
+          const inStack = isInStack(product);
           return (
             <Link
               key={product.product_id}

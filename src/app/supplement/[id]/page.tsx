@@ -356,7 +356,7 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
             ).length >= 2 && <CompareProducts supplementId={supplementId} />}
 
             {/* Reverse map: every product that contains this ingredient. */}
-            <ProductsWithIngredient ingredientSupplementId={supplementId} />
+            <ProductsWithIngredient ingredientName={supplement.supplement_name} />
           </>
         )}
 

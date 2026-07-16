@@ -16,6 +16,7 @@ import { EMPTY_STACK_INTAKE } from '@/lib/ingredients';
 const DEFAULT_VALUE: UseStackIngredientsResult = {
   intake: EMPTY_STACK_INTAKE,
   ingredientNames: new Set<string>(),
+  stackProductUrls: new Set<string>(),
   isLoading: false,
   error: null,
   refetch: async () => {},
