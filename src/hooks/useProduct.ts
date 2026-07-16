@@ -16,6 +16,16 @@ const PRODUCT_SELECT = `
   )
 `;
 
+// Composition-free fallback: used when the `product_ingredients` embed fails
+// (e.g. the composition migration hasn't been applied to this environment yet).
+// The product page must still load — it just renders without the "What's
+// inside" panel — rather than 404ing the entire page.
+const PRODUCT_SELECT_NO_COMPOSITION = `
+  *,
+  brands(brand_name),
+  supplements(supplement_id, supplement_name)
+`;
+
 /**
  * A single product by id: curated catalog first (string ids), database
  * fallback (integer ids). `product === null && !isLoading` means not found.
@@ -39,11 +49,24 @@ export function useProduct(productId: string) {
         return;
       }
 
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('products')
         .select(PRODUCT_SELECT)
         .eq('product_id', productId)
         .single();
+
+      // The composition embed can fail if `product_ingredients` isn't present
+      // in this environment yet. Retry without the embed so the page still
+      // loads (minus the "What's inside" panel) instead of rendering "not found".
+      if (error) {
+        const fallback = await supabase
+          .from('products')
+          .select(PRODUCT_SELECT_NO_COMPOSITION)
+          .eq('product_id', productId)
+          .single();
+        data = fallback.data;
+        error = fallback.error;
+      }
 
       if (cancelled) return;
       if (error) {
