@@ -8,7 +8,11 @@ import ProductCard from '../../components/ProductCard';
 import type { Supplement, Product, ProductFilters, ProductSortBy } from '@/types';
 import { Spinner, Button, EmptyState, Stack, Inline, Grid } from '@/components/ui';
 import { ProductFilterPanel } from '@/components/composite/Filter';
-import { CompareProducts, SupplementKnowledge } from '@/components/composite/Supplement';
+import {
+  CompareProducts,
+  ProductsWithIngredient,
+  SupplementKnowledge,
+} from '@/components/composite/Supplement';
 import {
   createCanonicalCatalogProductsForSupplement,
   findCatalogSupplementById,
@@ -350,6 +354,9 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
                 !String(product.product_id).startsWith('real-') &&
                 !String(product.product_id).startsWith('catalog-')
             ).length >= 2 && <CompareProducts supplementId={supplementId} />}
+
+            {/* Reverse map: every product that contains this ingredient. */}
+            <ProductsWithIngredient ingredientSupplementId={supplementId} />
           </>
         )}
 

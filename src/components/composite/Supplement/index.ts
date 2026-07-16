@@ -16,3 +16,6 @@ export type { CompareProductsProps } from './CompareProducts';
 
 export { SupplementKnowledge } from './SupplementKnowledge';
 export type { SupplementKnowledgeProps } from './SupplementKnowledge';
+
+export { ProductsWithIngredient } from './ProductsWithIngredient';
+export type { ProductsWithIngredientProps } from './ProductsWithIngredient';

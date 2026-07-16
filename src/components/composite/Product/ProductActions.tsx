@@ -9,7 +9,9 @@ import { Button, useToast } from '@/components/ui';
 import { EmbeddedCheckout } from '@/components/composite/Commerce';
 import { useAuth } from '@/app/context/AuthContext';
 import { useSavedProducts } from '@/app/context/SavedProductsContext';
+import { useStackIngredientsContext } from '@/app/context/StackIngredientsContext';
 import { useCommerceCheckout, useProductInStack } from '@/hooks';
+import { summarizeProductAddition } from '@/lib/ingredients/mapProductIngredients';
 import { canPurchase, getPurchaseLabel } from '@/lib/commerce/shopify-ucp';
 import { hasShopifyVariant } from '@/lib/commerce/product-source';
 import { cn } from '@/lib/design-system/utils';
@@ -32,8 +34,40 @@ export function ProductActions({
   const { isInStack, isUpdating, addToStack } = useProductInStack(product);
   const { isStartingCheckout, startCheckout } = useCommerceCheckout();
   const { isSaved, toggleSaved } = useSavedProducts();
+  // Shared stack-intake context (single fetch across the app). Read via
+  // context — NOT a direct `useStackIngredients` call — because this component
+  // renders inside every product tile/card. Absent/loading/errored context
+  // degrades to the plain "Added to stack" toast and never blocks the add.
+  const { ingredientIds, isLoading: isIntakeLoading, error: intakeError } =
+    useStackIngredientsContext();
   const productId = String(product.product_id);
   const saved = isSaved(productId);
+
+  /**
+   * Build the enriched success-toast description from the product's tracked
+   * composition and the current stack overlap. Returns undefined (plain toast)
+   * whenever intake data is unavailable or there is nothing meaningful to add.
+   */
+  const buildAddedDescription = (): string | undefined => {
+    if (isIntakeLoading || intakeError) return undefined;
+    const composition = product.ingredients ?? [];
+    if (composition.length === 0) return undefined;
+
+    try {
+      const { addedCount, overlapCount } = summarizeProductAddition(composition, ingredientIds);
+      const parts: string[] = [];
+      if (addedCount > 0) {
+        parts.push(`Adds ${addedCount} ${addedCount === 1 ? 'ingredient' : 'ingredients'}`);
+      }
+      if (overlapCount > 0) {
+        parts.push(`${overlapCount} overlap with your stack`);
+      }
+      return parts.length > 0 ? parts.join(' · ') : undefined;
+    } catch {
+      // Never let intake summarization break the add-to-stack flow.
+      return undefined;
+    }
+  };
 
   const handleAddToStack = async () => {
     if (!user) {
@@ -44,7 +78,7 @@ export function ProductActions({
 
     try {
       await addToStack();
-      toast.success('Added to stack');
+      toast.success('Added to stack', buildAddedDescription());
     } catch {
       toast.error('Failed to add product to stack. Please try again.');
     }

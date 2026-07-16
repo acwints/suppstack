@@ -10,6 +10,12 @@ import {
   WeeklyCalendar,
 } from '@/components/composite/Tracking';
 import { MyStackSection } from '@/components/composite/Stack/MyStackSection';
+import {
+  OverlapList,
+  StackIngredientBreakdown,
+  StackIntakeSummary,
+} from '@/components/composite/Ingredients';
+import { useStackIngredientsContext } from '@/app/context/StackIngredientsContext';
 import type { TimeOfDay } from '@/types';
 
 /**
@@ -19,6 +25,11 @@ import type { TimeOfDay } from '@/types';
 export default function StackPage() {
   const toast = useToast();
   const { regimen, activeRegimen, isLoading: isRegimenLoading } = useRegimen();
+  const {
+    intake,
+    isLoading: isIntakeLoading,
+    error: intakeError,
+  } = useStackIngredientsContext();
 
   const {
     logs,
@@ -98,6 +109,30 @@ export default function StackPage() {
           <RestockReminders />
         )}
         <MyStackSection regimen={regimen} />
+
+        {/* Ingredient intake rollup — only when the user has an active stack,
+            mirroring how the tracking cards gate on the regimen. */}
+        {regimen.length > 0 && (
+          <>
+            {isIntakeLoading ? (
+              <div className="flex justify-center py-8">
+                <Spinner size="md" color="secondary" />
+              </div>
+            ) : intakeError ? null : intake.ingredientCount > 0 ? (
+              <>
+                <StackIntakeSummary intake={intake} />
+                <StackIngredientBreakdown intake={intake} />
+                <OverlapList intake={intake} />
+              </>
+            ) : (
+              <EmptyState
+                title="No ingredient breakdown yet"
+                description="Once your stacked products have ingredient details, you'll see a per-ingredient breakdown and overlaps here."
+                variant="card"
+              />
+            )}
+          </>
+        )}
       </Stack>
     </main>
   );

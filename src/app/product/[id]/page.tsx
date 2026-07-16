@@ -28,7 +28,12 @@ import {
   isRemoteImageSrc,
   PRODUCT_IMAGE_FALLBACK,
 } from '@/lib/catalog/product-image';
-import { ProductActions, ProductPriceLine, ProductSourceBadge } from '@/components/composite/Product';
+import {
+  ProductActions,
+  ProductIngredientList,
+  ProductPriceLine,
+  ProductSourceBadge,
+} from '@/components/composite/Product';
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
@@ -192,6 +197,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               {product.servings_per_day !== 1 ? 's' : ''} per day
             </div>
           </div>
+
+          {/* What's inside — tracked ingredient composition */}
+          <ProductIngredientList product={product} />
 
           <div className="flex flex-wrap gap-2">
             {product.subscriptions_available && <Badge variant="secondary">Subscription available</Badge>}
