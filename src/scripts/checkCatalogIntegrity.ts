@@ -5,13 +5,28 @@
  *
  * Run: npm run check:catalog
  */
-import { supplementCatalog, getCuratedCatalogProducts } from '../lib/catalog/supplement-catalog';
+import {
+  supplementCatalog,
+  getCuratedCatalogProducts,
+  findCatalogSupplementByName,
+} from '../lib/catalog/supplement-catalog';
 import { getSupplementKnowledge } from '../lib/catalog/supplement-knowledge';
 import type { Product } from '../types';
 
 const products = getCuratedCatalogProducts();
 let failures = 0;
 let researchEntries = 0;
+
+const ALLOWED_UNITS = new Set([
+  'mg',
+  'mcg',
+  'g',
+  'IU',
+  'billion CFU',
+  'ml',
+  'mcg DFE',
+  'mg NE',
+]);
 
 const verifiedImageHosts = new Set([
   'cdn.shopify.com',
@@ -60,6 +75,35 @@ for (const s of supplementCatalog) {
     // product_url is the natural key used to sync catalog products into the
     // database for user tracking — it must never be empty.
     if (prods.some((p: Product) => !p.product_url)) issues.push('product missing product_url');
+
+    // Every purchasable product must carry a valid ingredient composition: at
+    // least one edge, every edge resolves to a catalog supplement, and any
+    // quantified edge has a positive amount plus an allowed unit. A fully
+    // unquantified single-ingredient edge (amount null AND unit null) is allowed.
+    for (const p of prods) {
+      const ingredients = p.ingredients ?? [];
+      if (ingredients.length < 1) {
+        issues.push(`product ${p.product_id} has no ingredients`);
+        continue;
+      }
+      for (const ing of ingredients) {
+        if (!findCatalogSupplementByName(ing.supplement_name)) {
+          issues.push(`product ${p.product_id} ingredient "${ing.supplement_name}" does not resolve`);
+        }
+        if (ing.amount !== null) {
+          if (!(ing.amount > 0)) {
+            issues.push(
+              `product ${p.product_id} ingredient "${ing.supplement_name}" has non-positive amount ${ing.amount}`
+            );
+          }
+          if (ing.unit === null || !ALLOWED_UNITS.has(ing.unit)) {
+            issues.push(
+              `product ${p.product_id} ingredient "${ing.supplement_name}" has invalid unit ${JSON.stringify(ing.unit)}`
+            );
+          }
+        }
+      }
+    }
   }
 
   if (issues.length) {
