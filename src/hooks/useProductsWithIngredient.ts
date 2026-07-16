@@ -53,31 +53,43 @@ export function useProductsWithIngredient(
       try {
         const catalogMatches = curatedProductsContainingIngredient(ingredientName);
 
-        // Resolve the ingredient name to DB supplement id(s) so the DB reverse
-        // query keys on the same natural key as the catalog side.
-        const { data: supplementRows, error: supplementError } = await supabase
-          .from('supplements')
-          .select('supplement_id')
-          .eq('supplement_name', ingredientName);
-
-        if (supplementError) throw supplementError;
-
-        const dbSupplementIds = (supplementRows ?? [])
-          .map((row: any) => row.supplement_id)
-          .filter((id: unknown): id is number => typeof id === 'number');
-
+        // DB reverse lookup is best-effort: it degrades to catalog-only when the
+        // composition table is missing (e.g. migration 20260716000016 not yet
+        // applied) or the query otherwise fails, so client-side catalog matches
+        // are never discarded.
         let dbMatches: ProductContainingIngredient[] = [];
-        if (dbSupplementIds.length > 0) {
-          const { data, error: dbError } = await supabase
-            .from('product_ingredients')
-            .select(DB_SELECT)
-            .in('ingredient_supplement_id', dbSupplementIds);
+        try {
+          // Resolve the ingredient name to DB supplement id(s) so the DB reverse
+          // query keys on the same natural key as the catalog side.
+          const { data: supplementRows, error: supplementError } = await supabase
+            .from('supplements')
+            .select('supplement_id')
+            .eq('supplement_name', ingredientName);
 
-          if (dbError) throw dbError;
+          if (supplementError) throw supplementError;
 
-          dbMatches = ((data ?? []) as any[])
-            .map(mapDbRow)
-            .filter((match): match is ProductContainingIngredient => match !== null);
+          const dbSupplementIds = (supplementRows ?? [])
+            .map((row: any) => row.supplement_id)
+            .filter((id: unknown): id is number => typeof id === 'number');
+
+          if (dbSupplementIds.length > 0) {
+            const { data, error: dbError } = await supabase
+              .from('product_ingredients')
+              .select(DB_SELECT)
+              .in('ingredient_supplement_id', dbSupplementIds);
+
+            if (dbError) throw dbError;
+
+            dbMatches = ((data ?? []) as any[])
+              .map(mapDbRow)
+              .filter((match): match is ProductContainingIngredient => match !== null);
+          }
+        } catch (dbErr) {
+          console.error(
+            'DB ingredient reverse lookup unavailable; using catalog only:',
+            dbErr
+          );
+          dbMatches = [];
         }
 
         // Dedupe on the underlying product (catalog preferred as primary),
