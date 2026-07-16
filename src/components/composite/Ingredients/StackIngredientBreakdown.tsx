@@ -1,25 +1,13 @@
 'use client';
 
 import { FiLayers } from 'react-icons/fi';
-import type { IngredientIntake, IngredientUnitTotal, StackIntake } from '@/lib/ingredients';
+import type { IngredientUnitTotal, StackIntake } from '@/lib/ingredients';
 import { formatNumber } from '@/lib/utils';
 import { cn } from '@/lib/design-system';
 
 export interface StackIngredientBreakdownProps {
   intake: StackIntake;
   className?: string;
-}
-
-/** Distinct contributing product names, in stable order. */
-function contributorNames(ingredient: IngredientIntake): string[] {
-  const names: string[] = [];
-  const seen = new Set<string>();
-  for (const contributor of ingredient.contributors) {
-    if (seen.has(contributor.productId)) continue;
-    seen.add(contributor.productId);
-    names.push(contributor.productName);
-  }
-  return names;
 }
 
 /** A single per-unit total line (mixed-unit ingredients render one per unit). */
@@ -52,7 +40,7 @@ export function StackIngredientBreakdown({ intake, className }: StackIngredientB
   if (intake.ingredients.length === 0) return null;
 
   return (
-    <section className={cn('', className)} data-component-id="stack-ingredient-breakdown">
+    <section className={className} data-component-id="stack-ingredient-breakdown">
       <div className="section-header flex items-baseline justify-between">
         <h2>What&rsquo;s in my stack</h2>
         <span className="text-xs font-medium text-gray-500">
@@ -65,7 +53,7 @@ export function StackIngredientBreakdown({ intake, className }: StackIngredientB
 
       <ul className="mt-2">
         {intake.ingredients.map((ingredient) => {
-          const names = contributorNames(ingredient);
+          const names = ingredient.contributors.map((c) => c.productName);
           const distinctProducts = names.length;
           const hasTotals = ingredient.amountsByUnit.length > 0;
 

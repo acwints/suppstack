@@ -101,7 +101,7 @@ export function ProductsWithIngredient({
   };
 
   return (
-    <section className={cn('', className)} data-component-id="products-with-ingredient">
+    <section className={className} data-component-id="products-with-ingredient">
       <div className="section-header flex items-baseline justify-between">
         <h2>Products with this ingredient</h2>
         <span className="text-xs font-medium text-gray-500">
@@ -157,9 +157,7 @@ export function ProductsWithIngredient({
                     {product.product_name}
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <span className="text-[13px] font-semibold text-gray-900">
-                      ${entry.product.product_price.toFixed(2)}
-                    </span>
+                    <ProductPriceLine product={product} />
                     {renderMeta(entry, inStack)}
                   </div>
                 </div>

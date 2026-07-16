@@ -1,25 +1,12 @@
 'use client';
 
 import { FiLayers } from 'react-icons/fi';
-import type { IngredientContributor, IngredientIntake, StackIntake } from '@/lib/ingredients';
+import type { IngredientIntake, StackIntake } from '@/lib/ingredients';
 import { formatNumber } from '@/lib/utils';
-import { cn } from '@/lib/design-system';
 
 export interface OverlapListProps {
   intake: StackIntake;
   className?: string;
-}
-
-/** Distinct contributors (one row per product) for an overlap ingredient. */
-function distinctContributors(ingredient: IngredientIntake): IngredientContributor[] {
-  const seen = new Set<string>();
-  const result: IngredientContributor[] = [];
-  for (const contributor of ingredient.contributors) {
-    if (seen.has(contributor.productId)) continue;
-    seen.add(contributor.productId);
-    result.push(contributor);
-  }
-  return result;
 }
 
 /**
@@ -53,7 +40,7 @@ export function OverlapList({ intake, className }: OverlapListProps) {
   if (overlaps.length === 0) return null;
 
   return (
-    <section className={cn('', className)} data-component-id="stack-overlaps">
+    <section className={className} data-component-id="stack-overlaps">
       <div className="section-header flex items-baseline justify-between">
         <h2>Overlaps</h2>
         <span className="text-xs font-medium text-gray-500">
@@ -69,7 +56,7 @@ export function OverlapList({ intake, className }: OverlapListProps) {
 
       <div className="mt-4 space-y-3.5">
         {overlaps.map((ingredient) => {
-          const contributors = distinctContributors(ingredient);
+          const contributors = ingredient.contributors;
           return (
             <article
               key={ingredient.ingredientId}

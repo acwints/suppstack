@@ -65,7 +65,7 @@ export function StackIntakeSummary({
   const hasProductCount = typeof productCount === 'number';
 
   return (
-    <Card variant="elevated" padding="md" className={cn('', className)} data-component-id="stack-summary-widget">
+    <Card variant="elevated" padding="md" className={className} data-component-id="stack-summary-widget">
       <div className="mb-3.5 flex items-baseline justify-between">
         <span className="font-serif text-[19px] text-gray-900">Your stack at a glance</span>
         {onSelectIngredients && (
