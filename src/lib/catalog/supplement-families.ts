@@ -12,7 +12,7 @@ const SUPPLEMENT_FAMILY_MEMBERS: Record<string, string[]> = {
   Creatine: ['Creatine Monohydrate', 'Creatine HCl'],
   Magnesium: ['Magnesium Glycinate', 'Magnesium Citrate'],
   'Omega-3s': ['Omega-3 Fish Oil', 'Krill Oil', 'Algal Oil', 'Cod Liver Oil'],
-  Protein: ['Whey Protein', 'Casein Protein', 'Plant Protein', 'Mass Gainer', 'Protein Bars'],
+  Protein: ['Whey Protein', 'Casein Protein', 'Plant Protein', 'Mass Gainer', 'Protein Bars', 'Protein Shakes'],
 };
 
 const FAMILY_BY_SUPPLEMENT_NAME = new Map<string, string>(

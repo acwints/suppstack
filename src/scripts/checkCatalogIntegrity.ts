@@ -18,6 +18,7 @@ const verifiedImageHosts = new Set([
   'cdn.sanity.io',
   'd1vo8zfysxy97v.cloudfront.net',
   'im8health.com',
+  'shop.heartandsoil.co',
 ]);
 
 function isVerifiedMerchantImageUrl(value: string) {
