@@ -78,6 +78,14 @@ export interface StackIntake {
   overlapCount: number;
 }
 
+/** The empty rollup, so callers (hooks/context) need not duplicate it. */
+export const EMPTY_STACK_INTAKE: StackIntake = {
+  ingredients: [],
+  overlaps: [],
+  ingredientCount: 0,
+  overlapCount: 0,
+};
+
 // ---------------------------------------------------------------------------
 // Unit normalization
 // ---------------------------------------------------------------------------
@@ -93,24 +101,23 @@ export function normalizeUnit(unit: string | null): string | null {
   const cleaned = unit.trim().toLowerCase();
   if (cleaned === '') return null;
 
+  // Only real synonyms are listed; identity mappings (e.g. mg -> mg) are no-ops
+  // because the function falls back to the cleaned token when no synonym matches.
   const synonyms: Record<string, string> = {
     'µg': 'mcg',
     'ug': 'mcg',
-    'mcg': 'mcg',
-    'iu': 'iu',
     'i.u.': 'iu',
-    'mg': 'mg',
-    'g': 'g',
     'gram': 'g',
     'grams': 'g',
     'billion cfu': 'cfu',
-    'cfu': 'cfu',
-    'ml': 'ml',
-    'mcg dfe': 'mcg dfe',
-    'mg ne': 'mg ne',
   };
 
   return synonyms[cleaned] ?? cleaned;
+}
+
+/** Canonicalize an ingredient name for identity comparison. */
+export function normalizeIngredientName(name: string): string {
+  return name.trim().toLowerCase();
 }
 
 // ---------------------------------------------------------------------------
@@ -275,23 +282,28 @@ function uniqueByProductId(contributors: IngredientContributor[]): IngredientCon
 /**
  * Summarize what adding a product would contribute to a stack.
  *
- * `addedCount` = distinct ingredientIds in the product; `overlapCount` /
- * `overlapNames` cover those ingredientIds already present in the stack.
+ * Overlap is keyed on NORMALIZED INGREDIENT NAME, not id: catalog products use
+ * catalog ids (9000+) while the persisted stack uses DB SERIAL ids, so id-based
+ * matching misses real overlaps. `existingIngredientNames` is a set of
+ * ALREADY-normalized names supplied by the caller.
+ *
+ * `addedCount` = distinct normalized ingredient names in the product;
+ * `overlapCount` / `overlapNames` cover the (original-cased) names already
+ * present in the stack.
  */
 export function summarizeAddition(
   productIngredients: ProductIngredientInput[],
-  existingIngredientIds: Set<number>
+  existingIngredientNames: Set<string>
 ): { addedCount: number; overlapCount: number; overlapNames: string[] } {
-  const seen = new Set<number>();
+  const seen = new Set<string>();
   const overlapNames: string[] = [];
-  const overlapSeen = new Set<number>();
+  const overlapSeen = new Set<string>();
 
   for (const ing of productIngredients) {
-    if (!seen.has(ing.ingredientId)) {
-      seen.add(ing.ingredientId);
-    }
-    if (existingIngredientIds.has(ing.ingredientId) && !overlapSeen.has(ing.ingredientId)) {
-      overlapSeen.add(ing.ingredientId);
+    const normalized = normalizeIngredientName(ing.ingredientName);
+    seen.add(normalized);
+    if (existingIngredientNames.has(normalized) && !overlapSeen.has(normalized)) {
+      overlapSeen.add(normalized);
       overlapNames.push(ing.ingredientName);
     }
   }

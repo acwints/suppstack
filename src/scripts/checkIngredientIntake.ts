@@ -14,6 +14,7 @@
 import {
   computeStackIntake,
   normalizeUnit,
+  normalizeIngredientName,
   summarizeAddition,
 } from '../lib/ingredients';
 import type { StackIntakeInput } from '../lib/ingredients';
@@ -167,20 +168,37 @@ check(normalizeUnit('Scoops') === 'scoops', 'normalizeUnit unknown -> cleaned to
   check(result.overlapCount === 0, 'test5: overlapCount = 0');
 }
 
-// --- Bonus: summarizeAddition --------------------------------------------
+// --- Bonus: normalizeIngredientName --------------------------------------
+check(normalizeIngredientName('  Magnesium ') === 'magnesium', 'bonus: normalizeIngredientName trims/lowercases');
+
+// --- Bonus: summarizeAddition (name-based overlap) -----------------------
 {
-  const existing = new Set<number>([30, 31]);
+  // Set of ALREADY-normalized names, as supplied by the caller. Uses different
+  // casing/whitespace on the product rows to prove name (not id) matching and
+  // that overlapNames returns the original casing.
+  const existing = new Set<string>(['magnesium', 'zinc']);
   const summary = summarizeAddition(
     [
-      { ingredientId: 30, ingredientName: 'Magnesium', amountPerServing: 100, unit: 'mg' },
-      { ingredientId: 50, ingredientName: 'Vitamin C', amountPerServing: 500, unit: 'mg' },
-      { ingredientId: 50, ingredientName: 'Vitamin C', amountPerServing: 250, unit: 'mg' },
+      { ingredientId: 9030, ingredientName: 'Magnesium', amountPerServing: 100, unit: 'mg' },
+      { ingredientId: 9050, ingredientName: 'Vitamin C', amountPerServing: 500, unit: 'mg' },
+      { ingredientId: 9050, ingredientName: 'Vitamin C', amountPerServing: 250, unit: 'mg' },
     ],
     existing
   );
-  check(summary.addedCount === 2, 'bonus: addedCount counts distinct ingredientIds (Magnesium, Vitamin C)');
-  check(summary.overlapCount === 1, 'bonus: overlapCount = 1 (Magnesium already present)');
-  check(summary.overlapNames.length === 1 && summary.overlapNames[0] === 'Magnesium', 'bonus: overlapNames = [Magnesium]');
+  check(summary.addedCount === 2, 'bonus: addedCount counts distinct normalized names (Magnesium, Vitamin C)');
+  check(summary.overlapCount === 1, 'bonus: overlapCount = 1 (Magnesium already present, by name)');
+  check(
+    summary.overlapNames.length === 1 && summary.overlapNames[0] === 'Magnesium',
+    'bonus: overlapNames returns original-cased [Magnesium]'
+  );
+
+  // Overlap must match by normalized name even when ids differ and casing varies.
+  const summary2 = summarizeAddition(
+    [{ ingredientId: 12345, ingredientName: 'MAGNESIUM', amountPerServing: 50, unit: 'mg' }],
+    existing
+  );
+  check(summary2.overlapCount === 1, 'bonus: overlap matches by normalized name across differing ids/casing');
+  check(summary2.overlapNames[0] === 'MAGNESIUM', 'bonus: overlapNames preserves the original casing');
 }
 
 // --- Result --------------------------------------------------------------

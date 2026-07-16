@@ -31,11 +31,13 @@ export function toIngredientInputs(ingredients: ProductIngredient[]): ProductIng
 /**
  * Summarize what adding a product (in DB/catalog `ProductIngredient` shape)
  * would contribute to a stack. Thin adapter over the pure
- * `summarizeAddition` — maps field names first, then delegates.
+ * `summarizeAddition` — maps field names first, then delegates. Overlap is
+ * keyed on NORMALIZED INGREDIENT NAME (catalog ids and DB SERIAL ids differ),
+ * so `existingIngredientNames` is a set of already-normalized names.
  */
 export function summarizeProductAddition(
   ingredients: ProductIngredient[],
-  existingIds: Set<number>
+  existingIngredientNames: Set<string>
 ): ReturnType<typeof summarizeAddition> {
-  return summarizeAddition(toIngredientInputs(ingredients), existingIds);
+  return summarizeAddition(toIngredientInputs(ingredients), existingIngredientNames);
 }

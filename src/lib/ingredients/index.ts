@@ -8,4 +8,10 @@ export type {
   StackIntake,
 } from './intake';
 
-export { normalizeUnit, computeStackIntake, summarizeAddition } from './intake';
+export {
+  normalizeUnit,
+  normalizeIngredientName,
+  computeStackIntake,
+  summarizeAddition,
+  EMPTY_STACK_INTAKE,
+} from './intake';

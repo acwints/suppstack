@@ -2,7 +2,7 @@
 
 import { createContext, useContext, type ReactNode } from 'react';
 import { useStackIngredients, type UseStackIngredientsResult } from '@/hooks/useStackIngredients';
-import type { StackIntake } from '@/lib/ingredients';
+import { EMPTY_STACK_INTAKE } from '@/lib/ingredients';
 
 /**
  * Shares a SINGLE `useStackIngredients` fetch across the app so
@@ -12,17 +12,10 @@ import type { StackIntake } from '@/lib/ingredients';
  * share one fetch.
  */
 
-const EMPTY_INTAKE: StackIntake = {
-  ingredients: [],
-  overlaps: [],
-  ingredientCount: 0,
-  overlapCount: 0,
-};
-
 /** Safe default when the provider is absent — never blocks the add-to-stack flow. */
 const DEFAULT_VALUE: UseStackIngredientsResult = {
-  intake: EMPTY_INTAKE,
-  ingredientIds: new Set<number>(),
+  intake: EMPTY_STACK_INTAKE,
+  ingredientNames: new Set<string>(),
   isLoading: false,
   error: null,
   refetch: async () => {},

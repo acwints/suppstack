@@ -4,7 +4,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/app/context/AuthContext';
 import { supabase } from '@/app/supabase';
 import { fetchUserProductLinks } from '@/lib/account/user-products';
-import { computeStackIntake, type StackIntake, type StackIntakeItem } from '@/lib/ingredients';
+import {
+  computeStackIntake,
+  normalizeIngredientName,
+  EMPTY_STACK_INTAKE,
+  type StackIntake,
+  type StackIntakeItem,
+} from '@/lib/ingredients';
 import { toIngredientInputs } from '@/lib/ingredients/mapProductIngredients';
 import type { IngredientUnit, ProductIngredient } from '@/types';
 
@@ -28,18 +34,12 @@ const STACK_INGREDIENTS_SELECT = `
 
 export interface UseStackIngredientsResult {
   intake: StackIntake;
-  ingredientIds: Set<number>;
+  /** Set of NORMALIZED ingredient names in the active stack (overlap key). */
+  ingredientNames: Set<string>;
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
 }
-
-const EMPTY_INTAKE: StackIntake = {
-  ingredients: [],
-  overlaps: [],
-  ingredientCount: 0,
-  overlapCount: 0,
-};
 
 /** Map a nested `product_ingredients` embed row into the DB/catalog `ProductIngredient` shape. */
 function mapEmbedRow(row: any): ProductIngredient {
@@ -59,13 +59,13 @@ function mapEmbedRow(row: any): ProductIngredient {
  */
 export function useStackIngredients(): UseStackIngredientsResult {
   const { user } = useAuth();
-  const [intake, setIntake] = useState<StackIntake>(EMPTY_INTAKE);
+  const [intake, setIntake] = useState<StackIntake>(EMPTY_STACK_INTAKE);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     if (!user) {
-      setIntake(EMPTY_INTAKE);
+      setIntake(EMPTY_STACK_INTAKE);
       setIsLoading(false);
       return;
     }
@@ -114,7 +114,7 @@ export function useStackIngredients(): UseStackIngredientsResult {
     } catch (err) {
       console.error('Error fetching stack ingredients:', err);
       setError('Could not load your stack ingredients.');
-      setIntake(EMPTY_INTAKE);
+      setIntake(EMPTY_STACK_INTAKE);
     } finally {
       setIsLoading(false);
     }
@@ -124,10 +124,11 @@ export function useStackIngredients(): UseStackIngredientsResult {
     refetch();
   }, [refetch]);
 
-  const ingredientIds = useMemo(
-    () => new Set(intake.ingredients.map((ingredient) => ingredient.ingredientId)),
+  const ingredientNames = useMemo(
+    () =>
+      new Set(intake.ingredients.map((ingredient) => normalizeIngredientName(ingredient.ingredientName))),
     [intake]
   );
 
-  return { intake, ingredientIds, isLoading, error, refetch };
+  return { intake, ingredientNames, isLoading, error, refetch };
 }

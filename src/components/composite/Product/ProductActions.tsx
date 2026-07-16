@@ -38,7 +38,7 @@ export function ProductActions({
   // context — NOT a direct `useStackIngredients` call — because this component
   // renders inside every product tile/card. Absent/loading/errored context
   // degrades to the plain "Added to stack" toast and never blocks the add.
-  const { ingredientIds, isLoading: isIntakeLoading, error: intakeError } =
+  const { ingredientNames, isLoading: isIntakeLoading, error: intakeError } =
     useStackIngredientsContext();
   const productId = String(product.product_id);
   const saved = isSaved(productId);
@@ -54,7 +54,7 @@ export function ProductActions({
     if (composition.length === 0) return undefined;
 
     try {
-      const { addedCount, overlapCount } = summarizeProductAddition(composition, ingredientIds);
+      const { addedCount, overlapCount } = summarizeProductAddition(composition, ingredientNames);
       const parts: string[] = [];
       if (addedCount > 0) {
         parts.push(`Adds ${addedCount} ${addedCount === 1 ? 'ingredient' : 'ingredients'}`);
