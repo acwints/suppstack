@@ -3,7 +3,28 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/app/supabase';
 import { findCatalogProductById } from '@/lib/catalog/supplement-catalog';
-import type { Product } from '@/types';
+import type { IngredientUnit, Product, ProductIngredient } from '@/types';
+
+const PRODUCT_SELECT = `
+  *,
+  brands(brand_name),
+  supplements(supplement_id, supplement_name),
+  product_ingredients(
+    amount, unit, order_index,
+    supplements(supplement_id, supplement_name)
+  )
+`;
+
+/** Map a nested `product_ingredients` embed row into the `ProductIngredient` shape. */
+function mapEmbedRow(row: any): ProductIngredient {
+  return {
+    supplement_id: row.supplements?.supplement_id,
+    supplement_name: row.supplements?.supplement_name ?? '',
+    amount: row.amount ?? null,
+    unit: (row.unit ?? null) as IngredientUnit | null,
+    order_index: row.order_index ?? undefined,
+  };
+}
 
 /**
  * A single product by id: curated catalog first (string ids), database
@@ -30,7 +51,7 @@ export function useProduct(productId: string) {
 
       const { data, error } = await supabase
         .from('products')
-        .select('*, brands(brand_name), supplements(supplement_id, supplement_name)')
+        .select(PRODUCT_SELECT)
         .eq('product_id', productId)
         .single();
 
@@ -39,7 +60,12 @@ export function useProduct(productId: string) {
         console.error('Error fetching product:', error);
         setProduct(null);
       } else {
-        setProduct(data);
+        const { product_ingredients: embeddedIngredients, ...productRow } = (data ?? {}) as any;
+        const ingredients = ((embeddedIngredients ?? []) as any[]).map(mapEmbedRow);
+        setProduct({
+          ...(productRow as Product),
+          ...(ingredients.length > 0 ? { ingredients } : {}),
+        });
       }
       setIsLoading(false);
     }

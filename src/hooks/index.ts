@@ -13,6 +13,12 @@ export { useRegimen } from './useRegimen';
 export { useProduct } from './useProduct';
 export { useProductRatingStats } from './useProductRatingStats';
 
+export { useStackIngredients } from './useStackIngredients';
+export type { UseStackIngredientsResult } from './useStackIngredients';
+
+export { useProductsWithIngredient } from './useProductsWithIngredient';
+export type { UseProductsWithIngredientResult } from './useProductsWithIngredient';
+
 
 export { useReviews } from './useReviews';
 export type { UseReviewsOptions, UseReviewsResult, ReviewSortBy } from './useReviews';
