@@ -107,6 +107,7 @@ const STORES = [
   { domain: 'bronsonvitamins.com', brandId: 'bronson', brandName: 'Bronson' },
   { domain: 'nusapure.com', brandId: 'nusapure', brandName: 'NusaPure' },
   { domain: 'purebulk.com', brandId: 'purebulk', brandName: 'PureBulk' },
+  { domain: 'wholesomestory.com', brandId: 'wholesome-story', brandName: 'Wholesome Story' },
   { domain: 'www.onnit.com', brandId: 'onnit', brandName: 'Onnit' },
   { domain: 'im8health.com', brandId: 'im8', brandName: 'IM8' },
   { domain: 'www.livemomentous.com', brandId: 'momentous', brandName: 'Momentous' },

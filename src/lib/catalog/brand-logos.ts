@@ -46,6 +46,7 @@ export const brandLogoByDomain: Record<string, string> = {
   'solaray.com': 'https://solaray.com/cdn/shop/files/favicon_32x32.jpg?v=1627404823',
   'toniiq.com': 'https://www.toniiq.com/cdn/shop/files/toniiqfavacon_1.png?crop=center&height=180&v=1671471307&width=180',
   'trycreate.co': 'https://trycreate.co/cdn/shop/files/ast.svg?v=1774398932&width=180',
+  'wholesomestory.com': 'https://wholesomestory.com/cdn/shop/files/WS-favicon_4x_1.png?crop=center&height=32&v=1613776125&width=32',
   'www.alaninu.com': 'https://www.alaninu.com/cdn/shop/files/AN_New_Favicon_-_Sep_2023_228x228.png?v=1696357321',
   'www.bareperformancenutrition.com': 'https://www.bareperformancenutrition.com/cdn/shop/t/792/assets/apple-touch-icon.png?v=20153161940833834701782400778',
   'www.ghostlifestyle.com': 'https://www.ghostlifestyle.com/cdn/shop/files/GHOST_SiteIcons.png?v=1742920825&width=180',
