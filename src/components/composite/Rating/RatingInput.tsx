@@ -51,8 +51,7 @@ export function RatingInput({
               className={`
                 ${sizeClasses[size].star}
                 ${starValue <= displayValue ? 'text-yellow-400' : 'text-gray-200'}
-                hover:text-yellow-400 transition-all duration-150
-                hover:scale-110
+                transition-[color,transform] duration-150 ease-out hover:scale-110 hover:text-yellow-400 active:scale-[0.96]
               `}
               onMouseEnter={() => setHoverValue(starValue)}
               onMouseLeave={() => setHoverValue(null)}

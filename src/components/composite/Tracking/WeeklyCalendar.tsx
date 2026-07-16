@@ -159,13 +159,13 @@ export function WeeklyCalendar({
             onClick={() => onDateSelect?.(day.date)}
             disabled={day.isFuture}
             className={`
-              flex flex-col items-center p-1.5 sm:p-3 rounded-lg sm:rounded-xl transition-all touch-manipulation active:scale-95
+              flex min-h-11 flex-col items-center rounded-lg p-1.5 transition-[background-color,box-shadow,opacity,transform] duration-150 ease-out touch-manipulation active:scale-[0.96] sm:rounded-xl sm:p-3
               ${day.isToday ? 'ring-2 ring-orange-500 ring-offset-1 sm:ring-offset-2' : ''}
               ${selectedDate === day.date ? 'bg-orange-100' : ''}
               ${day.isFuture ? 'cursor-not-allowed opacity-60' : 'hover:bg-gray-50 active:bg-gray-100 cursor-pointer'}
             `}
           >
-            <span className={`text-[10px] sm:text-xs font-medium mb-0.5 sm:mb-1 ${day.isToday ? 'text-orange-600' : 'text-gray-500'}`}>
+            <span className={`mb-0.5 text-xs font-medium sm:mb-1 ${day.isToday ? 'text-orange-700' : 'text-gray-500'}`}>
               <span className="sm:hidden">{shortDayNames[index]}</span>
               <span className="hidden sm:inline">{day.dayOfWeek}</span>
             </span>
@@ -182,7 +182,7 @@ export function WeeklyCalendar({
               {!day.isFuture && statusIcons[day.status]}
             </div>
             {!day.isFuture && day.status !== 'future' && (
-              <span className="text-[9px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">
+              <span className="mt-0.5 text-xs tabular-nums text-gray-500 sm:mt-1">
                 {day.logsCount}/{plannedCount}
               </span>
             )}
@@ -194,15 +194,15 @@ export function WeeklyCalendar({
       <div className="flex items-center justify-center gap-3 sm:gap-4 mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-100">
         <div className="flex items-center gap-1 sm:gap-1.5">
           <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500" />
-          <span className="text-[10px] sm:text-xs text-gray-600">Complete</span>
+          <span className="text-xs text-gray-600">Complete</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">
           <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-yellow-400" />
-          <span className="text-[10px] sm:text-xs text-gray-600">Partial</span>
+          <span className="text-xs text-gray-600">Partial</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">
           <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-gray-200" />
-          <span className="text-[10px] sm:text-xs text-gray-600">Missed</span>
+          <span className="text-xs text-gray-600">Missed</span>
         </div>
       </div>
     </Card>

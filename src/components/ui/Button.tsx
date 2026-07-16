@@ -37,11 +37,11 @@ const variantStyles: Record<ButtonVariant, string> = {
     'disabled:bg-gray-100 disabled:text-gray-400'
   ),
   outline: cn(
-    'border border-gray-200 bg-white text-gray-700',
-    'hover:border-gray-300 hover:bg-gray-50',
+    'bg-white text-gray-700 shadow-surface',
+    'hover:bg-gray-50 hover:shadow-surface-hover',
     'active:bg-gray-100',
     'focus-visible:ring-gray-500',
-    'disabled:border-gray-200 disabled:text-gray-400'
+    'disabled:text-gray-400 disabled:shadow-surface'
   ),
   ghost: cn(
     'bg-transparent text-gray-700',
@@ -60,9 +60,9 @@ const variantStyles: Record<ButtonVariant, string> = {
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-xs gap-1.5',
-  md: 'h-10 px-4 text-sm gap-2',
-  lg: 'h-11 px-6 text-sm gap-2',
+  sm: 'h-11 px-3 text-sm gap-1.5 sm:h-10',
+  md: 'h-11 px-4 text-sm gap-2',
+  lg: 'h-12 px-6 text-base gap-2',
 };
 
 const iconSizeStyles: Record<ButtonSize, string> = {
@@ -100,7 +100,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           // Base styles
           'inline-flex items-center justify-center',
           'font-medium rounded',
-          'transition-colors duration-150',
+          'transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out',
+          'enabled:active:scale-[0.96]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           'disabled:cursor-not-allowed',
           // Variant & Size

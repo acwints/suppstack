@@ -84,7 +84,7 @@ export default function BottomTabBar() {
               )}
             >
               <Icon size={22} strokeWidth={active ? 2.25 : 2} aria-hidden="true" />
-              <span className={cn('text-[10px] leading-none tracking-wide', active ? 'font-semibold' : 'font-medium')}>
+              <span className={cn('text-xs leading-none tracking-wide', active ? 'font-semibold' : 'font-medium')}>
                 {tab.label}
               </span>
             </Link>

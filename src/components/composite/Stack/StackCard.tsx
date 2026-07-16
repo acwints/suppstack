@@ -31,7 +31,7 @@ export function StackCard({
         <Card
           variant="outlined"
           padding="md"
-          className="hover:border-orange-300 hover:shadow-md transition-all"
+          className="transition-[border-color,box-shadow,transform] duration-150 hover:border-orange-300 hover:shadow-md active:scale-[0.96]"
         >
           <Inline gap={3} align="center">
             {showCreator && stack.profile && (
@@ -59,7 +59,7 @@ export function StackCard({
   return (
     <Link href={`/stacks/${stack.stack_id}`} className="block h-full">
       <Card
-        className="group h-full hover:shadow-md transition-all duration-200 animate-fade-in"
+        className="group h-full animate-fade-in transition-[box-shadow,transform] duration-200 hover:shadow-md active:scale-[0.96]"
         style={{ animationDelay: `${index * 0.1}s` }}
         padding="none"
       >

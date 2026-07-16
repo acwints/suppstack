@@ -24,8 +24,8 @@ export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectE
 // Right padding reserves room for the custom chevron so labels never
 // collide with it (the native arrow is suppressed via appearance-none).
 const sizeClasses: Record<InputSize, string> = {
-  sm: 'pl-3 pr-8 py-2 text-sm',
-  md: 'pl-4 pr-9 py-2.5 text-sm',
+  sm: 'pl-3 pr-8 py-2 text-base sm:text-sm',
+  md: 'pl-4 pr-9 py-2.5 text-base sm:text-sm',
   lg: 'pl-5 pr-10 py-3 text-base',
 };
 
@@ -69,7 +69,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 ? 'border-red-500 focus:ring-red-200 focus:border-red-500'
                 : 'border-gray-300 focus:ring-gray-200 focus:border-gray-400',
               'appearance-none truncate bg-white border rounded-lg text-gray-900',
-              'focus:ring-2 focus:outline-none transition-all duration-300',
+              'focus:ring-2 focus:outline-none transition-[border-color,box-shadow] duration-150',
               className,
             )}
             {...props}

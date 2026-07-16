@@ -184,7 +184,7 @@ export function ReviewForm({
           onChange={(e) => setReviewBody(e.target.value)}
           placeholder="Share your experience with this product. What did you like or dislike? How has it helped you?"
           rows={5}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 focus:outline-none transition-all"
+          className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base transition-[border-color,box-shadow] duration-150 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 sm:text-sm"
           minLength={20}
         />
         <p className="text-xs text-gray-500 mt-1">

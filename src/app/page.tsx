@@ -158,7 +158,7 @@ export default function Home() {
                     View all
                   </Link>
                 </Inline>
-                <p className="mb-4 max-w-2xl text-sm leading-6 text-gray-600">
+                <p className="mb-4 max-w-[65ch] text-sm leading-6 text-gray-600">
                   Research profiles only. Add peptides to planning stacks; SuppStack does not sell
                   peptides or route purchase paths for them.
                 </p>

@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 import type { InputVariant, InputSize } from '@/types';
 import { cn } from '@/lib/design-system/utils';
 
@@ -16,7 +16,7 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
 }
 
 const sizeClasses: Record<InputSize, string> = {
-  sm: 'px-3 py-2 text-sm',
+  sm: 'px-3 py-2 text-base sm:text-sm',
   md: 'px-4 py-3 text-base',
   lg: 'px-5 py-4 text-lg',
 };
@@ -43,7 +43,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    const inputId = id || `input-${Math.random().toString(36).slice(2, 9)}`;
+    const generatedId = useId();
+    const inputId = id || `input-${generatedId}`;
 
     return (
       <div className={cn(fullWidth && 'w-full')}>
@@ -72,7 +73,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               rightIcon && 'pr-12',
               error && 'border-red-500 focus:ring-red-200 focus:border-red-500',
               'bg-white text-gray-900 placeholder-gray-500',
-              'focus:outline-none transition-all duration-300',
+              'focus:outline-none transition-[border-color,box-shadow] duration-150',
               className,
             )}
             {...props}

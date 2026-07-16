@@ -51,8 +51,8 @@ export function LogButton({
 
   // Larger touch targets on mobile - minimum 44px recommended
   const sizeClasses = {
-    sm: 'p-2 min-w-[36px] min-h-[36px] sm:p-1.5 sm:min-w-0 sm:min-h-0',
-    md: 'p-2.5 min-w-[40px] min-h-[40px] sm:p-2 sm:min-w-0 sm:min-h-0',
+    sm: 'min-h-11 min-w-11 p-2 sm:min-h-10 sm:min-w-10 sm:p-1.5',
+    md: 'min-h-11 min-w-11 p-2.5 sm:min-h-10 sm:min-w-10 sm:p-2',
     lg: 'p-3 min-w-[48px] min-h-[48px] sm:p-3 sm:min-w-0 sm:min-h-0',
   };
 
@@ -70,7 +70,7 @@ export function LogButton({
         className={`
           flex items-center justify-center gap-2 rounded-full
           bg-green-100 text-green-700 hover:bg-green-200 active:bg-green-300
-          transition-all duration-200 touch-manipulation active:scale-95
+          transition-[color,background-color,transform] duration-150 ease-out touch-manipulation active:scale-[0.96]
           ${sizeClasses[size]}
           ${buttonLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           ${className}
@@ -93,8 +93,8 @@ export function LogButton({
       disabled={buttonLoading}
       className={`
         flex items-center justify-center gap-2 rounded-full
-        bg-gray-100 text-gray-600 hover:bg-orange-100 hover:text-orange-600 active:bg-orange-200
-        transition-all duration-200 touch-manipulation active:scale-95
+        bg-orange-50 text-orange-900 hover:bg-orange-100 active:bg-orange-200
+        transition-[color,background-color,transform] duration-150 ease-out touch-manipulation active:scale-[0.96]
         ${sizeClasses[size]}
         ${buttonLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         ${className}

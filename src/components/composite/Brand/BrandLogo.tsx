@@ -14,13 +14,13 @@ export interface BrandLogoProps {
 }
 
 const sizeStyles: Record<NonNullable<BrandLogoProps['size']>, string> = {
-  sm: 'h-4 w-4 text-[9px]',
+  sm: 'h-5 w-5 text-xs',
   md: 'h-7 w-7 text-xs',
   lg: 'h-12 w-12 text-lg',
 };
 
 const imageDimensions: Record<NonNullable<BrandLogoProps['size']>, number> = {
-  sm: 16,
+  sm: 20,
   md: 28,
   lg: 48,
 };

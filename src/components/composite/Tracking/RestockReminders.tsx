@@ -248,7 +248,7 @@ export function RestockReminders({ className }: RestockRemindersProps) {
                   <div className="mt-2 w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
                     <div
                       className={cn(
-                        'h-full rounded-full transition-all',
+                        'h-full rounded-full transition-[width]',
                         item.urgency === 'critical'
                           ? 'bg-red-500'
                           : item.urgency === 'soon'

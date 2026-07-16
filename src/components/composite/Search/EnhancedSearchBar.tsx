@@ -221,11 +221,11 @@ export function EnhancedSearchBar({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className={cn(
-              'w-full pl-12 pr-10 py-3.5 text-sm sm:text-base md:py-4',
+              'w-full pl-12 pr-12 py-3.5 text-base md:py-4',
               'border border-gray-300 rounded-full',
               'focus:ring-2 focus:ring-gray-200 focus:border-gray-400',
-              'bg-white text-gray-900 placeholder-gray-500 placeholder:text-sm sm:placeholder:text-base',
-              'focus:outline-none transition-all duration-300',
+              'bg-white text-gray-900 placeholder-gray-500 placeholder:text-base',
+              'focus:outline-none transition-[border-color,box-shadow] duration-150',
               'shadow-sm hover:shadow-md',
             )}
             role="combobox"
@@ -237,7 +237,8 @@ export function EnhancedSearchBar({
             <button
               type="button"
               onClick={handleClear}
-              className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+              className="absolute inset-y-0 right-0 flex min-w-11 items-center justify-center rounded-full text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
+              aria-label="Clear search"
             >
               <FaTimes className="h-4 w-4" />
             </button>

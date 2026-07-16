@@ -17,7 +17,7 @@ export function RatingBreakdown({ stats, showRecommendation = true }: RatingBrea
       {/* Overall Rating */}
       <div className="flex items-center gap-4">
         <div className="text-center">
-          <div className="text-4xl font-bold text-gray-900">
+          <div className="text-4xl font-bold tabular-nums text-gray-900">
             {stats.average_rating.toFixed(1)}
           </div>
           <Rating value={stats.average_rating} size="md" />
@@ -33,11 +33,11 @@ export function RatingBreakdown({ stats, showRecommendation = true }: RatingBrea
               <span className="text-sm text-gray-600 w-6">{rating}</span>
               <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-yellow-400 rounded-full transition-all duration-500"
+                  className="h-full bg-yellow-400 rounded-full transition-[width] duration-500"
                   style={{ width: `${percentage}%` }}
                 />
               </div>
-              <span className="text-xs text-gray-500 w-10 text-right">
+              <span className="w-10 text-end text-xs tabular-nums text-gray-500">
                 {count}
               </span>
             </div>

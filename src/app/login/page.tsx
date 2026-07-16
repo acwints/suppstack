@@ -100,13 +100,13 @@ export default function Login() {
             <BrandMark />
           </div>
           <p
-            className={`mt-9 text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-500 ${ENTER}`}
+            className={`mt-9 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 ${ENTER}`}
             style={delay(90)}
           >
             The supplement marketplace
           </p>
           <h1
-            className={`mt-3 font-serif text-[34px] leading-[1.15] text-gray-900 ${ENTER}`}
+            className={`mt-3 max-w-sm text-balance font-serif text-4xl leading-[1.15] tracking-[-0.015em] text-gray-900 ${ENTER}`}
             style={delay(150)}
           >
             Know what you take.

@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
+import { forwardRef, type HTMLAttributes, type KeyboardEvent, type ReactNode } from 'react';
 import { cn } from '@/lib/design-system';
 
 export type CardVariant = 'default' | 'outlined' | 'elevated' | 'ghost' | 'modern' | 'feature';
@@ -20,12 +20,12 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles: Record<CardVariant, string> = {
-  default: 'bg-white border border-gray-100',
+  default: 'bg-white shadow-surface',
   outlined: 'bg-transparent border border-gray-200',
-  elevated: 'bg-white shadow-sm border border-gray-100',
-  ghost: 'bg-gray-50 border border-transparent',
-  modern: 'bg-white border border-gray-100',
-  feature: 'bg-gray-50 border border-gray-100',
+  elevated: 'bg-white shadow-md',
+  ghost: 'bg-gray-50',
+  modern: 'bg-white shadow-surface',
+  feature: 'bg-gray-50 shadow-surface',
 };
 
 const paddingStyles: Record<CardPadding, string> = {
@@ -48,23 +48,36 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       className,
       children,
       onClick,
+      onKeyDown,
       ...props
     },
     ref
   ) => {
+    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+      onKeyDown?.(event);
+      if (event.defaultPrevented || !interactive || !onClick) return;
+
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        event.currentTarget.click();
+      }
+    };
+
     return (
       <div
         ref={ref}
         onClick={onClick}
+        onKeyDown={handleKeyDown}
         className={cn(
           // Base styles
           'rounded-lg',
-          'transition-all duration-150',
+          'transition-[box-shadow,transform] duration-150 ease-out',
           // Variant & Padding
           variantStyles[variant],
           paddingStyles[padding],
           // Interactive states
-          hoverable && 'hover:border-gray-200 hover:shadow-sm',
+          hoverable && 'hover:shadow-surface-hover',
+          interactive && 'active:scale-[0.96]',
           interactive && 'cursor-pointer',
           interactive && 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2',
           onClick && 'cursor-pointer',

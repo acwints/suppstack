@@ -114,7 +114,7 @@ export function DailyLogCard({
             <div className="h-2.5 sm:h-2 bg-gray-100 rounded-full overflow-hidden">
               <div
                 className={cn(
-                  'h-full rounded-full transition-all duration-500',
+                  'h-full rounded-full transition-[width] duration-500',
                   logsComplete ? 'bg-green-500' : 'bg-orange-500',
                 )}
                 style={{ width: `${progress}%` }}

@@ -327,7 +327,7 @@ export default function CreateStackPage() {
                           <div className="flex flex-wrap items-center gap-2">
                             <h4 className="font-medium text-gray-900">{supplement.supplement_name}</h4>
                             {supplement.research_only && (
-                              <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                              <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-900">
                                 Reference
                               </span>
                             )}
@@ -450,7 +450,7 @@ export default function CreateStackPage() {
                           <FiPlus className="text-gray-400" size={14} />
                           <span className="min-w-0 flex-1 truncate">{supplement.supplement_name}</span>
                           {supplement.research_only && (
-                            <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                            <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-900">
                               Reference
                             </span>
                           )}

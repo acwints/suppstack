@@ -20,7 +20,7 @@ export default function Footer() {
     <footer className="mt-auto border-t border-gray-200 bg-white px-4 py-6 text-gray-600 md:p-8">
       <div className="container-custom">
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div className="text-center md:text-left">
+          <div className="text-center md:text-start">
             <p className="text-sm">
               &copy; {new Date().getFullYear()} <span className="font-semibold text-gray-900">SuppStack AI</span>. 
               Health and wellness supplement marketplace.
@@ -36,7 +36,7 @@ export default function Footer() {
         </div>
         
         <div className="mt-4 pt-4 border-t border-gray-200 text-center">
-          <p className="text-xs text-gray-500">
+          <p className="mx-auto max-w-[65ch] text-xs text-gray-500">
             Compare vitamins, minerals, herbs, protein, and everyday wellness products with verified checkout.
           </p>
         </div>

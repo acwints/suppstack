@@ -19,7 +19,7 @@ export interface SupplementCardProps {
  * tile spanning Monohydrate and HCl); family tiles link to the flagship form,
  * where the form switcher exposes the rest.
  */
-export function SupplementCard({ group }: SupplementCardProps) {
+export function SupplementCard({ group, index }: SupplementCardProps) {
   const { flagship } = group;
   const isResearch = flagship.research_only ?? false;
   const hasMultipleOptions =
@@ -29,10 +29,10 @@ export function SupplementCard({ group }: SupplementCardProps) {
 
   return (
     <Link href={`/supplement/${flagship.supplement_id}`} className="block h-full">
-      <div className="group flex h-full flex-col overflow-hidden rounded border border-gray-200 bg-white transition-all duration-150 hover:border-gray-300 hover:shadow-md">
+      <div className="group flex h-full flex-col overflow-hidden rounded bg-white shadow-surface transition-[box-shadow,transform] duration-150 ease-out hover:shadow-surface-hover active:scale-[0.96]">
         <div className="relative aspect-square w-full bg-white">
           {isResearch && (
-            <span className="absolute left-2 top-2 z-10 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">
+            <span className="absolute left-2 top-2 z-10 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-900">
               Research
             </span>
           )}
@@ -41,6 +41,7 @@ export function SupplementCard({ group }: SupplementCardProps) {
               src={flagship.image_url}
               alt={group.name}
               fill
+              priority={typeof index === 'number' && index < 2}
               className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.04]"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
               unoptimized={isRemoteImageSrc(flagship.image_url)}
