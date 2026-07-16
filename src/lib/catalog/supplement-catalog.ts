@@ -1,4 +1,11 @@
-import type { Product, Supplement } from '@/types';
+import type {
+  IngredientComposition,
+  IngredientUnit,
+  Product,
+  ProductContainingIngredient,
+  ProductIngredient,
+  Supplement,
+} from '@/types';
 import {
   hasDirectShopifyCheckout,
   hasShopifyVariant,
@@ -310,8 +317,15 @@ function catalogIdForSeed(seed: CatalogSeed) {
   return stableCatalogIds[seed.name] ?? fallbackCatalogId(seed.name);
 }
 
-export type CuratedProductSeed = Omit<Product, 'supplement_id' | 'supplements'> & {
+export type CuratedProductSeed = Omit<Product, 'supplement_id' | 'supplements' | 'ingredients'> & {
   supplement_name: string;
+  ingredients?: {
+    supplement_name: string;
+    amount: number | null;
+    unit: IngredientUnit | null;
+    is_primary?: boolean;
+    notes?: string;
+  }[];
 };
 
 const curatedProductSeeds: CuratedProductSeed[] = [
@@ -4434,6 +4448,55 @@ function findCuratedSeedByProductId(productId: string) {
   return allCuratedProductSeeds.find((product) => product.product_id === productId) ?? null;
 }
 
+/**
+ * Build the ingredient composition for a curated seed.
+ *
+ * - When `seed.ingredients` is present, each entry is resolved to a catalog
+ *   supplement (via `findCatalogSupplementByName`) so the edge carries a real
+ *   `supplement_id`; `order_index` follows array position.
+ * - Otherwise we emit a single unquantified edge from the seed's own
+ *   `supplement_name` (`amount: null`, `unit: null`) — we never fabricate a
+ *   per-serving amount for a single-active product without a cited label.
+ *
+ * Entries whose `supplement_name` does not resolve to a catalog supplement are
+ * skipped (Task 3 authors the real composition arrays; the integrity gate
+ * enforces resolvability).
+ */
+function buildCuratedComposition(
+  seed: CuratedProductSeed,
+  supplement: Supplement
+): IngredientComposition {
+  if (seed.ingredients && seed.ingredients.length > 0) {
+    return seed.ingredients.flatMap((ingredient, index) => {
+      const catalogSupplement = findCatalogSupplementByName(ingredient.supplement_name);
+      if (!catalogSupplement) return [];
+
+      const edge: ProductIngredient = {
+        supplement_id: catalogSupplement.supplement_id,
+        supplement_name: catalogSupplement.supplement_name,
+        amount: ingredient.amount,
+        unit: ingredient.unit,
+        is_primary: ingredient.is_primary,
+        order_index: index,
+        notes: ingredient.notes,
+      };
+
+      return [edge];
+    });
+  }
+
+  return [
+    {
+      supplement_id: supplement.supplement_id,
+      supplement_name: supplement.supplement_name,
+      amount: null,
+      unit: null,
+      is_primary: true,
+      order_index: 0,
+    },
+  ];
+}
+
 function createCuratedProduct(seed: CuratedProductSeed, supplement: Supplement): Product {
   return {
     ...seed,
@@ -4443,6 +4506,7 @@ function createCuratedProduct(seed: CuratedProductSeed, supplement: Supplement):
       supplement_id: supplement.supplement_id,
       supplement_name: supplement.supplement_name,
     },
+    ingredients: buildCuratedComposition(seed, supplement),
   };
 }
 
@@ -4496,6 +4560,42 @@ export function getCuratedCatalogProducts() {
 
     return supplement ? [createCuratedProduct(seed, supplement)] : [];
   }));
+}
+
+/**
+ * Reverse lookup for the ingredient page: every curated product whose
+ * composition (or single-supplement fallback) includes `ingredientSupplementId`.
+ *
+ * Products are deduped by the underlying `Product` via `mergeProductSources`
+ * (the same helper the forward product listing uses), and each surviving
+ * product carries the per-product edge (`amount`/`unit`/`is_primary`) for that
+ * ingredient.
+ */
+export function curatedProductsContainingIngredient(
+  ingredientSupplementId: number
+): ProductContainingIngredient[] {
+  const matches = getCuratedCatalogProducts().flatMap((product) => {
+    const edge = (product.ingredients ?? []).find(
+      (ingredient) => ingredient.supplement_id === ingredientSupplementId
+    );
+    return edge ? [{ product, edge }] : [];
+  });
+
+  const dedupedProducts = mergeProductSources(matches.map((match) => match.product));
+
+  return dedupedProducts.flatMap((product) => {
+    const match = matches.find((candidate) => candidate.product === product);
+    if (!match) return [];
+
+    return [
+      {
+        product,
+        amount: match.edge.amount,
+        unit: match.edge.unit,
+        is_primary: match.edge.is_primary,
+      },
+    ];
+  });
 }
 
 

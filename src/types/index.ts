@@ -60,7 +60,8 @@ export interface Product {
   inventory_status?: 'in_stock' | 'low_stock' | 'out_of_stock' | 'preorder';
   quality_badges?: string[];
   subscriptions_available?: boolean;
-  supplement_facts?: SupplementFacts;
+  /** Ingredient composition (2-tier: each edge references a catalog supplement). */
+  ingredients?: IngredientComposition;
   last_api_sync?: string;
   data_source?:
     | 'manual'
@@ -72,20 +73,42 @@ export interface Product {
     | 'catalog_fallback';
 }
 
-export interface SupplementFacts {
-  servingSize: string;
-  servingsPerContainer: number;
-  ingredients: SupplementIngredient[];
-  otherIngredients?: string[];
-  warnings?: string[];
-  manufacturer?: string;
+// ============================================================================
+// Ingredient Composition Types (2-tier model)
+// ============================================================================
+//
+// A product composes many ingredients. Ingredient identity reuses the catalog
+// `supplements` table (`supplement_id`), so each edge points at a catalog
+// supplement with a per-serving amount + unit. `amount: null` means the
+// ingredient is present but unquantified (no fabricated amount).
+
+export type IngredientUnit =
+  | 'mg'
+  | 'mcg'
+  | 'g'
+  | 'IU'
+  | 'billion CFU'
+  | 'ml'
+  | 'mcg DFE'
+  | 'mg NE';
+
+export interface ProductIngredient {
+  supplement_id: number; // ingredient identity = a catalog supplement (2-tier)
+  supplement_name: string;
+  amount: number | null; // per serving; null = present but unquantified
+  unit: IngredientUnit | null;
+  is_primary?: boolean;
+  order_index?: number;
+  notes?: string;
 }
 
-export interface SupplementIngredient {
-  name: string;
-  amount: string;
-  unit: string;
-  dailyValue?: number;
+export type IngredientComposition = ProductIngredient[];
+
+export interface ProductContainingIngredient {
+  product: Product;
+  amount: number | null;
+  unit: IngredientUnit | null;
+  is_primary?: boolean;
 }
 
 // ============================================================================
