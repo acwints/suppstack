@@ -22,6 +22,7 @@ const WEB_PUBLIC_PATHS = [
   '/products',
   '/product',
   '/saved',
+  '/scan',
   '/search',
   '/supplement',
   '/terms',
