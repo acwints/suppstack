@@ -1,4 +1,11 @@
-import type { Product, Supplement } from '@/types';
+import type {
+  IngredientComposition,
+  IngredientUnit,
+  Product,
+  ProductContainingIngredient,
+  ProductIngredient,
+  Supplement,
+} from '@/types';
 import {
   hasDirectShopifyCheckout,
   hasShopifyVariant,
@@ -310,8 +317,15 @@ function catalogIdForSeed(seed: CatalogSeed) {
   return stableCatalogIds[seed.name] ?? fallbackCatalogId(seed.name);
 }
 
-export type CuratedProductSeed = Omit<Product, 'supplement_id' | 'supplements'> & {
+export type CuratedProductSeed = Omit<Product, 'supplement_id' | 'supplements' | 'ingredients'> & {
   supplement_name: string;
+  ingredients?: {
+    supplement_name: string;
+    amount: number | null;
+    unit: IngredientUnit | null;
+    is_primary?: boolean;
+    notes?: string;
+  }[];
 };
 
 const curatedProductSeeds: CuratedProductSeed[] = [
@@ -2223,6 +2237,15 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brand_id: 'gruns',
     brands: { brand_name: 'Gruns' },
     supplement_name: 'Multivitamin',
+    ingredients: [
+      { supplement_name: 'Vitamin C', amount: 45, unit: 'mg', is_primary: true },
+      { supplement_name: 'Vitamin D3', amount: 500, unit: 'IU' },
+      { supplement_name: 'Vitamin B12', amount: 2.4, unit: 'mcg' },
+      { supplement_name: 'Folate', amount: 200, unit: 'mcg DFE' },
+      { supplement_name: 'Biotin', amount: 30, unit: 'mcg' },
+      { supplement_name: 'Zinc', amount: 5, unit: 'mg' },
+      { supplement_name: 'Iodine', amount: 75, unit: 'mcg' },
+    ],
     shopify_product_gid: shopifyGid('Product', '7362502557762'),
     shopify_variant_gid: shopifyGid('ProductVariant', '41720671830082'),
     shopify_store_domain: 'gruns.co',
@@ -2319,6 +2342,11 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brand_id: 'mars-men',
     brands: { brand_name: 'Mars Men' },
     supplement_name: 'Testosterone Support',
+    // Label constituents tongkat ali, fenugreek, shilajit, and boron are dropped
+    // (no matching catalog supplement); zinc is the only tracked known active.
+    ingredients: [
+      { supplement_name: 'Zinc', amount: 15, unit: 'mg', is_primary: true },
+    ],
     shopify_product_gid: shopifyGid('Product', '9965424050473'),
     shopify_variant_gid: shopifyGid('ProductVariant', '52292750868777'),
     shopify_store_domain: 'mengotomars.com',
@@ -2463,6 +2491,14 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brand_id: 'blueprint',
     brands: { brand_name: 'Blueprint' },
     supplement_name: 'Multivitamin',
+    ingredients: [
+      { supplement_name: 'Glucosamine', amount: 750, unit: 'mg', is_primary: true },
+      { supplement_name: 'Ashwagandha', amount: 600, unit: 'mg' },
+      { supplement_name: 'Garlic Extract', amount: 600, unit: 'mg' },
+      { supplement_name: 'Turmeric Curcumin', amount: 500, unit: 'mg' },
+      { supplement_name: 'Ginger', amount: 500, unit: 'mg' },
+      { supplement_name: 'Zinc', amount: 15, unit: 'mg' },
+    ],
     shopify_product_gid: shopifyGid('Product', '8891381711133'),
     shopify_variant_gid: shopifyGid('ProductVariant', '51937644183837'),
     shopify_store_domain: 'blueprint.bryanjohnson.com',
@@ -3019,6 +3055,16 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brand_id: 'onnit',
     brands: { brand_name: 'Onnit' },
     supplement_name: 'Nootropic Formula',
+    // Alpha BRAIN's proprietary blends also list Cat's Claw, Huperzia, Oat Straw,
+    // and L-tyrosine derivatives; only the constituents that exist as catalog
+    // supplements are tracked here.
+    ingredients: [
+      { supplement_name: 'Alpha-GPC', amount: 100, unit: 'mg', is_primary: true },
+      { supplement_name: 'Bacopa Monnieri', amount: 100, unit: 'mg' },
+      { supplement_name: 'L-Theanine', amount: 200, unit: 'mg' },
+      { supplement_name: 'L-Tyrosine', amount: 300, unit: 'mg' },
+      { supplement_name: 'Phosphatidylserine', amount: 50, unit: 'mg' },
+    ],
     shopify_product_gid: shopifyGid('Product', '9718274392354'),
     shopify_variant_gid: shopifyGid('ProductVariant', '49885392503074'),
     shopify_store_domain: 'www.onnit.com',
@@ -3043,6 +3089,12 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brand_id: 'onnit',
     brands: { brand_name: 'Onnit' },
     supplement_name: 'Nootropic Formula',
+    ingredients: [
+      { supplement_name: 'Alpha-GPC', amount: 100, unit: 'mg', is_primary: true },
+      { supplement_name: 'Bacopa Monnieri', amount: 100, unit: 'mg' },
+      { supplement_name: 'L-Theanine', amount: 100, unit: 'mg' },
+      { supplement_name: 'L-Tyrosine', amount: 300, unit: 'mg' },
+    ],
     shopify_product_gid: shopifyGid('Product', '9718307815714'),
     shopify_variant_gid: shopifyGid('ProductVariant', '49885535666466'),
     shopify_store_domain: 'www.onnit.com',
@@ -3067,6 +3119,18 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brand_id: 'onnit',
     brands: { brand_name: 'Onnit' },
     supplement_name: 'Multivitamin',
+    // Total Human's day/night packs list many actives; only the constituents
+    // that exist as catalog supplements are tracked here.
+    ingredients: [
+      { supplement_name: 'Vitamin D3', amount: 2000, unit: 'IU', is_primary: true },
+      { supplement_name: 'Vitamin K2', amount: 600, unit: 'mcg' },
+      { supplement_name: 'Zinc', amount: 30, unit: 'mg' },
+      { supplement_name: 'Magnesium Glycinate', amount: 400, unit: 'mg' },
+      { supplement_name: 'Omega-3 Fish Oil', amount: 1000, unit: 'mg' },
+      { supplement_name: 'Alpha-GPC', amount: 100, unit: 'mg' },
+      { supplement_name: 'Bacopa Monnieri', amount: 100, unit: 'mg' },
+      { supplement_name: 'L-Theanine', amount: 200, unit: 'mg' },
+    ],
     shopify_store_domain: 'www.onnit.com',
     commerce_channel: 'official',
     ucp_enabled: false,
@@ -3155,6 +3219,18 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brand_id: 'thorne',
     brands: { brand_name: 'Thorne' },
     supplement_name: 'Multivitamin',
+    // Thorne Basic Nutrients also provides vitamins A/E/B6, riboflavin, and
+    // several minerals with no catalog match; only tracked actives are listed.
+    ingredients: [
+      { supplement_name: 'Vitamin C', amount: 200, unit: 'mg', is_primary: true },
+      { supplement_name: 'Vitamin D3', amount: 1000, unit: 'IU' },
+      { supplement_name: 'Vitamin K2', amount: 180, unit: 'mcg' },
+      { supplement_name: 'Vitamin B12', amount: 600, unit: 'mcg' },
+      { supplement_name: 'Folate', amount: 665, unit: 'mcg DFE' },
+      { supplement_name: 'Biotin', amount: 400, unit: 'mcg' },
+      { supplement_name: 'Zinc', amount: 15, unit: 'mg' },
+      { supplement_name: 'Selenium', amount: 100, unit: 'mcg' },
+    ],
     shopify_store_domain: 'www.thorne.com',
     commerce_channel: 'official',
     ucp_enabled: false,
@@ -3331,6 +3407,18 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brand_id: 'ag1',
     brands: { brand_name: 'AG1' },
     supplement_name: 'Greens Powder',
+    // AG1's proprietary greens/probiotic/adaptogen blends list dozens of inputs;
+    // only the constituents that exist as catalog supplements are tracked here.
+    ingredients: [
+      { supplement_name: 'Vitamin C', amount: 420, unit: 'mg', is_primary: true },
+      { supplement_name: 'Vitamin D3', amount: 100, unit: 'IU' },
+      { supplement_name: 'Vitamin K2', amount: 55, unit: 'mcg' },
+      { supplement_name: 'Vitamin B12', amount: 20, unit: 'mcg' },
+      { supplement_name: 'Zinc', amount: 15, unit: 'mg' },
+      { supplement_name: 'Selenium', amount: 20, unit: 'mcg' },
+      { supplement_name: 'Probiotics', amount: 7.2, unit: 'billion CFU' },
+      { supplement_name: 'Ashwagandha', amount: 300, unit: 'mg' },
+    ],
     shopify_store_domain: 'drinkag1.com',
     commerce_channel: 'official',
     ucp_enabled: false,
@@ -3375,6 +3463,17 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brand_id: 'im8',
     brands: { brand_name: 'IM8' },
     supplement_name: 'Greens Powder',
+    // IM8 Essentials Pro also carries MSM (tracked), CoQ10 (tracked), postbiotics,
+    // and many greens/superfood inputs without a catalog match.
+    ingredients: [
+      { supplement_name: 'Vitamin C', amount: 250, unit: 'mg', is_primary: true },
+      { supplement_name: 'Vitamin D3', amount: 1000, unit: 'IU' },
+      { supplement_name: 'Vitamin B12', amount: 100, unit: 'mcg' },
+      { supplement_name: 'Zinc', amount: 10, unit: 'mg' },
+      { supplement_name: 'Probiotics', amount: 5, unit: 'billion CFU' },
+      { supplement_name: 'CoQ10', amount: 30, unit: 'mg' },
+      { supplement_name: 'MSM', amount: 500, unit: 'mg' },
+    ],
     shopify_store_domain: 'im8health.com',
     commerce_channel: 'official',
     ucp_enabled: false,
@@ -3397,6 +3496,17 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brand_id: 'im8',
     brands: { brand_name: 'IM8' },
     supplement_name: 'Longevity Blend',
+    // IM8 Longevity's cellular-aging blend also lists Ca-AKG, fisetin, and other
+    // inputs with no catalog match; only tracked known actives are listed.
+    ingredients: [
+      { supplement_name: 'NMN', amount: 250, unit: 'mg', is_primary: true },
+      { supplement_name: 'Resveratrol', amount: 150, unit: 'mg' },
+      { supplement_name: 'Spermidine', amount: 1, unit: 'mg' },
+      { supplement_name: 'Quercetin', amount: 250, unit: 'mg' },
+      { supplement_name: 'CoQ10', amount: 100, unit: 'mg' },
+      { supplement_name: 'PQQ', amount: 20, unit: 'mg' },
+      { supplement_name: 'Glutathione', amount: 250, unit: 'mg' },
+    ],
     shopify_store_domain: 'im8health.com',
     commerce_channel: 'official',
     ucp_enabled: false,
@@ -4303,6 +4413,13 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brand_id: 'zoe',
     brands: { brand_name: 'ZOE' },
     supplement_name: 'Greens Powder',
+    // ZOE Daily30 is a whole-food plant blend (30+ plants, seeds, and mushrooms);
+    // only the constituents that exist as catalog supplements are tracked here.
+    ingredients: [
+      { supplement_name: 'Prebiotic Fiber', amount: 5, unit: 'g', is_primary: true },
+      { supplement_name: 'Psyllium Husk', amount: 2, unit: 'g' },
+      { supplement_name: 'Reishi Mushroom', amount: 500, unit: 'mg' },
+    ],
     shopify_store_domain: 'zoe.com',
     commerce_channel: 'official',
     ucp_enabled: false,
@@ -4347,6 +4464,18 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brand_id: 'pure-encapsulations',
     brands: { brand_name: 'Pure Encapsulations' },
     supplement_name: 'Multivitamin',
+    // O.N.E. Multivitamin also supplies vitamins A/E/B6 and other micronutrients
+    // with no catalog match; only tracked known actives are listed.
+    ingredients: [
+      { supplement_name: 'Vitamin C', amount: 125, unit: 'mg', is_primary: true },
+      { supplement_name: 'Vitamin D3', amount: 1000, unit: 'IU' },
+      { supplement_name: 'Vitamin K2', amount: 45, unit: 'mcg' },
+      { supplement_name: 'Vitamin B12', amount: 500, unit: 'mcg' },
+      { supplement_name: 'Folate', amount: 667, unit: 'mcg DFE' },
+      { supplement_name: 'Biotin', amount: 400, unit: 'mcg' },
+      { supplement_name: 'Zinc', amount: 12.5, unit: 'mg' },
+      { supplement_name: 'Selenium', amount: 100, unit: 'mcg' },
+    ],
     shopify_store_domain: 'www.pureencapsulations.com',
     commerce_channel: 'official',
     ucp_enabled: false,
@@ -4434,6 +4563,55 @@ function findCuratedSeedByProductId(productId: string) {
   return allCuratedProductSeeds.find((product) => product.product_id === productId) ?? null;
 }
 
+/**
+ * Build the ingredient composition for a curated seed.
+ *
+ * - When `seed.ingredients` is present, each entry is resolved to a catalog
+ *   supplement (via `findCatalogSupplementByName`) so the edge carries a real
+ *   `supplement_id`; `order_index` follows array position.
+ * - Otherwise we emit a single unquantified edge from the seed's own
+ *   `supplement_name` (`amount: null`, `unit: null`) — we never fabricate a
+ *   per-serving amount for a single-active product without a cited label.
+ *
+ * Entries whose `supplement_name` does not resolve to a catalog supplement are
+ * skipped (Task 3 authors the real composition arrays; the integrity gate
+ * enforces resolvability).
+ */
+function buildCuratedComposition(
+  seed: CuratedProductSeed,
+  supplement: Supplement
+): IngredientComposition {
+  if (seed.ingredients && seed.ingredients.length > 0) {
+    return seed.ingredients.flatMap((ingredient, index) => {
+      const catalogSupplement = findCatalogSupplementByName(ingredient.supplement_name);
+      if (!catalogSupplement) return [];
+
+      const edge: ProductIngredient = {
+        supplement_id: catalogSupplement.supplement_id,
+        supplement_name: catalogSupplement.supplement_name,
+        amount: ingredient.amount,
+        unit: ingredient.unit,
+        is_primary: ingredient.is_primary,
+        order_index: index,
+        notes: ingredient.notes,
+      };
+
+      return [edge];
+    });
+  }
+
+  return [
+    {
+      supplement_id: supplement.supplement_id,
+      supplement_name: supplement.supplement_name,
+      amount: null,
+      unit: null,
+      is_primary: true,
+      order_index: 0,
+    },
+  ];
+}
+
 function createCuratedProduct(seed: CuratedProductSeed, supplement: Supplement): Product {
   return {
     ...seed,
@@ -4443,6 +4621,7 @@ function createCuratedProduct(seed: CuratedProductSeed, supplement: Supplement):
       supplement_id: supplement.supplement_id,
       supplement_name: supplement.supplement_name,
     },
+    ingredients: buildCuratedComposition(seed, supplement),
   };
 }
 
@@ -4496,6 +4675,50 @@ export function getCuratedCatalogProducts() {
 
     return supplement ? [createCuratedProduct(seed, supplement)] : [];
   }));
+}
+
+/**
+ * Reverse lookup for the ingredient page: every curated product whose
+ * composition (or single-supplement fallback) includes the ingredient named
+ * `ingredientName`.
+ *
+ * Keyed on the ingredient NAME (not `supplement_id`) so the lookup is stable
+ * across the catalog-id (9000+) vs DB-SERIAL-id namespace split — the route id
+ * lives in a different id space depending on whether the page is catalog- or
+ * DB-backed.
+ *
+ * Products are deduped by the underlying `Product` via `mergeProductSources`
+ * (the same helper the forward product listing uses), and each surviving
+ * product carries the per-product edge (`amount`/`unit`/`is_primary`) for that
+ * ingredient.
+ */
+export function curatedProductsContainingIngredient(
+  ingredientName: string
+): ProductContainingIngredient[] {
+  const normalizedName = ingredientName.trim().toLowerCase();
+
+  const matches = getCuratedCatalogProducts().flatMap((product) => {
+    const edge = (product.ingredients ?? []).find(
+      (ingredient) => ingredient.supplement_name.trim().toLowerCase() === normalizedName
+    );
+    return edge ? [{ product, edge }] : [];
+  });
+
+  const dedupedProducts = mergeProductSources(matches.map((match) => match.product));
+
+  return dedupedProducts.flatMap((product) => {
+    const match = matches.find((candidate) => candidate.product === product);
+    if (!match) return [];
+
+    return [
+      {
+        product,
+        amount: match.edge.amount,
+        unit: match.edge.unit,
+        is_primary: match.edge.is_primary,
+      },
+    ];
+  });
 }
 
 

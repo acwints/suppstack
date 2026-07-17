@@ -121,11 +121,63 @@ export async function findDatabaseProductId(product: Product): Promise<number | 
   return existing?.[0]?.product_id ?? null;
 }
 
+/**
+ * Materializes a curated product's ingredient composition into
+ * `product_ingredients`. Each catalog edge references an ingredient by its
+ * catalog `supplement_id` (9000+ range); those are bridged to database
+ * supplement rows via `resolveDatabaseSupplementId` before upserting. Edges
+ * whose ingredient can't be resolved are skipped (surfaced, not thrown), and a
+ * concurrent-insert unique violation is ignored like elsewhere in this module.
+ * Composition failures never propagate: the caller's product resolution must
+ * still succeed.
+ */
+async function syncProductIngredients(dbProductId: number, product: Product): Promise<void> {
+  for (const ingredient of product.ingredients ?? []) {
+    let ingredientSupplementId: number;
+    try {
+      ingredientSupplementId = await resolveDatabaseSupplementId(ingredient.supplement_id);
+    } catch (error) {
+      console.error(
+        `Failed to resolve ingredient "${ingredient.supplement_name}" for product "${product.product_name}":`,
+        error,
+      );
+      continue;
+    }
+
+    const { error } = await supabase
+      .from('product_ingredients')
+      .upsert(
+        {
+          product_id: dbProductId,
+          ingredient_supplement_id: ingredientSupplementId,
+          amount: ingredient.amount ?? null,
+          unit: ingredient.unit ?? null,
+          order_index: ingredient.order_index ?? 0,
+          is_primary: ingredient.is_primary ?? false,
+          notes: ingredient.notes ?? null,
+        },
+        { onConflict: 'product_id,ingredient_supplement_id' },
+      );
+
+    if (error && error.code !== UNIQUE_VIOLATION) {
+      console.error(
+        `Failed to sync ingredient "${ingredient.supplement_name}" for product "${product.product_name}":`,
+        error,
+      );
+    }
+  }
+}
+
 export async function resolveDatabaseProductId(product: Product): Promise<number | string> {
   if (!isCuratedCatalogProductId(product.product_id)) return product.product_id;
 
   const existingId = await findDatabaseProductId(product);
-  if (existingId !== null) return existingId;
+  if (existingId !== null) {
+    if (typeof existingId === 'number' && product.ingredients?.length) {
+      await syncProductIngredients(existingId, product);
+    }
+    return existingId;
+  }
 
   const [supplementId, brandId] = await Promise.all([
     resolveDatabaseSupplementId(product.supplement_id),
@@ -151,6 +203,10 @@ export async function resolveDatabaseProductId(product: Product): Promise<number
 
   if (error || !inserted) {
     throw error ?? new Error(`Failed to sync product "${product.product_name}"`);
+  }
+
+  if (product.ingredients?.length) {
+    await syncProductIngredients(inserted.product_id, product);
   }
 
   return inserted.product_id;
