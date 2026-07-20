@@ -37,17 +37,17 @@ export const HEALTH_GOAL_DEFINITIONS: HealthGoalDefinition[] = [
     id: 'sleep-recovery',
     title: 'Sleep & Recovery',
     shortTitle: 'Sleep',
-    description: 'Nighttime routines for sleep duration, sleep quality, calm, and next-day recovery.',
+    description: 'Sleep routines for sleep duration, sleep quality, calm, and next-day recovery.',
     signalLabel: 'Sleep hours, sleep quality, consistency',
     commerceAngle:
-      'Start with calm, mineral status, and low-friction sleep timing before adding stronger sleep aids.',
+      'Start with calm, mineral status, and simple sleep support before adding stronger sleep aids.',
     aiUseCase:
       'When sleep duration or quality trails the rest of the profile, AI ranks gentle recovery products ahead of performance add-ons.',
     signalMetrics: ['Sleep duration', 'Sleep quality', 'Sleep consistency', 'Next-day recovery'],
     routineIdeas: [
       'Anchor one sleep-support ingredient for 14 nights.',
       'Compare bedtime consistency against next-day energy.',
-      'Treat melatonin as a timing tool, not the default nightly base.',
+      'Treat melatonin as short-term sleep-onset support, not the default base.',
     ],
     supplementNames: [
       'Magnesium Glycinate',
@@ -116,12 +116,12 @@ export const HEALTH_GOAL_DEFINITIONS: HealthGoalDefinition[] = [
     title: 'Metabolic Health',
     shortTitle: 'Metabolic',
     description: 'Evidence-aware picks for glucose, lipids, appetite, and post-meal routines.',
-    signalLabel: 'Body trend, calories, meal timing',
+    signalLabel: 'Body trend, calories, meal pattern',
     commerceAngle:
       'Build a conservative metabolic shelf around fiber, meal routines, and clinician-aware stronger ingredients.',
     aiUseCase:
       'When sleep, body trend, and calorie signals converge, AI frames metabolic support as an experiment to discuss with a professional.',
-    signalMetrics: ['Body trend', 'Meal timing', 'Calorie balance', 'Sleep overlap'],
+    signalMetrics: ['Body trend', 'Meal pattern', 'Calorie balance', 'Sleep overlap'],
     routineIdeas: [
       'Try fiber or meal-support products before stronger botanicals.',
       'Watch sleep and late meals together, not in isolation.',

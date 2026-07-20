@@ -218,7 +218,7 @@ const seeds: CatalogSeed[] = [
   { name: 'L-Carnitine', category: 'Amino Acids', description: 'Compound involved in fatty acid transport and studied for exercise, cognition, and metabolic support.', aliases: ['acetyl-l-carnitine', 'alcar'], goals: ['Energy metabolism', 'Brain support'], forms: ['Capsule', 'Liquid'], dosage: '500-2000 mg daily', evidence: 'moderate', price: 24 },
   { name: 'L-Glutamine', category: 'Amino Acids', description: 'Amino acid used for gut barrier, recovery, and high-training-load nutrition support.', aliases: ['glutamine'], goals: ['Gut support', 'Recovery'], forms: ['Powder'], dosage: '5 g daily', evidence: 'moderate', price: 23 },
   { name: 'GABA', category: 'Sleep & Relaxation', description: 'Inhibitory neurotransmitter supplement used for relaxation and sleep routines.', goals: ['Relaxation', 'Sleep support'], forms: ['Capsule', 'Lozenge'], dosage: '100-300 mg as needed', evidence: 'emerging', price: 16 },
-  { name: 'Melatonin', category: 'Sleep & Relaxation', description: 'Sleep-timing hormone used for jet lag, circadian rhythm support, and short-term sleep onset help.', goals: ['Sleep timing', 'Jet lag'], forms: ['Tablet', 'Gummy', 'Liquid'], dosage: '0.3-3 mg before bed', evidence: 'strong', price: 12 },
+  { name: 'Melatonin', category: 'Sleep & Relaxation', description: 'Sleep-onset hormone used for jet lag, circadian rhythm support, and short-term sleep onset help.', goals: ['Sleep onset', 'Jet lag'], forms: ['Tablet', 'Gummy', 'Liquid'], dosage: '0.3-3 mg before bed', evidence: 'strong', price: 12 },
   { name: 'Apigenin', category: 'Sleep & Relaxation', description: 'Chamomile-derived flavone used in relaxation and sleep stacks.', goals: ['Relaxation', 'Sleep quality'], forms: ['Capsule'], dosage: '25-50 mg before bed', evidence: 'emerging', price: 22 },
   { name: 'Valerian Root', category: 'Sleep & Relaxation', description: 'Traditional herb used for relaxation and occasional sleep support.', aliases: ['valerian'], goals: ['Sleep support', 'Relaxation'], forms: ['Capsule', 'Tea'], dosage: '300-600 mg before bed', evidence: 'moderate', price: 16 },
   { name: 'Passionflower', category: 'Sleep & Relaxation', description: 'Botanical used for calm, relaxation, and sleep routines.', goals: ['Calm', 'Sleep support'], forms: ['Capsule', 'Tea', 'Tincture'], dosage: '250-500 mg extract', evidence: 'emerging', price: 18 },
@@ -475,7 +475,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     product_id: 'real-jocko-molk-protein',
     product_name: 'Jocko Molk Protein Powder',
     product_description:
-      'A whey and casein protein powder option for shoppers who want a training shake that can also fit slower-digesting evening stacks.',
+      'A whey and casein protein powder option for shoppers who want a training shake that can also fit slower-digesting protein stacks.',
     product_price: 49.99,
     product_url: 'https://jockofuel.com/products/jocko-protein-powder',
     amazon_url: '',
@@ -1579,7 +1579,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     product_id: 'real-animal-primal-preworkout-powder-supplement',
     product_name: 'Animal Primal Preworkout',
     product_description:
-      'Animal Primal pre-workout for shoppers comparing full-spectrum energy products and refill timing.',
+      'Animal Primal pre-workout for shoppers comparing full-spectrum energy products and refill planning.',
     product_price: 45.95,
     product_url: 'https://animalpak.com/products/primal-preworkout-powder-supplement',
     amazon_url: '',
@@ -2011,7 +2011,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     product_id: 'real-naked-casein-protein',
     product_name: 'Naked Casein Micellar Casein Protein',
     product_description:
-      'Micellar casein for slower-digesting protein stacks, evening shakes, and shoppers comparing large-format protein refills.',
+      'Micellar casein for slower-digesting protein stacks, protein shakes, and shoppers comparing large-format refills.',
     product_price: 99.99,
     product_url: 'https://nakednutrition.com/products/micellar-casein-protein-powder',
     amazon_url: '',
@@ -3109,7 +3109,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     product_id: 'real-onnit-total-human-30',
     product_name: 'Total Human 30 Day Supply',
     product_description:
-      'Onnit day-and-night supplement packs positioned as an all-in-one daily wellness routine with vitamins, minerals, omega-3s, herbs, and amino acids.',
+      'Onnit daily supplement packs positioned as an all-in-one wellness routine with vitamins, minerals, omega-3s, herbs, and amino acids.',
     product_price: 137.95,
     product_url: 'https://www.onnit.com/products/total-human-30-day-supply',
     amazon_url: '',
@@ -3119,7 +3119,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     brand_id: 'onnit',
     brands: { brand_name: 'Onnit' },
     supplement_name: 'Multivitamin',
-    // Total Human's day/night packs list many actives; only the constituents
+    // Total Human's packs list many actives; only the constituents
     // that exist as catalog supplements are tracked here.
     ingredients: [
       { supplement_name: 'Vitamin D3', amount: 2000, unit: 'IU', is_primary: true },
@@ -3135,7 +3135,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     commerce_channel: 'official',
     ucp_enabled: false,
     inventory_status: 'in_stock',
-    quality_badges: ['Day + night packs', 'Verified merchant', '30 days'],
+    quality_badges: ['Daily packs', 'Verified merchant', '30 days'],
     subscriptions_available: true,
     data_source: 'official_page',
   },

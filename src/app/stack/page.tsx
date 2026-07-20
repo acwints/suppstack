@@ -16,7 +16,6 @@ import {
   StackIntakeSummary,
 } from '@/components/composite/Ingredients';
 import { useStackIngredientsContext } from '@/app/context/StackIngredientsContext';
-import type { TimeOfDay } from '@/types';
 
 /**
  * The stack screen: check off today's supplements, see the week, and manage
@@ -40,9 +39,9 @@ export default function StackPage() {
   } = useSupplementLogs();
 
   const handleLog = useCallback(
-    async (productId: string, timeOfDay?: TimeOfDay) => {
+    async (productId: string) => {
       try {
-        await logSupplement({ product_id: productId, time_of_day: timeOfDay });
+        await logSupplement({ product_id: productId });
       } catch (error) {
         console.error('Failed to log supplement:', error);
         toast.error('Could not save that log. Try again.');

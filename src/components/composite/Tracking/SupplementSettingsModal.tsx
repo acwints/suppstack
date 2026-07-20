@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiX, FiClock, FiTarget, FiCalendar, FiBell } from 'react-icons/fi';
+import { FiTarget, FiCalendar } from 'react-icons/fi';
 import { Modal, Button, Input } from '@/components/ui';
 import type { UserSupplementSettings, UserSupplementSettingsInput, SupplementStatus } from '@/types';
 import { SUPPLEMENT_STATUS_OPTIONS, DAYS_OF_WEEK } from '@/types';
@@ -28,40 +28,31 @@ export function SupplementSettingsModal({
   // Form state
   const [customDosage, setCustomDosage] = useState('');
   const [servingsPerDay, setServingsPerDay] = useState(1);
-  const [scheduleTimes, setScheduleTimes] = useState<string[]>(['08:00']);
   const [scheduleDays, setScheduleDays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
   const [takeWithFood, setTakeWithFood] = useState(false);
-  const [timingNotes, setTimingNotes] = useState('');
   const [status, setStatus] = useState<SupplementStatus>('active');
   const [goal, setGoal] = useState('');
   const [targetDuration, setTargetDuration] = useState<number | ''>('');
-  const [remindersEnabled, setRemindersEnabled] = useState(false);
 
   // Initialize form from existing settings
   useEffect(() => {
     if (existingSettings) {
       setCustomDosage(existingSettings.custom_dosage || '');
       setServingsPerDay(existingSettings.servings_per_day || 1);
-      setScheduleTimes(existingSettings.schedule_times || ['08:00']);
       setScheduleDays(existingSettings.schedule_days || [1, 2, 3, 4, 5, 6, 7]);
       setTakeWithFood(existingSettings.take_with_food || false);
-      setTimingNotes(existingSettings.timing_notes || '');
       setStatus(existingSettings.status || 'active');
       setGoal(existingSettings.goal || '');
       setTargetDuration(existingSettings.target_duration_days || '');
-      setRemindersEnabled(existingSettings.reminders_enabled || false);
     } else {
       // Reset to defaults
       setCustomDosage('');
       setServingsPerDay(1);
-      setScheduleTimes(['08:00']);
       setScheduleDays([1, 2, 3, 4, 5, 6, 7]);
       setTakeWithFood(false);
-      setTimingNotes('');
       setStatus('active');
       setGoal('');
       setTargetDuration('');
-      setRemindersEnabled(false);
     }
   }, [existingSettings, isOpen]);
 
@@ -74,14 +65,11 @@ export function SupplementSettingsModal({
         product_id: productId,
         custom_dosage: customDosage || undefined,
         servings_per_day: servingsPerDay,
-        schedule_times: scheduleTimes,
         schedule_days: scheduleDays,
         take_with_food: takeWithFood,
-        timing_notes: timingNotes || undefined,
         status,
         goal: goal || undefined,
         target_duration_days: targetDuration ? Number(targetDuration) : undefined,
-        reminders_enabled: remindersEnabled,
       });
       onClose();
     } catch (error) {
@@ -97,18 +85,6 @@ export function SupplementSettingsModal({
         ? prev.filter(d => d !== day)
         : [...prev, day].sort()
     );
-  };
-
-  const addTime = () => {
-    setScheduleTimes(prev => [...prev, '12:00']);
-  };
-
-  const removeTime = (index: number) => {
-    setScheduleTimes(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const updateTime = (index: number, value: string) => {
-    setScheduleTimes(prev => prev.map((t, i) => i === index ? value : t));
   };
 
   return (
@@ -187,82 +163,6 @@ export function SupplementSettingsModal({
           </div>
         </div>
 
-        {/* Schedule Times */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <FiClock className="inline mr-1" />
-            Schedule Times
-          </label>
-          <div className="space-y-2">
-            {scheduleTimes.map((time, index) => (
-              <div key={index} className="flex gap-2">
-                <input
-                  type="time"
-                  value={time}
-                  onChange={(e) => updateTime(index, e.target.value)}
-                  className="flex-1 px-3 py-2 border rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
-                />
-                {scheduleTimes.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeTime(index)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
-                  >
-                    <FiX size={18} />
-                  </button>
-                )}
-              </div>
-            ))}
-            {scheduleTimes.length < 4 && (
-              <button
-                type="button"
-                onClick={addTime}
-                className="text-sm text-orange-600 hover:text-orange-700 font-medium"
-              >
-                + Add another time
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Reminders Toggle */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-full ${remindersEnabled ? 'bg-orange-100' : 'bg-gray-200'}`}>
-                <FiBell className={`w-5 h-5 ${remindersEnabled ? 'text-orange-600' : 'text-gray-500'}`} />
-              </div>
-              <div>
-                <label htmlFor="remindersEnabled" className="font-medium text-gray-900 cursor-pointer">
-                  Reminder schedule
-                </label>
-                <p className="text-sm text-gray-500">Save the times you plan to take this</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={remindersEnabled}
-              onClick={() => setRemindersEnabled(!remindersEnabled)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                remindersEnabled ? 'bg-orange-500' : 'bg-gray-300'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  remindersEnabled ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </div>
-          {remindersEnabled && (
-            <p className="mt-3 text-xs text-gray-500 bg-gray-50 p-2 rounded">
-              Scheduled for {scheduleTimes.join(', ')}. Push reminders are coming soon — for now
-              your schedule appears on your daily log.
-            </p>
-          )}
-        </div>
-
         {/* Take with food */}
         <div className="flex items-center gap-3">
           <input
@@ -276,14 +176,6 @@ export function SupplementSettingsModal({
             Take with food
           </label>
         </div>
-
-        {/* Timing Notes */}
-        <Input
-          label="Timing Notes"
-          value={timingNotes}
-          onChange={(e) => setTimingNotes(e.target.value)}
-          placeholder="e.g., Take 30 min before breakfast"
-        />
 
         {/* Goal */}
         <div>

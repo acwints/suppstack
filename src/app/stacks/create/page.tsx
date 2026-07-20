@@ -53,7 +53,6 @@ function createSupplementEntry(
     research_only: supplement.research_only,
     dosage: '',
     frequency: '',
-    timing: '',
     notes: supplement.research_only
       ? 'Reference only; not purchasable through SuppStack.'
       : '',
@@ -235,7 +234,7 @@ export default function CreateStackPage() {
                 label="Stack Name *"
                 value={stackName}
                 onChange={(e) => setStackName(e.target.value)}
-                placeholder="e.g., Morning Energy Stack"
+                placeholder="e.g., Recovery Stack"
                 maxLength={100}
               />
 
@@ -382,18 +381,6 @@ export default function CreateStackPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Timing</label>
-                        <input
-                          type="text"
-                          value={supplement.timing || ''}
-                          onChange={(e) =>
-                            updateSupplement(supplement.supplement_id, 'timing', e.target.value)
-                          }
-                          placeholder="e.g., Morning with food"
-                          className="w-full px-3 py-1.5 text-base sm:text-sm border border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
-                        />
-                      </div>
-                      <div>
                         <label className="block text-xs text-gray-500 mb-1">Notes</label>
                         <input
                           type="text"
@@ -506,7 +493,7 @@ export default function CreateStackPage() {
                 label="Source Title"
                 value={sourceTitle}
                 onChange={(e) => setSourceTitle(e.target.value)}
-                placeholder="e.g., Dr. Huberman's Morning Routine Episode"
+                placeholder="e.g., A podcast, article, or protocol"
               />
 
               <div>

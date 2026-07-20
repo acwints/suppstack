@@ -287,7 +287,7 @@ export default function Profile() {
             <div className="mb-8">
               <h2 className="text-2xl font-serif text-gray-900">Stack Insights</h2>
               <p className="mt-1 text-gray-500">
-                Supplement adherence, restock timing, and connected health context.
+                Supplement adherence, restock planning, and connected health context.
               </p>
             </div>
 

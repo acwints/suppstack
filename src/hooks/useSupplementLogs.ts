@@ -2,13 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/supabase';
-import { getCurrentTimeOfDay } from '@/lib/utils';
 import { useAuth } from '@/app/context/AuthContext';
 import type {
   SupplementLog,
   SupplementLogInput,
   TrackingStats,
-  TimeOfDay,
 } from '@/types';
 
 export interface UseSupplementLogsOptions {
@@ -26,7 +24,7 @@ export interface UseSupplementLogsResult {
   error: Error | null;
   logSupplement: (input: SupplementLogInput) => Promise<SupplementLog>;
   unlogSupplement: (logId: string) => Promise<void>;
-  isLoggedToday: (productId: string, timeOfDay?: TimeOfDay) => boolean;
+  isLoggedToday: (productId: string) => boolean;
   getLogsForDate: (date: string) => SupplementLog[];
   refreshLogs: () => Promise<void>;
 }
@@ -171,7 +169,6 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
       product_id: input.product_id,
       log_date: today,
       logged_at: new Date().toISOString(),
-      time_of_day: input.time_of_day || getCurrentTimeOfDay(),
       servings_taken: input.servings_taken || 1,
     };
 
@@ -226,11 +223,10 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
   }, [user, fetchStats]);
 
   // Check if product is logged today
-  const isLoggedToday = useCallback((productId: string, timeOfDay?: TimeOfDay): boolean => {
+  const isLoggedToday = useCallback((productId: string): boolean => {
     return logs.some(log =>
       log.product_id === productId &&
-      log.log_date === today &&
-      (timeOfDay ? log.time_of_day === timeOfDay : true)
+      log.log_date === today
     );
   }, [logs, today]);
 

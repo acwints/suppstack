@@ -295,11 +295,6 @@ export default function StackDetailPage() {
                                 {supplement.frequency}
                               </span>
                             )}
-                            {supplement.timing && (
-                              <span className="text-xs bg-white px-2 py-0.5 rounded border border-gray-200">
-                                {supplement.timing}
-                              </span>
-                            )}
                           </Inline>
                           {supplement.notes && (
                             <p className="text-sm text-gray-500 mt-2">{supplement.notes}</p>
@@ -335,11 +330,6 @@ export default function StackDetailPage() {
                         {supplement.frequency && (
                           <span className="text-xs bg-white px-2 py-0.5 rounded border border-gray-200">
                             {supplement.frequency}
-                          </span>
-                        )}
-                        {supplement.timing && (
-                          <span className="text-xs bg-white px-2 py-0.5 rounded border border-gray-200">
-                            {supplement.timing}
                           </span>
                         )}
                       </Inline>

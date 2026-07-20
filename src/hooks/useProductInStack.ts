@@ -55,7 +55,6 @@ async function upsertDefaultProductSettings(
         servings_per_day: servingsPerDay,
         schedule_days: DEFAULT_SCHEDULE_DAYS,
         status: 'active',
-        reminders_enabled: false,
         start_date: new Date().toISOString().split('T')[0],
         updated_at: new Date().toISOString(),
       },

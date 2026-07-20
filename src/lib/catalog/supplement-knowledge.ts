@@ -250,7 +250,7 @@ const KNOWLEDGE: Record<string, SupplementKnowledge> = {
       'Emerging research into cognitive and recovery benefits',
     ],
     dosing:
-      '3–5 g daily is the standard maintenance dose. An optional loading phase (~20 g/day split over 4 doses for 5–7 days) saturates muscles faster but is not required. Consistency matters more than timing.',
+      '3–5 g daily is the standard maintenance dose. An optional loading phase (~20 g/day split over 4 doses for 5–7 days) saturates muscles faster but is not required. Consistency matters most.',
     safety:
       'Creatine has an excellent safety record in healthy adults. Mild water retention is common early on. People with kidney disease should consult a clinician first. Monohydrate is the best-studied and most cost-effective form.',
     faqs: [
@@ -298,7 +298,7 @@ const KNOWLEDGE: Record<string, SupplementKnowledge> = {
       'Helps meet magnesium needs when dietary intake is low',
     ],
     dosing:
-      '100–400 mg of elemental magnesium daily, often taken in the evening. Start low and increase as tolerated.',
+      '100–400 mg of elemental magnesium daily. Start low and increase as tolerated.',
     safety:
       'Generally well tolerated. Very high doses can cause loose stools. People with kidney impairment should consult a clinician before supplementing.',
     citations: [

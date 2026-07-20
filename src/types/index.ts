@@ -155,7 +155,6 @@ export interface RegimenItem {
 // Supplement Logging & Tracking Types
 // ============================================================================
 
-export type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'night';
 export type SupplementStatus = 'active' | 'paused' | 'stopped';
 
 export interface SupplementLog {
@@ -164,7 +163,6 @@ export interface SupplementLog {
   product_id: string;
   logged_at: string;
   log_date: string;
-  time_of_day: TimeOfDay;
   servings_taken: number;
   created_at: string;
   // Relations
@@ -173,7 +171,6 @@ export interface SupplementLog {
 
 export interface SupplementLogInput {
   product_id: string;
-  time_of_day?: TimeOfDay;
   servings_taken?: number;
 }
 
@@ -183,16 +180,13 @@ export interface UserSupplementSettings {
   product_id: string;
   custom_dosage?: string;
   servings_per_day: number;
-  schedule_times?: string[];
   schedule_days?: number[];
   take_with_food: boolean;
-  timing_notes?: string;
   status: SupplementStatus;
   start_date: string;
   end_date?: string;
   goal?: string;
   target_duration_days?: number;
-  reminders_enabled: boolean;
   created_at: string;
   updated_at: string;
   // Relations
@@ -203,14 +197,11 @@ export interface UserSupplementSettingsInput {
   product_id: string;
   custom_dosage?: string;
   servings_per_day?: number;
-  schedule_times?: string[];
   schedule_days?: number[];
   take_with_food?: boolean;
-  timing_notes?: string;
   status?: SupplementStatus;
   goal?: string;
   target_duration_days?: number;
-  reminders_enabled?: boolean;
 }
 
 export interface DailyTrackingSummary {
@@ -262,7 +253,6 @@ export interface StackSupplement {
   supplement_name: string;
   dosage?: string;
   frequency?: string;
-  timing?: string;
   notes?: string;
   is_core: boolean;
   order_index: number;
@@ -382,7 +372,6 @@ export interface StackSupplementInput {
   supplement_id: number;
   dosage?: string;
   frequency?: string;
-  timing?: string;
   notes?: string;
   is_core?: boolean;
   order_index: number;
@@ -478,13 +467,6 @@ export const USAGE_DURATION_OPTIONS = [
 
 export const DEFAULT_PAGE_SIZE = 20;
 export const DAYS_PER_MONTH = 30.437; // Average days per month
-
-export const TIME_OF_DAY_OPTIONS = [
-  { value: 'morning', label: 'Morning', timeRange: '6am - 12pm' },
-  { value: 'afternoon', label: 'Afternoon', timeRange: '12pm - 5pm' },
-  { value: 'evening', label: 'Evening', timeRange: '5pm - 9pm' },
-  { value: 'night', label: 'Night', timeRange: '9pm - 6am' },
-] as const;
 
 export const SUPPLEMENT_STATUS_OPTIONS = [
   { value: 'active', label: 'Currently Taking', color: 'green' },

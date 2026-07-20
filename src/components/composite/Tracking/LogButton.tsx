@@ -2,15 +2,13 @@
 
 import { useState } from 'react';
 import { FiCheck, FiPlus, FiLoader } from 'react-icons/fi';
-import { Button } from '@/components/ui';
-import type { TimeOfDay } from '@/types';
 
 export interface LogButtonProps {
   productId: string;
   productName: string;
   isLogged: boolean;
   isLoading?: boolean;
-  onLog: (productId: string, timeOfDay?: TimeOfDay) => Promise<void>;
+  onLog: (productId: string) => Promise<void>;
   onUnlog?: (productId: string) => Promise<void>;
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;

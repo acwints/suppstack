@@ -87,14 +87,11 @@ export function useSupplementSettings(): UseSupplementSettingsResult {
       product_id: input.product_id,
       custom_dosage: input.custom_dosage || null,
       servings_per_day: input.servings_per_day || 1,
-      schedule_times: input.schedule_times || null,
       schedule_days: input.schedule_days || [1, 2, 3, 4, 5, 6, 7], // Default to every day
       take_with_food: input.take_with_food || false,
-      timing_notes: input.timing_notes || null,
       status: input.status || 'active',
       goal: input.goal || null,
       target_duration_days: input.target_duration_days || null,
-      reminders_enabled: input.reminders_enabled || false,
       start_date: new Date().toISOString().split('T')[0],
     };
 
