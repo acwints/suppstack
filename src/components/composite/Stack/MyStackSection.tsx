@@ -85,9 +85,6 @@ export function MyStackSection({ regimen }: MyStackSectionProps) {
                   <div className="mt-1.5 flex items-center gap-3 text-sm text-gray-600">
                     {costPerMonth > 0 && <span>{formatCurrency(costPerMonth)}/mo</span>}
                     {productSettings?.custom_dosage && <span>{productSettings.custom_dosage}</span>}
-                    {productSettings?.goal && (
-                      <span className="text-accent-600">{productSettings.goal}</span>
-                    )}
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">

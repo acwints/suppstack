@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiTarget, FiCalendar } from 'react-icons/fi';
+import { FiCalendar } from 'react-icons/fi';
 import { Modal, Button, Input } from '@/components/ui';
 import type { UserSupplementSettings, UserSupplementSettingsInput, SupplementStatus } from '@/types';
 import { SUPPLEMENT_STATUS_OPTIONS, DAYS_OF_WEEK } from '@/types';
@@ -29,10 +29,7 @@ export function SupplementSettingsModal({
   const [customDosage, setCustomDosage] = useState('');
   const [servingsPerDay, setServingsPerDay] = useState(1);
   const [scheduleDays, setScheduleDays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
-  const [takeWithFood, setTakeWithFood] = useState(false);
   const [status, setStatus] = useState<SupplementStatus>('active');
-  const [goal, setGoal] = useState('');
-  const [targetDuration, setTargetDuration] = useState<number | ''>('');
 
   // Initialize form from existing settings
   useEffect(() => {
@@ -40,19 +37,13 @@ export function SupplementSettingsModal({
       setCustomDosage(existingSettings.custom_dosage || '');
       setServingsPerDay(existingSettings.servings_per_day || 1);
       setScheduleDays(existingSettings.schedule_days || [1, 2, 3, 4, 5, 6, 7]);
-      setTakeWithFood(existingSettings.take_with_food || false);
       setStatus(existingSettings.status || 'active');
-      setGoal(existingSettings.goal || '');
-      setTargetDuration(existingSettings.target_duration_days || '');
     } else {
       // Reset to defaults
       setCustomDosage('');
       setServingsPerDay(1);
       setScheduleDays([1, 2, 3, 4, 5, 6, 7]);
-      setTakeWithFood(false);
       setStatus('active');
-      setGoal('');
-      setTargetDuration('');
     }
   }, [existingSettings, isOpen]);
 
@@ -66,10 +57,7 @@ export function SupplementSettingsModal({
         custom_dosage: customDosage || undefined,
         servings_per_day: servingsPerDay,
         schedule_days: scheduleDays,
-        take_with_food: takeWithFood,
         status,
-        goal: goal || undefined,
-        target_duration_days: targetDuration ? Number(targetDuration) : undefined,
       });
       onClose();
     } catch (error) {
@@ -161,50 +149,6 @@ export function SupplementSettingsModal({
               </button>
             ))}
           </div>
-        </div>
-
-        {/* Take with food */}
-        <div className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            id="takeWithFood"
-            checked={takeWithFood}
-            onChange={(e) => setTakeWithFood(e.target.checked)}
-            className="w-4 h-4 text-gray-900 rounded focus:ring-gray-900"
-          />
-          <label htmlFor="takeWithFood" className="text-sm text-gray-700">
-            Take with food
-          </label>
-        </div>
-
-        {/* Goal */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            <FiTarget className="inline mr-1" />
-            Goal (optional)
-          </label>
-          <textarea
-            value={goal}
-            onChange={(e) => setGoal(e.target.value)}
-            placeholder="e.g., Build muscle, support focus..."
-            rows={2}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900 resize-none"
-          />
-        </div>
-
-        {/* Target Duration */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Target Duration (days)
-          </label>
-          <input
-            type="number"
-            min={1}
-            value={targetDuration}
-            onChange={(e) => setTargetDuration(e.target.value ? Number(e.target.value) : '')}
-            placeholder="e.g., 30, 60, 90"
-            className="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
-          />
         </div>
 
         {/* Actions */}

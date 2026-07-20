@@ -36,7 +36,7 @@ export function useRegimen() {
         fetchUserProductLinks<any>(user, REGIMEN_SELECT),
         supabase
           .from('user_supplement_settings')
-          .select('product_id, servings_per_day, schedule_days, status, goal, custom_dosage')
+          .select('product_id, servings_per_day, schedule_days, status, custom_dosage')
           .eq('user_id', user.id),
       ]);
 
@@ -68,7 +68,6 @@ export function useRegimen() {
                 servings_per_day: servingsPerDay || 1,
                 schedule_days: setting?.schedule_days ?? [1, 2, 3, 4, 5, 6, 7],
                 status: setting?.status ?? 'active',
-                goal: setting?.goal ?? undefined,
                 custom_dosage: setting?.custom_dosage ?? undefined,
               },
             } satisfies RegimenItem;

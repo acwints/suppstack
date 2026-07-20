@@ -88,10 +88,7 @@ export function useSupplementSettings(): UseSupplementSettingsResult {
       custom_dosage: input.custom_dosage || null,
       servings_per_day: input.servings_per_day || 1,
       schedule_days: input.schedule_days || [1, 2, 3, 4, 5, 6, 7], // Default to every day
-      take_with_food: input.take_with_food || false,
       status: input.status || 'active',
-      goal: input.goal || null,
-      target_duration_days: input.target_duration_days || null,
       start_date: new Date().toISOString().split('T')[0],
     };
 

@@ -146,7 +146,6 @@ export interface RegimenItem {
     servings_per_day: number;
     schedule_days?: number[];
     status: SupplementStatus;
-    goal?: string;
     custom_dosage?: string;
   };
 }
@@ -181,12 +180,9 @@ export interface UserSupplementSettings {
   custom_dosage?: string;
   servings_per_day: number;
   schedule_days?: number[];
-  take_with_food: boolean;
   status: SupplementStatus;
   start_date: string;
   end_date?: string;
-  goal?: string;
-  target_duration_days?: number;
   created_at: string;
   updated_at: string;
   // Relations
@@ -198,10 +194,7 @@ export interface UserSupplementSettingsInput {
   custom_dosage?: string;
   servings_per_day?: number;
   schedule_days?: number[];
-  take_with_food?: boolean;
   status?: SupplementStatus;
-  goal?: string;
-  target_duration_days?: number;
 }
 
 export interface DailyTrackingSummary {
