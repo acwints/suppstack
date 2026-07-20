@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FiArrowRight, FiCamera } from 'react-icons/fi';
 import { useSupplements } from '@/hooks';
 import { brandSlug, buildCatalogBrandDiscovery } from '@/lib/catalog/brand-discovery';
@@ -15,12 +15,14 @@ import {
   PeptideReferenceShelf,
 } from '@/components/composite/Supplement';
 import { BrandLogo } from '@/components/composite/Brand';
+import { isNativeApp } from '@/lib/native/capacitor';
 
 export default function Home() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState<SortFilterValue>('name');
+  const [showScanYourStack, setShowScanYourStack] = useState(false);
 
   const { supplements: catalogSupplements, isLoading } = useSupplements();
   const { browseGroups: productBrowseGroups } = useSupplements({
@@ -49,6 +51,10 @@ export default function Home() {
     []
   );
 
+  useEffect(() => {
+    setShowScanYourStack(isNativeApp());
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Search bar — the storefront entry point */}
@@ -59,21 +65,23 @@ export default function Home() {
             onChange={setSearchTerm}
             onSubmit={(term) => router.push(`/search?q=${encodeURIComponent(term)}`)}
           />
-          <Link
-            href="/scan"
-            className="mt-3 flex min-h-14 items-center gap-3 rounded bg-gray-50 px-3 py-2 text-left shadow-[inset_0_0_0_1px_rgba(17,24,39,0.08)] transition-[background-color,box-shadow,transform] duration-150 ease-out hover:bg-white hover:shadow-surface active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 sm:px-4"
-          >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-white text-gray-900 shadow-surface">
-              <FiCamera size={19} aria-hidden="true" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold text-gray-950">Counter Scan</span>
-              <span className="block truncate text-sm text-gray-500">
-                Photograph bottles, review matches, add to Stack.
+          {showScanYourStack && (
+            <Link
+              href="/scan"
+              className="mt-3 flex min-h-14 items-center gap-3 rounded bg-gray-50 px-3 py-2 text-left shadow-[inset_0_0_0_1px_rgba(17,24,39,0.08)] transition-[background-color,box-shadow,transform] duration-150 ease-out hover:bg-white hover:shadow-surface active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 sm:px-4"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-white text-gray-900 shadow-surface">
+                <FiCamera size={19} aria-hidden="true" />
               </span>
-            </span>
-            <FiArrowRight className="shrink-0 text-gray-400" size={18} aria-hidden="true" />
-          </Link>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-gray-950">Scan Your Stack</span>
+                <span className="block truncate text-sm text-gray-500">
+                  Photograph bottles, review matches, add to Stack.
+                </span>
+              </span>
+              <FiArrowRight className="shrink-0 text-gray-400" size={18} aria-hidden="true" />
+            </Link>
+          )}
         </div>
       </div>
 

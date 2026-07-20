@@ -26,6 +26,7 @@ import {
   PRODUCT_IMAGE_FALLBACK,
 } from '@/lib/catalog/product-image';
 import { cn } from '@/lib/design-system';
+import { isNativeApp } from '@/lib/native/capacitor';
 import type {
   CounterScanApiError,
   CounterScanApiResponse,
@@ -246,6 +247,7 @@ export function CounterScanClient() {
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scan, setScan] = useState<CounterScanApiResponse | null>(null);
+  const [isNativeShell, setIsNativeShell] = useState<boolean | null>(null);
 
   const hasPhoto = Boolean(file && previewUrl);
   const matchedCount = scan?.matchedCount ?? 0;
@@ -263,6 +265,14 @@ export function CounterScanClient() {
     };
   }, [previewUrl]);
 
+  useEffect(() => {
+    const native = isNativeApp();
+    setIsNativeShell(native);
+    if (!native) {
+      router.replace('/');
+    }
+  }, [router]);
+
   const handleFile = (selectedFile: File | null) => {
     setError(null);
     setScan(null);
@@ -272,6 +282,10 @@ export function CounterScanClient() {
 
   const handleScan = async () => {
     if (!file) return;
+    if (isNativeShell !== true) {
+      router.replace('/');
+      return;
+    }
     if (!user || !session?.access_token) {
       router.push('/login?next=/scan');
       return;
@@ -294,6 +308,7 @@ export function CounterScanClient() {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${session.access_token}`,
+          'X-SuppStack-Client': 'native',
         },
         body: formData,
       });
@@ -320,16 +335,24 @@ export function CounterScanClient() {
     inputRef.current?.focus();
   };
 
+  if (isNativeShell !== true) {
+    return (
+      <div className="flex min-h-[60dvh] items-center justify-center bg-white px-4">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-3 py-5 pb-24 sm:px-6 sm:py-8 md:pb-10">
       <div className="grid gap-5 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
         <section className="rounded-lg bg-white p-4 shadow-surface sm:p-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">
-              Counter Scan
+              Scan Your Stack
             </p>
             <h1 className="mt-2 text-2xl font-semibold tracking-normal text-gray-950 sm:text-3xl">
-              Turn a counter full of bottles into your stack.
+              Turn a photo of your bottles into your stack.
             </h1>
             <p className="mt-3 max-w-[58ch] text-sm leading-6 text-gray-600">
               Take one clear photo, review the canonical matches, then add the right products.
@@ -389,7 +412,7 @@ export function CounterScanClient() {
               leftIcon={<FiUpload />}
               className="flex-1"
             >
-              Scan Bottles
+              Scan Your Stack
             </Button>
           </div>
 

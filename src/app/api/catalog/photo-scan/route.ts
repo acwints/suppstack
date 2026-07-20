@@ -200,13 +200,21 @@ async function recognizeCounterImage(imageDataUrl: string) {
   if (!response.ok) {
     const detail = await response.text().catch(() => '');
     console.error('Counter scan OpenAI request failed:', response.status, detail);
-    throw new Error('OpenAI counter scan request failed');
+    throw new Error('OpenAI Scan Your Stack request failed');
   }
 
   return parseRecognitionsFromOpenAI((await response.json()) as OpenAIResponsePayload);
 }
 
 export async function POST(request: Request) {
+  if (request.headers.get('x-suppstack-client') !== 'native') {
+    return jsonError(
+      'NATIVE_APP_REQUIRED',
+      'Scan Your Stack is available in the mobile app.',
+      403
+    );
+  }
+
   const user = await getAuthenticatedUser(request);
   if (!user) {
     return jsonError('AUTH_REQUIRED', 'Sign in to scan supplement photos.', 401);
@@ -237,7 +245,7 @@ export async function POST(request: Request) {
     if (!aiRecognitions && recognitions.length === 0) {
       return jsonError(
         'AI_NOT_CONFIGURED',
-        'Counter Scan is not configured in this environment.',
+        'Scan Your Stack is not configured in this environment.',
         503
       );
     }

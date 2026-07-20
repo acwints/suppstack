@@ -63,7 +63,7 @@ function getMobileAppBarConfig(pathname: string): MobileAppBarConfig {
   if (pathname === '/products') return { title: 'All Products', backHref: '/', showSaved: false };
   if (pathname === '/brands') return { title: 'Brands', backHref: '/', showSaved: false };
   if (pathname.startsWith('/brands/')) return { title: 'Brand', backHref: '/brands' };
-  if (pathname === '/scan') return { title: 'Counter Scan', backHref: '/', showSaved: false };
+  if (pathname === '/scan') return { title: 'Scan Your Stack', backHref: '/', showSaved: false };
   if (pathname === '/peptides') return { title: 'Peptides', backHref: '/', showSaved: false };
   if (pathname.startsWith('/peptides/')) return { title: 'Peptide', backHref: '/peptides' };
   if (pathname === '/health') return { title: 'Shop by Goal', backHref: '/' };

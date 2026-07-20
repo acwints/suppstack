@@ -33,6 +33,7 @@ export interface CounterScanApiResponse {
 export interface CounterScanApiError {
   code:
     | 'AUTH_REQUIRED'
+    | 'NATIVE_APP_REQUIRED'
     | 'AI_NOT_CONFIGURED'
     | 'INVALID_IMAGE'
     | 'IMAGE_TOO_LARGE'
