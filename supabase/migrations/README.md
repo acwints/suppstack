@@ -20,7 +20,14 @@ schema. Each file is an ordered, idempotent migration.
 | 0013 | `20260715000013_complete_wholesome_story_backfill.sql` | Creates the missing Myo-Inositol and NAC supplement rows that production lacked and idempotently replays the Wholesome Story product sync that 0012 had to skip. |
 | 0014 | `20260716000014_add_colostrum_organ_protein_brand_coverage.sql` | Adds official Pioneer Pastures, David Protein, ARMRA, Cowboy Colostrum, and Heart & Soil catalog rows plus the canonical supplement buckets to classify them. |
 | 0015 | `20260716000015_add_requested_brand_catalog_coverage.sql` | Adds first-party rows for BPN, Four Sigmatic, Ancestral Supplements, Dose Daily, Maui Nui Venison, Sports Research, Vital Proteins, Nutrafol, ZOE, Seed, and Pure Encapsulations; refreshes Thorne, Jocko Fuel, and Double Wood without duplicating product rows. |
-| 0016 | `20260716000016_product_ingredient_composition.sql` | Adds the `product_ingredients` join table (2-tier composition: ingredient = a catalog supplement), seeds the explicit catch-all product compositions (temp-staging + double name-join, mirrors the static catalog), and backfills a single unquantified edge for existing single-active products. No RLS (inherits the open catalog exposure of products/supplements/brands). |
+| 0016 | `20260716000016_product_ingredient_composition.sql` | Adds the `product_ingredients` join table (2-tier composition: ingredient = a catalog supplement), seeds the explicit catch-all product compositions (temp-staging + double name-join, mirrors the static catalog), and backfills a single unquantified edge for existing single-active products. Superseded by 0020/0021 for RLS and grants. |
+| 0017 | `20260720000017_drop_time_of_day_routine_fields.sql` | Removes time-of-day routine fields from supplement logs, settings, and stack supplements; tracking stays product/date based. |
+| 0018 | `20260720000018_update_time_language_catalog_rows.sql` | Updates the Onnit Total Human DB-backed catalog copy away from time-of-day pack language. |
+| 0019 | `20260720000019_drop_extra_supplement_settings_fields.sql` | Drops unused settings fields (`take_with_food`, `goal`, `target_duration_days`) so per-product settings stay operational. |
+| 0020 | `20260721000020_enable_rls_product_ingredients.sql` | Enables RLS on `product_ingredients`, keeps public catalog reads, and removes direct client writes. |
+| 0021 | `20260721000021_restrict_product_ingredients_grants.sql` | Narrows `product_ingredients` client grants to SELECT only at the privilege layer. |
+| 0022 | `20260721000022_lock_catalog_client_writes.sql` | Removes public insert policies and write grants on `brands`, `products`, and `supplements`; catalog materialization is service-role only. |
+| 0023 | `20260721000023_fix_function_search_paths.sql` | Pins public trigger/helper function search paths to `public, pg_temp` to satisfy Supabase security advisor hardening. |
 
 ## Applying
 

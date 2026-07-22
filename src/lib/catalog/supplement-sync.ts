@@ -6,7 +6,13 @@ import {
 } from '@/lib/catalog/supplement-catalog';
 import { isCuratedCatalogProductId } from '@/lib/commerce/product-source';
 
-const UNIQUE_VIOLATION = '23505';
+interface SyncSupplementResponse {
+  supplementId: number;
+}
+
+interface SyncProductResponse {
+  productId: number | string;
+}
 
 /**
  * Finds the database row that refers to the same supplement as the catalog
@@ -40,6 +46,35 @@ async function findDatabaseSupplementRow(catalogSupplement: Supplement) {
   return null;
 }
 
+async function postCatalogSync<T>(path: string, body: Record<string, unknown>): Promise<T> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+
+  if (!token) {
+    throw new Error('Please log in to sync catalog data');
+  }
+
+  const response = await fetch(path, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+    cache: 'no-store',
+  });
+
+  const payload = (await response.json().catch(() => null)) as
+    | (T & { error?: string })
+    | null;
+
+  if (!response.ok || !payload) {
+    throw new Error(payload?.error ?? 'Catalog sync failed');
+  }
+
+  return payload;
+}
+
 /**
  * Catalog supplements live in static code with IDs in the 9000+ range, but
  * user data (stacks, tracking) references rows in the `supplements` table via
@@ -54,60 +89,13 @@ export async function resolveDatabaseSupplementId(supplementId: number): Promise
   const existing = await findDatabaseSupplementRow(catalogSupplement);
   if (existing) return existing.supplement_id;
 
-  const { data: inserted, error } = await supabase
-    .from('supplements')
-    .insert({
-      supplement_name: catalogSupplement.supplement_name,
-      supplement_description: catalogSupplement.supplement_description,
-      category: catalogSupplement.category ?? null,
-      image_url: catalogSupplement.image_url ?? null,
-    })
-    .select('supplement_id')
-    .single();
+  const synced = await postCatalogSync<SyncSupplementResponse>('/api/catalog/sync-supplement', {
+    supplementId,
+  });
 
-  if (inserted) return inserted.supplement_id;
-
-  // Concurrent insert of the same name: re-read the winner's row.
-  if (error?.code === UNIQUE_VIOLATION) {
-    const raced = await findDatabaseSupplementRow(catalogSupplement);
-    if (raced) return raced.supplement_id;
-  }
-
-  throw error ?? new Error(`Failed to sync supplement "${catalogSupplement.supplement_name}"`);
+  return synced.supplementId;
 }
 
-async function resolveDatabaseBrandId(brandName?: string | null): Promise<number | null> {
-  if (!brandName) return null;
-
-  const findExisting = async () => {
-    const { data } = await supabase
-      .from('brands')
-      .select('brand_id')
-      .ilike('brand_name', brandName)
-      .limit(1);
-    return data?.[0]?.brand_id ?? null;
-  };
-
-  const existingId = await findExisting();
-  if (existingId) return existingId;
-
-  const { data: inserted, error } = await supabase
-    .from('brands')
-    .insert({ brand_name: brandName })
-    .select('brand_id')
-    .single();
-
-  if (inserted?.brand_id) return inserted.brand_id;
-  if (error?.code === UNIQUE_VIOLATION) return findExisting();
-  return null;
-}
-
-/**
- * Finds the database row for a curated catalog product, creating it on first
- * use. Catalog products live in static code with string IDs (`real-*`), but
- * user tracking (`users_products`) references integer rows in `products`.
- * The product URL is the stable natural key between the two.
- */
 export async function findDatabaseProductId(product: Product): Promise<number | string | null> {
   if (!isCuratedCatalogProductId(product.product_id)) return product.product_id;
   if (!product.product_url) return null;
@@ -122,92 +110,33 @@ export async function findDatabaseProductId(product: Product): Promise<number | 
 }
 
 /**
- * Materializes a curated product's ingredient composition into
- * `product_ingredients`. Each catalog edge references an ingredient by its
- * catalog `supplement_id` (9000+ range); those are bridged to database
- * supplement rows via `resolveDatabaseSupplementId` before upserting. Edges
- * whose ingredient can't be resolved are skipped (surfaced, not thrown), and a
- * concurrent-insert unique violation is ignored like elsewhere in this module.
- * Composition failures never propagate: the caller's product resolution must
- * still succeed.
+ * Finds the database row for a curated catalog product, creating it on first
+ * authenticated use through a server route. Catalog products live in static
+ * code with string IDs (`real-*`), but user tracking (`users_products`)
+ * references integer rows in `products`. The server route validates the static
+ * catalog ID and performs all catalog writes with the service role.
  */
-async function syncProductIngredients(dbProductId: number, product: Product): Promise<void> {
-  for (const ingredient of product.ingredients ?? []) {
-    let ingredientSupplementId: number;
-    try {
-      ingredientSupplementId = await resolveDatabaseSupplementId(ingredient.supplement_id);
-    } catch (error) {
-      console.error(
-        `Failed to resolve ingredient "${ingredient.supplement_name}" for product "${product.product_name}":`,
-        error,
-      );
-      continue;
-    }
-
-    const { error } = await supabase
-      .from('product_ingredients')
-      .upsert(
-        {
-          product_id: dbProductId,
-          ingredient_supplement_id: ingredientSupplementId,
-          amount: ingredient.amount ?? null,
-          unit: ingredient.unit ?? null,
-          order_index: ingredient.order_index ?? 0,
-          is_primary: ingredient.is_primary ?? false,
-          notes: ingredient.notes ?? null,
-        },
-        { onConflict: 'product_id,ingredient_supplement_id' },
-      );
-
-    if (error && error.code !== UNIQUE_VIOLATION) {
-      console.error(
-        `Failed to sync ingredient "${ingredient.supplement_name}" for product "${product.product_name}":`,
-        error,
-      );
-    }
-  }
-}
-
 export async function resolveDatabaseProductId(product: Product): Promise<number | string> {
   if (!isCuratedCatalogProductId(product.product_id)) return product.product_id;
 
   const existingId = await findDatabaseProductId(product);
   if (existingId !== null) {
-    if (typeof existingId === 'number' && product.ingredients?.length) {
-      await syncProductIngredients(existingId, product);
+    if (!product.ingredients?.length) return existingId;
+
+    try {
+      const synced = await postCatalogSync<SyncProductResponse>('/api/catalog/sync-product', {
+        productId: product.product_id,
+      });
+      return synced.productId;
+    } catch (error) {
+      console.error('Could not refresh catalog ingredient composition:', error);
+      return existingId;
     }
-    return existingId;
   }
 
-  const [supplementId, brandId] = await Promise.all([
-    resolveDatabaseSupplementId(product.supplement_id),
-    resolveDatabaseBrandId(product.brands?.brand_name),
-  ]);
+  const synced = await postCatalogSync<SyncProductResponse>('/api/catalog/sync-product', {
+    productId: product.product_id,
+  });
 
-  const { data: inserted, error } = await supabase
-    .from('products')
-    .insert({
-      product_name: product.product_name,
-      product_description: product.product_description ?? null,
-      product_price: product.product_price,
-      product_url: product.product_url || null,
-      amazon_url: product.amazon_url || null,
-      product_image: product.product_image || null,
-      servings_per_container: product.servings_per_container ?? null,
-      servings_per_day: product.servings_per_day ?? null,
-      supplement_id: supplementId,
-      brand_id: brandId,
-    })
-    .select('product_id')
-    .single();
-
-  if (error || !inserted) {
-    throw error ?? new Error(`Failed to sync product "${product.product_name}"`);
-  }
-
-  if (product.ingredients?.length) {
-    await syncProductIngredients(inserted.product_id, product);
-  }
-
-  return inserted.product_id;
+  return synced.productId;
 }

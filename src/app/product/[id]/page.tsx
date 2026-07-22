@@ -22,7 +22,7 @@ import { Rating } from '@/components/composite/Rating';
 import { ReviewList } from '@/components/composite/Review/ReviewList';
 import { BrandLogo } from '@/components/composite/Brand';
 import type { ReviewSortBy } from '@/hooks/useReviews';
-import { resolveDatabaseProductId } from '@/lib/catalog/supplement-sync';
+import { findDatabaseProductId, resolveDatabaseProductId } from '@/lib/catalog/supplement-sync';
 import {
   getProductImageSrc,
   isRemoteImageSrc,
@@ -76,21 +76,38 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     if (product) recordProductView(product);
   }, [product]);
 
-  // Resolve the database identity for catalog products (creates the products
-  // row on first visit, idempotent by product_url) so reviews attach to it.
+  // Resolve the database identity for catalog products so reviews attach to
+  // the canonical DB row when one already exists. Signed-in users may create
+  // that row through the authenticated catalog sync route.
   useEffect(() => {
-    if (!product || !isLocalCatalogProductId) return;
+    if (!isLocalCatalogProductId) {
+      setReviewProductId(params.id);
+      return;
+    }
+
+    if (!product) {
+      setReviewProductId(null);
+      return;
+    }
+
     let cancelled = false;
-    resolveDatabaseProductId(product)
+    const resolveReviewProductId = async () => {
+      const existingId = await findDatabaseProductId(product);
+      if (existingId !== null) return existingId;
+      if (!user) return null;
+      return resolveDatabaseProductId(product);
+    };
+
+    resolveReviewProductId()
       .then((id) => {
-        if (!cancelled) setReviewProductId(String(id));
+        if (!cancelled) setReviewProductId(id === null ? null : String(id));
       })
       .catch((error) => console.error('Could not resolve review identity:', error));
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product?.product_id, isLocalCatalogProductId]);
+  }, [params.id, product?.product_id, isLocalCatalogProductId, user?.id]);
 
   if (isLoading) {
     return (
