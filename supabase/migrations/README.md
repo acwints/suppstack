@@ -28,6 +28,8 @@ schema. Each file is an ordered, idempotent migration.
 | 0021 | `20260721000021_restrict_product_ingredients_grants.sql` | Narrows `product_ingredients` client grants to SELECT only at the privilege layer. |
 | 0022 | `20260721000022_lock_catalog_client_writes.sql` | Removes public insert policies and write grants on `brands`, `products`, and `supplements`; catalog materialization is service-role only. |
 | 0023 | `20260721000023_fix_function_search_paths.sql` | Pins public trigger/helper function search paths to `public, pg_temp` to satisfy Supabase security advisor hardening. |
+| 0024 | `20260722000024_add_hiya_health_catalog.sql` | Adds Hiya Health official kids products, the `Immune Support Formula` bucket, and matching product ingredient composition rows. |
+| 0025 | `20260722000025_repair_hiya_health_catalog_support.sql` | Adds missing `Prebiotic Fiber` and `MCT Oil` supplement support rows so Hiya Fiber+ and ingredient composition materialize in DB-backed flows. |
 
 ## Applying
 
