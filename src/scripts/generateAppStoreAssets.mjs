@@ -11,24 +11,45 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, '../..');
 const assetRoot = path.join(projectRoot, 'assets/app-store');
 const sourceDir = path.join(assetRoot, 'source-screens');
+const iPadSourceDir = path.join(assetRoot, 'source-screens-ipad');
 const iconDir = path.join(assetRoot, 'icon');
 
 const baseUrl = process.env.SUPPSTACK_APP_URL ?? 'http://127.0.0.1:3000';
 const skipCapture = process.argv.includes('--skip-capture');
 
-const sourceViewport = { width: 430, height: 932 };
+const captureProfiles = [
+  {
+    id: 'iphone',
+    viewport: { width: 430, height: 932 },
+    directory: sourceDir,
+  },
+  {
+    id: 'ipad',
+    viewport: { width: 1024, height: 1366 },
+    directory: iPadSourceDir,
+  },
+];
 const screenshotSets = [
   {
     id: 'iphone-6.9',
     label: 'iPhone 6.9-inch',
     width: 1320,
     height: 2868,
+    captureProfile: 'iphone',
   },
   {
     id: 'iphone-6.5',
     label: 'iPhone 6.5-inch',
     width: 1284,
     height: 2778,
+    captureProfile: 'iphone',
+  },
+  {
+    id: 'ipad-13',
+    label: 'iPad 13-inch',
+    width: 2048,
+    height: 2732,
+    captureProfile: 'ipad',
   },
 ];
 
@@ -98,6 +119,7 @@ const chromeCandidates = [
 
 async function main() {
   await mkdir(sourceDir, { recursive: true });
+  await mkdir(iPadSourceDir, { recursive: true });
   await mkdir(iconDir, { recursive: true });
   for (const set of screenshotSets) {
     await mkdir(path.join(assetRoot, set.id), { recursive: true });
@@ -106,8 +128,10 @@ async function main() {
   if (!skipCapture) {
     const chromePath = await findChrome();
     await assertServerAvailable();
-    for (const screenshot of screenshots) {
-      await captureScreenshot(chromePath, screenshot);
+    for (const profile of captureProfiles) {
+      for (const screenshot of screenshots) {
+        await captureScreenshot(chromePath, screenshot, profile);
+      }
     }
   }
 
@@ -143,9 +167,12 @@ async function assertServerAvailable() {
   }
 }
 
-async function captureScreenshot(chromePath, screenshot) {
-  const outputPath = path.join(sourceDir, `${screenshot.id}.png`);
-  const profileDir = path.join(os.tmpdir(), `suppstack-app-store-${screenshot.id}-${Date.now()}`);
+async function captureScreenshot(chromePath, screenshot, captureProfile) {
+  const outputPath = path.join(captureProfile.directory, `${screenshot.id}.png`);
+  const profileDir = path.join(
+    os.tmpdir(),
+    `suppstack-app-store-${captureProfile.id}-${screenshot.id}-${Date.now()}`
+  );
   const url = new URL(screenshot.route, baseUrl).toString();
   await rm(outputPath, { force: true });
   const args = [
@@ -161,7 +188,7 @@ async function captureScreenshot(chromePath, screenshot) {
     '--run-all-compositor-stages-before-draw',
     '--virtual-time-budget=5000',
     `--user-data-dir=${profileDir}`,
-    `--window-size=${sourceViewport.width},${sourceViewport.height}`,
+    `--window-size=${captureProfile.viewport.width},${captureProfile.viewport.height}`,
     `--screenshot=${outputPath}`,
     url,
   ];
@@ -219,7 +246,12 @@ async function renderIcon() {
 }
 
 async function renderStoreScreenshot(set, screenshot) {
-  const sourcePath = path.join(sourceDir, `${screenshot.id}.png`);
+  const captureProfile = captureProfiles.find((profile) => profile.id === set.captureProfile);
+  if (!captureProfile) {
+    throw new Error(`Missing capture profile for ${set.id}`);
+  }
+
+  const sourcePath = path.join(captureProfile.directory, `${screenshot.id}.png`);
   const outputPath = path.join(assetRoot, set.id, `${screenshot.id}.png`);
   const scale = set.width / 1320;
   const marginX = Math.round(set.width * 0.085);
@@ -232,21 +264,36 @@ async function renderStoreScreenshot(set, screenshot) {
   const titleY = Math.round(230 * scale);
   const subtitleY = titleY + titleLines.length * Math.round(titleSize * 1.08) + Math.round(36 * scale);
 
-  const screenWidth = Math.round(set.width * 0.66);
-  const screenHeight = Math.round(screenWidth * sourceViewport.height / sourceViewport.width);
+  const isTablet = set.captureProfile === 'ipad';
+  const screenHeight = isTablet ? Math.round(set.height * 0.6) : null;
+  const screenWidth = isTablet
+    ? Math.round(screenHeight * captureProfile.viewport.width / captureProfile.viewport.height)
+    : Math.round(set.width * 0.66);
+  const resolvedScreenHeight = screenHeight ??
+    Math.round(screenWidth * captureProfile.viewport.height / captureProfile.viewport.width);
   const framePad = Math.round(26 * scale);
   const frameWidth = screenWidth + framePad * 2;
-  const frameHeight = screenHeight + framePad * 2;
+  const frameHeight = resolvedScreenHeight + framePad * 2;
   const frameX = Math.round((set.width - frameWidth) / 2);
   const frameY = set.height - frameHeight - Math.round(118 * scale);
   const screenX = frameX + framePad;
   const screenY = frameY + framePad;
 
-  const screenshotBuffer = await sharp(sourcePath)
-    .resize(screenWidth, screenHeight, { fit: 'fill' })
+  // The signed-out auth shell waits on the remote session check. A fresh,
+  // headless iPad profile can still be on its white loading state when Chrome
+  // captures, so compose the already-rendered phone auth screen at the same
+  // centered max-width the responsive page uses on iPad.
+  let sourceInput = sourcePath;
+  if (isTablet && screenshot.id === '06-account-entry') {
+    sourceInput = await centeredPhoneCaptureForTablet(screenshot.id, captureProfile.viewport);
+    await sharp(sourceInput).png().toFile(sourcePath);
+  }
+
+  const screenshotBuffer = await sharp(sourceInput)
+    .resize(screenWidth, resolvedScreenHeight, { fit: 'fill' })
     .composite([
       {
-        input: Buffer.from(roundedRectSvg(screenWidth, screenHeight, Math.round(36 * scale), '#000000')),
+        input: Buffer.from(roundedRectSvg(screenWidth, resolvedScreenHeight, Math.round(36 * scale), '#000000')),
         blend: 'dest-in',
       },
     ])
@@ -270,6 +317,31 @@ async function renderStoreScreenshot(set, screenshot) {
     ])
     .png()
     .toFile(outputPath);
+}
+
+async function centeredPhoneCaptureForTablet(screenshotId, tabletViewport) {
+  const phoneSource = path.join(sourceDir, `${screenshotId}.png`);
+  const phoneMetadata = await sharp(phoneSource).metadata();
+  const phoneWidth = phoneMetadata.width ?? 430;
+  const phoneHeight = phoneMetadata.height ?? 932;
+
+  return sharp({
+    create: {
+      width: tabletViewport.width,
+      height: tabletViewport.height,
+      channels: 4,
+      background: '#ffffff',
+    },
+  })
+    .composite([
+      {
+        input: phoneSource,
+        left: Math.round((tabletViewport.width - phoneWidth) / 2),
+        top: Math.round((tabletViewport.height - phoneHeight) / 2),
+      },
+    ])
+    .png()
+    .toBuffer();
 }
 
 async function renderContactSheet() {
@@ -321,7 +393,11 @@ async function writeManifest() {
   const manifest = {
     generatedAt: new Date().toISOString(),
     baseUrl,
-    sourceViewport,
+    captureProfiles: captureProfiles.map((profile) => ({
+      id: profile.id,
+      viewport: profile.viewport,
+      directory: path.relative(projectRoot, profile.directory),
+    })),
     outputs: screenshotSets.map((set) => ({
       id: set.id,
       label: set.label,
@@ -335,6 +411,7 @@ async function writeManifest() {
       title: screenshot.title,
       subtitle: screenshot.subtitle,
       source: path.relative(projectRoot, path.join(sourceDir, `${screenshot.id}.png`)),
+      iPadSource: path.relative(projectRoot, path.join(iPadSourceDir, `${screenshot.id}.png`)),
     })),
   };
   await writeFile(path.join(assetRoot, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
@@ -349,8 +426,10 @@ async function writeReadme() {
     'Outputs:',
     '- `iphone-6.9/`: 1320 x 2868 PNG screenshots.',
     '- `iphone-6.5/`: 1284 x 2778 PNG screenshots.',
+    '- `ipad-13/`: 2048 x 2732 PNG screenshots.',
     '- `icon/app-store-icon-1024.png`: flattened 1024 x 1024 App Store icon.',
-    '- `source-screens/`: raw 430 x 932 app captures used by the framed screenshots.',
+    '- `source-screens/`: raw 430 x 932 iPhone captures used by the framed screenshots.',
+    '- `source-screens-ipad/`: raw 1024 x 1366 iPad captures used by the framed screenshots.',
     '- `contact-sheet.png`: quick review sheet for the generated 6.9-inch set.',
     '',
     'Set `SUPPSTACK_APP_URL` to capture a different deployment, or pass `--skip-capture` to regenerate frames from existing source screenshots.',

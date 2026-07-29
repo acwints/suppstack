@@ -7,10 +7,8 @@ import { getBrandLogoSourceUrl } from '@/lib/catalog/brand-logos';
  * cannot be used as an open proxy, and no third-party image hosts need to be
  * exposed to the client or allowlisted in next.config.
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { domain: string } }
-) {
+export async function GET(_request: NextRequest, props: { params: Promise<{ domain: string }> }) {
+  const params = await props.params;
   const sourceUrl = getBrandLogoSourceUrl(params.domain);
   if (!sourceUrl) {
     return NextResponse.json({ error: 'Unknown brand domain.' }, { status: 404 });

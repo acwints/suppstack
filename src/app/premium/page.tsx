@@ -1,9 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FiCheck, FiArrowRight } from 'react-icons/fi';
 import { useAuth } from '@/app/context/AuthContext';
 import { usePremium } from '@/hooks/usePremium';
+import { isNativeApp } from '@/lib/native/capacitor';
 import {
   PREMIUM_FEATURES,
   PREMIUM_PRICE_LABEL,
@@ -21,10 +23,16 @@ const FREE_FEATURES = [
 export default function PremiumPage() {
   const { user, loading: authLoading } = useAuth();
   const { isPremium, entitlement, loading: premiumLoading } = usePremium();
+  const [platform, setPlatform] = useState<'checking' | 'native' | 'web'>('checking');
 
-  const checkoutUrl = user ? premiumCheckoutUrl(user.id) : null;
+  useEffect(() => {
+    setPlatform(isNativeApp() ? 'native' : 'web');
+  }, []);
+
+  const isNative = platform === 'native';
+  const checkoutUrl = user && !isNative ? premiumCheckoutUrl(user.id) : null;
   const manageUrl = process.env.NEXT_PUBLIC_PREMIUM_MANAGE_URL;
-  const loading = authLoading || premiumLoading;
+  const loading = authLoading || premiumLoading || platform === 'checking';
 
   return (
     <div className="container-custom py-12">
@@ -96,7 +104,7 @@ export default function PremiumPage() {
                     })}
                   </p>
                 )}
-                {manageUrl && (
+                {manageUrl && !isNative && (
                   <a
                     href={manageUrl}
                     target="_blank"
@@ -105,6 +113,21 @@ export default function PremiumPage() {
                   >
                     Manage subscription
                   </a>
+                )}
+              </div>
+            ) : isNative ? (
+              <div className="space-y-3 rounded border border-gray-200 bg-gray-50 px-4 py-4 text-center">
+                <p className="text-sm text-gray-600">
+                  Premium subscriptions are not offered for purchase in the iOS app.
+                </p>
+                {!user && (
+                  <Link
+                    href="/login?next=/premium"
+                    className="inline-flex items-center justify-center gap-2 text-sm font-medium text-gray-900 underline underline-offset-4"
+                  >
+                    Sign in to access an existing membership
+                    <FiArrowRight size={16} />
+                  </Link>
                 )}
               </div>
             ) : !user ? (

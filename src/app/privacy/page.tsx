@@ -29,9 +29,9 @@ export default function PrivacyPolicy() {
         </h2>
         <ul className="list-disc pl-6">
           <li>
-            <strong>Account information.</strong> If you sign in with Google, we receive your name,
-            email address, and profile photo from Google. We use this only to create and operate
-            your account.
+            <strong>Account information.</strong> If you sign in with Apple or Google, we receive
+            the account details that provider shares with us, such as your name, email address, and
+            profile photo. We use this only to create and operate your account.
           </li>
           <li>
             <strong>Your supplement data.</strong> Supplement routines, stacks, and tracking
@@ -41,7 +41,8 @@ export default function PrivacyPolicy() {
           <li>
             <strong>Health data you choose to connect.</strong> In the iOS app, you may grant access
             to Apple Health data such as sleep, weight, body fat, calories burned, and activity
-            summaries. This access is optional and controlled by Apple Health permissions.
+            summaries. This access is optional, controlled by Apple Health permissions, and
+            processed on your device rather than stored by SuppStack.
           </li>
           <li>
             <strong>Usage data.</strong> Standard server logs (IP address, browser type, pages
@@ -63,9 +64,9 @@ export default function PrivacyPolicy() {
           4. Apple Health and Health Context
         </h2>
         <p>
-          Apple Health data is used to show connected health context and supplement opportunity
-          rankings inside SuppStack. Health data is not sent to merchants, used to target ads, or
-          sold.
+          Apple Health data is read on demand to show connected health context and supplement
+          opportunity rankings inside SuppStack. It is not uploaded to SuppStack, sent to
+          merchants, used to target ads, or sold.
         </p>
 
         <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">

@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FiActivity, FiArrowRight, FiCpu, FiMoon, FiTrendingUp } from 'react-icons/fi';
 import { TbScaleOutline } from 'react-icons/tb';
+import type { JSX } from 'react';
 import { supplementCatalog } from '@/lib/catalog/supplement-catalog';
 import {
   buildHealthGoalDirectory,

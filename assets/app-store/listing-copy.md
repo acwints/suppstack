@@ -3,11 +3,11 @@
 ## App Information
 
 - Name: SuppStack AI
-- Subtitle: Build a smarter supplement stack
-- Category: Shopping
-- Secondary category: Health & Fitness
+- Subtitle: Smarter supplement stacks
+- Category: Health & Fitness
+- Secondary category: Shopping
 - Privacy policy URL: https://www.suppstack.app/privacy
-- Support URL: https://www.suppstack.app
+- Support URL: https://www.suppstack.app/support
 - Marketing URL: https://www.suppstack.app
 - Copyright: 2026 Andrew Winter
 
@@ -43,6 +43,6 @@ supplements,vitamins,protein,creatine,wellness,brands,stack,health,sleep,fitness
 
 SuppStack AI is a Capacitor iOS shell for the production SuppStack web app. Native integrations include HealthKit plumbing, native in-app browser checkout handoff, OAuth deep-link return, splash/status bar configuration, and offline fallback.
 
-The app sells physical goods through external merchant checkout paths, so In-App Purchase is not used for supplement purchases. Peptide pages are reference-only and do not include purchase links. Account deletion is available in-app from You/Profile settings.
+The app sells physical goods through external merchant checkout paths, so In-App Purchase is not used for supplement purchases. Peptide pages are reference-only and do not include purchase links. Premium subscriptions are not offered for purchase in the iOS app; existing Premium members can sign in to access their membership. Account deletion is available in-app from You/Profile settings.
 
-No demo credentials are required. Reviewers can use Continue as guest to browse Shop, catalog search, brand pages, product pages, and peptide reference pages. Sign in is only required for saved personal stack state.
+No demo credentials are required. Reviewers can use Continue as guest to browse Shop, catalog search, brand pages, product pages, and peptide reference pages. Sign in is only required for saved personal stack state. Apple Health access is optional, read on demand, processed on device, and not uploaded to SuppStack.

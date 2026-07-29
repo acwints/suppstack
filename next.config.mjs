@@ -1,13 +1,6 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   async redirects() {
     return [{ source: '/log', destination: '/stack', permanent: true }];
   },
@@ -68,16 +61,6 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
-  },
-  webpack: (config, { dev }) => {
-    if (dev) {
-      config.cache = false;
-    }
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': path.resolve(__dirname, 'src'),
-    };
-    return config;
   },
 };
 

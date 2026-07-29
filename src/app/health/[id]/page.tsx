@@ -14,7 +14,8 @@ export function generateStaticParams() {
   return HEALTH_GOAL_DEFINITIONS.map((goal) => ({ id: goal.id }));
 }
 
-export function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const goal = findHealthGoalDirectoryItem(params.id);
   if (!goal) return {};
 
@@ -24,7 +25,8 @@ export function generateMetadata({ params }: { params: { id: string } }) {
   };
 }
 
-export default function HealthGoalPage({ params }: { params: { id: string } }) {
+export default async function HealthGoalPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const goal = findHealthGoalDirectoryItem(params.id);
   if (!goal) notFound();
 

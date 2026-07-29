@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
@@ -35,7 +35,8 @@ import {
   ProductSourceBadge,
 } from '@/components/composite/Product';
 
-export default function ProductPage({ params }: { params: { id: string } }) {
+export default function ProductPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const { user } = useAuth();
   const { product, isLoading } = useProduct(params.id);
   const [productImageSrc, setProductImageSrc] = useState(PRODUCT_IMAGE_FALLBACK);

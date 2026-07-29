@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type JSX } from 'react';
 import { cn } from '@/lib/design-system';
 import type { Toast as ToastType, ToastType as ToastVariant } from './ToastContext';
 

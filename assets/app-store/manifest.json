@@ -1,10 +1,24 @@
 {
-  "generatedAt": "2026-07-10T18:19:47.660Z",
-  "baseUrl": "http://127.0.0.1:3000",
-  "sourceViewport": {
-    "width": 430,
-    "height": 932
-  },
+  "generatedAt": "2026-07-29T15:37:22.560Z",
+  "baseUrl": "https://www.suppstack.app",
+  "captureProfiles": [
+    {
+      "id": "iphone",
+      "viewport": {
+        "width": 430,
+        "height": 932
+      },
+      "directory": "assets/app-store/source-screens"
+    },
+    {
+      "id": "ipad",
+      "viewport": {
+        "width": 1024,
+        "height": 1366
+      },
+      "directory": "assets/app-store/source-screens-ipad"
+    }
+  ],
   "outputs": [
     {
       "id": "iphone-6.9",
@@ -17,6 +31,12 @@
       "label": "iPhone 6.5-inch",
       "size": "1284x2778",
       "directory": "assets/app-store/iphone-6.5"
+    },
+    {
+      "id": "ipad-13",
+      "label": "iPad 13-inch",
+      "size": "2048x2732",
+      "directory": "assets/app-store/ipad-13"
     }
   ],
   "icon": "assets/app-store/icon/app-store-icon-1024.png",
@@ -26,42 +46,48 @@
       "route": "/",
       "title": "Shop by goal",
       "subtitle": "Outcome-first shelves for sleep, recovery, training, and metabolism.",
-      "source": "assets/app-store/source-screens/01-shop-by-goal.png"
+      "source": "assets/app-store/source-screens/01-shop-by-goal.png",
+      "iPadSource": "assets/app-store/source-screens-ipad/01-shop-by-goal.png"
     },
     {
       "id": "02-search-products-brands",
       "route": "/search?q=creatine",
       "title": "Search products and brands",
       "subtitle": "Find Thorne, AG1, creatine, peptides, and product matches in one catalog.",
-      "source": "assets/app-store/source-screens/02-search-products-brands.png"
+      "source": "assets/app-store/source-screens/02-search-products-brands.png",
+      "iPadSource": "assets/app-store/source-screens-ipad/02-search-products-brands.png"
     },
     {
       "id": "03-brand-pages",
       "route": "/brands/thorne",
       "title": "Compare trusted brands",
       "subtitle": "Brand pages keep identity, product coverage, and official-store paths together.",
-      "source": "assets/app-store/source-screens/03-brand-pages.png"
+      "source": "assets/app-store/source-screens/03-brand-pages.png",
+      "iPadSource": "assets/app-store/source-screens-ipad/03-brand-pages.png"
     },
     {
       "id": "04-product-detail",
       "route": "/product/real-thorne-creatine-90",
       "title": "Add first, buy second",
       "subtitle": "Build your stack with serving economics, source labels, and clear actions.",
-      "source": "assets/app-store/source-screens/04-product-detail.png"
+      "source": "assets/app-store/source-screens/04-product-detail.png",
+      "iPadSource": "assets/app-store/source-screens-ipad/04-product-detail.png"
     },
     {
       "id": "05-peptides-reference",
       "route": "/peptides",
       "title": "Peptides stay separate",
       "subtitle": "Reference-only planning with safety context and no buy path.",
-      "source": "assets/app-store/source-screens/05-peptides-reference.png"
+      "source": "assets/app-store/source-screens/05-peptides-reference.png",
+      "iPadSource": "assets/app-store/source-screens-ipad/05-peptides-reference.png"
     },
     {
       "id": "06-account-entry",
       "route": "/login",
       "title": "Simple account entry",
       "subtitle": "Sign in when you want saved stacks, routines, and personal tracking.",
-      "source": "assets/app-store/source-screens/06-account-entry.png"
+      "source": "assets/app-store/source-screens/06-account-entry.png",
+      "iPadSource": "assets/app-store/source-screens-ipad/06-account-entry.png"
     }
   ]
 }

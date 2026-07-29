@@ -1,17 +1,18 @@
 import { ProductDirectoryClient } from '@/components/composite/Product';
 import { buildProductDirectory } from '@/lib/catalog/product-directory';
 
-export default function ProductsPage({
-  searchParams,
-}: {
-  searchParams?: {
-    q?: string;
-    goal?: string;
-    category?: string;
-    brand?: string;
-    sort?: string;
-  };
-}) {
+export default async function ProductsPage(
+  props: {
+    searchParams?: Promise<{
+      q?: string;
+      goal?: string;
+      category?: string;
+      brand?: string;
+      sort?: string;
+    }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const directory = buildProductDirectory();
 
   return (

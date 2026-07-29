@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, use } from 'react';
 import Link from 'next/link';
 import { FiArrowLeft, FiPackage, FiPlus } from 'react-icons/fi';
 import { supabase } from '../../supabase';
@@ -23,7 +23,8 @@ import {
 import { familyForSupplement, familyFormLabel } from '@/lib/catalog/supplement-families';
 import { getSupplementKnowledge } from '@/lib/catalog/supplement-knowledge';
 
-export default function SupplementPage({ params }: { params: { id: string } }) {
+export default function SupplementPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const [currentPage, setCurrentPage] = useState(1);
   const [supplement, setSupplement] = useState<Supplement | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -202,7 +203,6 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
         <FiArrowLeft />
         <span>All products</span>
       </Link>
-
       {/* Header */}
       <Stack gap={2} className="mb-5 sm:mb-6">
         <div className="flex flex-wrap items-center gap-2">
@@ -263,7 +263,6 @@ export default function SupplementPage({ params }: { params: { id: string } }) {
           </div>
         )}
       </Stack>
-
       <Stack gap={6}>
         {isResearchOnly ? (
           /* Research-only compounds are documented, not sold. No shopping

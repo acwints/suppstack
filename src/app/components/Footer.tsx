@@ -31,7 +31,7 @@ export default function Footer() {
             <a href="/premium" className="hover:text-gray-900 transition-colors duration-200">Premium</a>
             <a href="/privacy" className="hover:text-gray-900 transition-colors duration-200">Privacy</a>
             <a href="/terms" className="hover:text-gray-900 transition-colors duration-200">Terms</a>
-            <a href="mailto:support@suppstack.com" className="hover:text-gray-900 transition-colors duration-200">Support</a>
+            <a href="/support" className="hover:text-gray-900 transition-colors duration-200">Support</a>
           </div>
         </div>
         
