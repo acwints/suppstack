@@ -38,7 +38,7 @@ export function RatingInput({
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-2">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-error-500 ml-1">*</span>}
         </label>
       )}
 
@@ -50,8 +50,8 @@ export function RatingInput({
               type="button"
               className={`
                 ${sizeClasses[size].star}
-                ${starValue <= displayValue ? 'text-yellow-400' : 'text-gray-200'}
-                transition-[color,transform] duration-150 ease-out hover:scale-110 hover:text-yellow-400 active:scale-[0.96]
+                ${starValue <= displayValue ? 'text-warning-400' : 'text-gray-200'}
+                transition-[color,transform] duration-150 ease-out hover:scale-110 hover:text-warning-400 active:scale-[0.96]
               `}
               onMouseEnter={() => setHoverValue(starValue)}
               onMouseLeave={() => setHoverValue(null)}
@@ -71,7 +71,7 @@ export function RatingInput({
       </div>
 
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
+        <p className="mt-1 text-sm text-error-600">{error}</p>
       )}
       {helperText && !error && (
         <p className="mt-1 text-sm text-gray-500">{helperText}</p>

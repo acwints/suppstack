@@ -255,7 +255,7 @@ export default function StackDetailPage() {
                         href={stack.source_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700 mt-2"
+                        className="inline-flex items-center gap-1 text-sm text-accent-600 hover:text-accent-700 mt-2"
                       >
                         View Original <FiExternalLink size={14} />
                       </a>
@@ -279,7 +279,7 @@ export default function StackDetailPage() {
                       className="flex items-start justify-between p-4 bg-gray-50 rounded-xl border border-gray-100"
                     >
                       <Inline gap={3} align="start">
-                        <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-sm font-semibold text-orange-600">
+                        <div className="w-8 h-8 bg-accent-100 rounded-full flex items-center justify-center text-sm font-semibold text-accent-600">
                           {idx + 1}
                         </div>
                         <div>
@@ -416,7 +416,7 @@ export default function StackDetailPage() {
 
           {/* CTA for non-logged in users */}
           {!user && (
-            <div className="rounded border border-orange-200 bg-orange-50 p-6">
+            <div className="rounded border border-accent-200 bg-accent-50 p-6">
               <h3 className="font-bold mb-2 text-gray-900">Want to save this stack?</h3>
               <p className="text-sm text-gray-700 mb-4">
                 Sign in to copy this stack, track refill cost, and keep your supplements organized.

@@ -213,8 +213,8 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
           </div>
         )}
         {isUnavailable && (
-          <div className="flex items-start gap-2 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-            <FiAlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
+          <div className="flex items-start gap-2 rounded border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-900">
+            <FiAlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-warning-600" />
             <span>
               This variant is currently unavailable at the merchant. You can still visit the
               product page to pick another size or flavor.
@@ -314,7 +314,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
         )}
 
         {stage === 'blocked' && !isUnavailable && (
-          <div className="rounded border border-amber-200 bg-amber-50 p-5 text-center">
+          <div className="rounded border border-warning-200 bg-warning-50 p-5 text-center">
             <p className="font-medium text-gray-900">Popup was blocked</p>
             <p className="mt-1 text-sm text-gray-600">
               Use the link below to open the secure checkout directly.

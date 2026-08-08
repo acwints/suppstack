@@ -48,8 +48,8 @@ function statusLabel(status: CounterScanMatchedItem['matchStatus']) {
 }
 
 function statusClassName(status: CounterScanMatchedItem['matchStatus']) {
-  if (status === 'matched') return 'bg-green-50 text-green-700 shadow-[inset_0_0_0_1px_rgba(21,128,61,0.14)]';
-  if (status === 'ambiguous') return 'bg-amber-50 text-amber-800 shadow-[inset_0_0_0_1px_rgba(146,64,14,0.16)]';
+  if (status === 'matched') return 'bg-success-50 text-success-700 shadow-[inset_0_0_0_1px_rgba(21,128,61,0.14)]';
+  if (status === 'ambiguous') return 'bg-warning-50 text-warning-800 shadow-[inset_0_0_0_1px_rgba(146,64,14,0.16)]';
   return 'bg-gray-100 text-gray-700 shadow-[inset_0_0_0_1px_rgba(17,24,39,0.08)]';
 }
 
@@ -423,7 +423,7 @@ export function CounterScanClient() {
           )}
 
           {error && (
-            <div className="mt-4 flex gap-2 rounded bg-red-50 p-3 text-sm leading-5 text-red-700 shadow-[inset_0_0_0_1px_rgba(185,28,28,0.14)]">
+            <div className="mt-4 flex gap-2 rounded bg-error-50 p-3 text-sm leading-5 text-error-700 shadow-[inset_0_0_0_1px_rgba(185,28,28,0.14)]">
               <FiAlertCircle className="mt-0.5 shrink-0" size={16} aria-hidden="true" />
               <span>{error}</span>
             </div>

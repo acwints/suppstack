@@ -90,9 +90,9 @@ export function SupplementSettingsModal({
                 className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   status === option.value
                     ? option.value === 'active'
-                      ? 'bg-green-100 text-green-700 ring-2 ring-green-500'
+                      ? 'bg-success-100 text-success-700 ring-2 ring-success-500'
                       : option.value === 'paused'
-                      ? 'bg-yellow-100 text-yellow-700 ring-2 ring-yellow-500'
+                      ? 'bg-warning-100 text-warning-700 ring-2 ring-warning-500'
                       : 'bg-gray-200 text-gray-700 ring-2 ring-gray-400'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
@@ -141,7 +141,7 @@ export function SupplementSettingsModal({
                 onClick={() => toggleDay(day.value)}
                 className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
                   scheduleDays.includes(day.value)
-                    ? 'bg-orange-500 text-white'
+                    ? 'bg-accent-500 text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >

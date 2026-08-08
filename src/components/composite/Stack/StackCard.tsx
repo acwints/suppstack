@@ -31,7 +31,7 @@ export function StackCard({
         <Card
           variant="outlined"
           padding="md"
-          className="transition-[border-color,box-shadow,transform] duration-150 hover:border-orange-300 hover:shadow-md active:scale-[0.96]"
+          className="transition-[border-color,box-shadow,transform] duration-150 hover:border-accent-300 hover:shadow-md active:scale-[0.96]"
         >
           <Inline gap={3} align="center">
             {showCreator && stack.profile && (
@@ -76,7 +76,7 @@ export function StackCard({
               />
 
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
+                <h3 className="font-bold text-gray-900 group-hover:text-accent-700 transition-colors">
                   {stack.profile.display_name}
                 </h3>
                 <p className="text-sm text-gray-600 mb-2">

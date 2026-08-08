@@ -37,15 +37,15 @@ export function PeptideReferenceShelf({
           key={peptide.supplement_id}
           href={`/supplement/${peptide.supplement_id}`}
           className={cn(
-            'group flex flex-col rounded border border-amber-200 bg-amber-50/40 p-4 transition-colors hover:border-amber-300 hover:bg-amber-50',
+            'group flex flex-col rounded border border-warning-200 bg-warning-50/40 p-4 transition-colors hover:border-warning-300 hover:bg-warning-50',
             isGrid ? 'min-h-56' : 'w-[min(82vw,21rem)] shrink-0 snap-start sm:w-80'
           )}
         >
           <div className="mb-4 flex items-center justify-between gap-3">
-            <span className="rounded-full border border-amber-300 bg-white px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-amber-800">
+            <span className="rounded-full border border-warning-300 bg-white px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-warning-800">
               Reference
             </span>
-            <span className="text-xs font-medium text-amber-800">Not sold</span>
+            <span className="text-xs font-medium text-warning-800">Not sold</span>
           </div>
 
           <h3 className="font-serif text-2xl leading-tight text-gray-900">
@@ -59,7 +59,7 @@ export function PeptideReferenceShelf({
             {(peptide.primary_goals ?? []).slice(0, 2).map((goal) => (
               <span
                 key={goal}
-                className="rounded border border-amber-200 bg-white px-2 py-1 text-xs font-medium text-gray-600"
+                className="rounded border border-warning-200 bg-white px-2 py-1 text-xs font-medium text-gray-600"
               >
                 {goal}
               </span>
@@ -68,7 +68,7 @@ export function PeptideReferenceShelf({
 
           <div className="mt-auto flex items-center justify-between pt-5 text-sm font-semibold text-gray-900">
             <span className="inline-flex items-center gap-2">
-              <FiPlus className="text-amber-700" />
+              <FiPlus className="text-warning-700" />
               Stackable
             </span>
             <FiArrowRight className="text-gray-400 transition-transform group-hover:translate-x-0.5" />

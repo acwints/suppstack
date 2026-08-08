@@ -1,7 +1,9 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
+import { FiZap } from 'react-icons/fi';
 import { useSupplementLogs } from '@/hooks/useSupplementLogs';
+import { computeLogStreak, getLocalDateKey } from '@/lib/utils';
 import { useRegimen } from '@/hooks/useRegimen';
 import { EmptyState, Spinner, Stack, useToast } from '@/components/ui';
 import {
@@ -70,6 +72,15 @@ export default function StackPage() {
     day: 'numeric',
   });
 
+  const streak = useMemo(
+    () =>
+      computeLogStreak(
+        logs.map((log) => log.log_date),
+        getLocalDateKey()
+      ),
+    [logs]
+  );
+
   if (isRegimenLoading && regimen.length === 0) {
     return (
       <div className="flex min-h-[60dvh] items-center justify-center">
@@ -80,10 +91,19 @@ export default function StackPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-3 py-5 sm:px-6 sm:py-8">
-      <div className="section-header">
-        <h2>My Stack</h2>
-      </div>
-      <p className="mb-6 text-sm text-gray-500">{todayLabel}</p>
+      {/* Today hero — the daily ritual leads; stack management follows below. */}
+      <header className="mb-6 flex items-end justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-3xl lg:text-4xl">Today</h1>
+          <p className="mt-1 text-sm text-gray-500">{todayLabel}</p>
+        </div>
+        {streak >= 2 && (
+          <p className="flex shrink-0 items-center gap-1.5 rounded-md bg-accent-50 px-2.5 py-1.5 text-sm font-medium text-accent-800">
+            <FiZap size={15} className="text-accent-600" aria-hidden="true" />
+            {streak >= 30 ? '30+' : streak}-day streak
+          </p>
+        )}
+      </header>
 
       <Stack gap={8}>
         {activeRegimen.length > 0 ? (

@@ -33,7 +33,7 @@ export function RatingBreakdown({ stats, showRecommendation = true }: RatingBrea
               <span className="text-sm text-gray-600 w-6">{rating}</span>
               <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-yellow-400 rounded-full transition-[width] duration-500"
+                  className="h-full bg-warning-400 rounded-full transition-[width] duration-500"
                   style={{ width: `${percentage}%` }}
                 />
               </div>
@@ -49,7 +49,7 @@ export function RatingBreakdown({ stats, showRecommendation = true }: RatingBrea
       {showRecommendation && stats.recommendation_percentage > 0 && (
         <div className="pt-4 border-t border-gray-100">
           <div className="flex items-center gap-2">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-success-600">
               {stats.recommendation_percentage.toFixed(0)}%
             </div>
             <span className="text-sm text-gray-600">

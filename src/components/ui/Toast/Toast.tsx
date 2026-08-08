@@ -11,24 +11,24 @@ interface ToastProps {
 
 const variantStyles: Record<ToastVariant, { bg: string; icon: string; border: string }> = {
   success: {
-    bg: 'bg-green-50',
-    icon: 'text-green-500',
-    border: 'border-green-200',
+    bg: 'bg-success-50',
+    icon: 'text-success-500',
+    border: 'border-success-200',
   },
   error: {
-    bg: 'bg-red-50',
-    icon: 'text-red-500',
-    border: 'border-red-200',
+    bg: 'bg-error-50',
+    icon: 'text-error-500',
+    border: 'border-error-200',
   },
   warning: {
-    bg: 'bg-yellow-50',
-    icon: 'text-yellow-500',
-    border: 'border-yellow-200',
+    bg: 'bg-warning-50',
+    icon: 'text-warning-500',
+    border: 'border-warning-200',
   },
   info: {
-    bg: 'bg-blue-50',
-    icon: 'text-blue-500',
-    border: 'border-blue-200',
+    bg: 'bg-info-50',
+    icon: 'text-info-500',
+    border: 'border-info-200',
   },
 };
 

@@ -66,7 +66,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               fullWidth && 'w-full',
               sizeClasses[selectSize],
               error
-                ? 'border-red-500 focus:ring-red-200 focus:border-red-500'
+                ? 'border-error-500 focus:ring-error-200 focus:border-error-500'
                 : 'border-gray-300 focus:ring-gray-200 focus:border-gray-400',
               'appearance-none truncate bg-white border rounded-lg text-gray-900',
               'focus:ring-2 focus:outline-none transition-[border-color,box-shadow] duration-150',
@@ -92,7 +92,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           />
         </span>
         {error && (
-          <p className="mt-1 text-sm text-red-600">{error}</p>
+          <p className="mt-1 text-sm text-error-600">{error}</p>
         )}
         {helperText && !error && (
           <p className="mt-1 text-sm text-gray-500">{helperText}</p>

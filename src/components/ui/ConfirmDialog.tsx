@@ -132,9 +132,9 @@ export function ConfirmDialog({
         <div className="p-6">
           {/* Icon */}
           {danger && (
-            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-error-100 flex items-center justify-center">
               <svg
-                className="w-6 h-6 text-red-600"
+                className="w-6 h-6 text-error-600"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

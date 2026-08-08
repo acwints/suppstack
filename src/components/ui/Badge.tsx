@@ -19,22 +19,22 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 
 const variantStyles: Record<BadgeVariant, string> = {
   default: 'bg-gray-100 text-gray-700',
-  primary: 'bg-orange-100 text-orange-700',
+  primary: 'bg-accent-100 text-accent-700',
   secondary: 'bg-gray-100 text-gray-600',
-  success: 'bg-green-100 text-green-700',
-  warning: 'bg-yellow-100 text-yellow-700',
-  error: 'bg-red-100 text-red-700',
-  info: 'bg-blue-100 text-blue-700',
+  success: 'bg-success-100 text-success-700',
+  warning: 'bg-warning-100 text-warning-700',
+  error: 'bg-error-100 text-error-700',
+  info: 'bg-info-100 text-info-700',
 };
 
 const dotStyles: Record<BadgeVariant, string> = {
   default: 'bg-gray-500',
-  primary: 'bg-orange-500',
+  primary: 'bg-accent-500',
   secondary: 'bg-gray-500',
-  success: 'bg-green-500',
-  warning: 'bg-yellow-500',
-  error: 'bg-red-500',
-  info: 'bg-blue-500',
+  success: 'bg-success-500',
+  warning: 'bg-warning-500',
+  error: 'bg-error-500',
+  info: 'bg-info-500',
 };
 
 const sizeStyles: Record<BadgeSize, string> = {

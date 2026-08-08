@@ -104,7 +104,7 @@ export default function BrandDetailPage(props: { params: Promise<{ slug: string 
             {brand.storeDomains.map((domain) => (
               <span
                 key={domain}
-                className="rounded border border-orange-200 bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700"
+                className="rounded border border-accent-200 bg-accent-50 px-2 py-1 text-xs font-medium text-accent-700"
               >
                 {domain}
               </span>

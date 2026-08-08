@@ -222,7 +222,7 @@ export default function SupplementPage(props: { params: Promise<{ id: string }> 
             {supplement.supplement_name}
           </h1>
           {isResearchOnly && (
-            <span className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800">
+            <span className="rounded-full border border-warning-300 bg-warning-50 px-2.5 py-1 text-xs font-semibold text-warning-800">
               Research reference
             </span>
           )}
@@ -267,11 +267,11 @@ export default function SupplementPage(props: { params: Promise<{ id: string }> 
         {isResearchOnly ? (
           /* Research-only compounds are documented, not sold. No shopping
              surface — just a prominent safety disclaimer and the wiki. */
-          <div className="rounded-lg border border-amber-300 bg-amber-50 p-5">
-            <h2 className="text-base font-semibold text-amber-900">
+          <div className="rounded-lg border border-warning-300 bg-warning-50 p-5">
+            <h2 className="text-base font-semibold text-warning-900">
               Reference information only — not for sale
             </h2>
-            <p className="mt-1.5 text-sm leading-6 text-amber-800">
+            <p className="mt-1.5 text-sm leading-6 text-warning-800">
               {supplement.supplement_name} is a research compound or prescription
               medication, not a dietary supplement. SuppStack does not sell it and does
               not facilitate its purchase. This page exists for education only and is not
@@ -286,7 +286,7 @@ export default function SupplementPage(props: { params: Promise<{ id: string }> 
                 <FiPlus />
                 Add to stack
               </Link>
-              <p className="text-xs font-medium text-amber-800">
+              <p className="text-xs font-medium text-warning-800">
                 Stack planning only; no checkout path is provided.
               </p>
             </div>

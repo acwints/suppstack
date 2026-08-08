@@ -255,7 +255,7 @@ export function CompareProducts({
                           key={p.product_id}
                           className={cn(
                             'py-2.5 px-2 text-center font-medium',
-                            p.product_price === lowestPrice ? 'text-green-600' : 'text-gray-900'
+                            p.product_price === lowestPrice ? 'text-success-600' : 'text-gray-900'
                           )}
                         >
                           ${formatPrice(p.product_price)}
@@ -277,7 +277,7 @@ export function CompareProducts({
                           key={p.product_id}
                           className={cn(
                             'py-2.5 px-2 text-center font-medium',
-                            thisCost > 0 && thisCost === lowest ? 'text-green-600' : 'text-gray-900'
+                            thisCost > 0 && thisCost === lowest ? 'text-success-600' : 'text-gray-900'
                           )}
                         >
                           {thisCost > 0 ? `$${formatPrice(thisCost)}` : '—'}
@@ -299,7 +299,7 @@ export function CompareProducts({
                           key={p.product_id}
                           className={cn(
                             'py-2.5 px-2 text-center font-medium',
-                            thisCost > 0 && thisCost === lowest ? 'text-green-600' : 'text-gray-900'
+                            thisCost > 0 && thisCost === lowest ? 'text-success-600' : 'text-gray-900'
                           )}
                         >
                           {thisCost > 0 ? `$${formatPrice(thisCost)}` : '—'}
@@ -331,7 +331,7 @@ export function CompareProducts({
                         <td key={p.product_id} className="py-2.5 px-2 text-center">
                           {rating ? (
                             <span className="inline-flex items-center gap-1 text-gray-900">
-                              <FiStar className="text-amber-400" size={12} />
+                              <FiStar className="text-warning-400" size={12} />
                               {rating.toFixed(1)}
                               <span className="text-gray-400 text-xs">
                                 ({p.rating_stats?.total_reviews})

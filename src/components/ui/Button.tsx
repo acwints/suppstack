@@ -51,11 +51,11 @@ const variantStyles: Record<ButtonVariant, string> = {
     'disabled:text-gray-400'
   ),
   danger: cn(
-    'bg-red-600 text-white',
-    'hover:bg-red-700',
-    'active:bg-red-800',
-    'focus-visible:ring-red-600',
-    'disabled:bg-red-300'
+    'bg-error-600 text-white',
+    'hover:bg-error-700',
+    'active:bg-error-800',
+    'focus-visible:ring-error-600',
+    'disabled:bg-error-300'
   ),
 };
 

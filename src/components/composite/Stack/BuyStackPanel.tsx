@@ -253,7 +253,7 @@ export function BuyStackPanel({
                       <p
                         className={cn(
                           'text-xs',
-                          item.researchOnly ? 'text-amber-700' : 'text-gray-400'
+                          item.researchOnly ? 'text-warning-700' : 'text-gray-400'
                         )}
                       >
                         {item.researchOnly
@@ -309,8 +309,8 @@ export function BuyStackPanel({
           </div>
 
           {cartGroups.length > 0 && (
-            <div className="mb-4 rounded-lg border border-orange-100 bg-orange-50 p-3">
-              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-orange-800">
+            <div className="mb-4 rounded-lg border border-accent-100 bg-accent-50 p-3">
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-accent-800">
                 One-click brand carts
               </div>
               <div className="space-y-2">
@@ -320,17 +320,17 @@ export function BuyStackPanel({
                     href={group.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex min-h-11 items-center justify-between gap-3 rounded border border-orange-100 bg-white px-3 py-2 text-sm text-orange-950 transition-[background-color,border-color,transform] duration-150 hover:border-orange-200 hover:bg-orange-50 active:scale-[0.96]"
+                    className="flex min-h-11 items-center justify-between gap-3 rounded border border-accent-100 bg-white px-3 py-2 text-sm text-accent-900 transition-[background-color,border-color,transform] duration-150 hover:border-accent-200 hover:bg-accent-50 active:scale-[0.96]"
                   >
                     <span className="min-w-0">
                       <span className="block truncate font-medium">
                         {group.brandNames.join(', ') || group.storeDomain}
                       </span>
-                      <span className="text-xs text-orange-800">
+                      <span className="text-xs text-accent-800">
                         {group.products.length} item{group.products.length !== 1 ? 's' : ''} in one cart
                       </span>
                     </span>
-                    <FiExternalLink className="shrink-0 text-orange-700" size={14} />
+                    <FiExternalLink className="shrink-0 text-accent-700" size={14} />
                   </a>
                 ))}
               </div>

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { FiChevronLeft, FiChevronRight, FiCheck, FiX, FiMinus } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { Card } from '@/components/ui';
+import { cn } from '@/lib/design-system';
 import type { SupplementLog, DailyTrackingSummary } from '@/types';
 
 export interface WeeklyCalendarProps {
@@ -109,17 +110,17 @@ export function WeeklyCalendar({
   };
 
   const statusColors = {
-    perfect: 'bg-green-500 text-white',
-    partial: 'bg-yellow-400 text-yellow-900',
-    missed: 'bg-gray-200 text-gray-500',
-    future: 'bg-gray-100 text-gray-400',
+    perfect: 'bg-success-600 text-white',
+    partial: 'bg-accent-200 text-accent-900',
+    missed: 'bg-gray-100 text-gray-400',
+    future: 'bg-gray-50 text-gray-300',
   };
 
-  const statusIcons = {
-    perfect: <FiCheck size={16} />,
-    partial: <FiMinus size={16} />,
-    missed: <FiX size={16} />,
-    future: null,
+  const statusLabels = {
+    perfect: 'complete',
+    partial: 'partially logged',
+    missed: 'not logged',
+    future: 'upcoming',
   };
 
   return (
@@ -158,34 +159,31 @@ export function WeeklyCalendar({
             key={day.date}
             onClick={() => onDateSelect?.(day.date)}
             disabled={day.isFuture}
-            className={`
-              flex min-h-11 flex-col items-center rounded-lg p-1.5 transition-[background-color,box-shadow,opacity,transform] duration-150 ease-out touch-manipulation active:scale-[0.96] sm:rounded-xl sm:p-3
-              ${day.isToday ? 'ring-2 ring-orange-500 ring-offset-1 sm:ring-offset-2' : ''}
-              ${selectedDate === day.date ? 'bg-orange-100' : ''}
-              ${day.isFuture ? 'cursor-not-allowed opacity-60' : 'hover:bg-gray-50 active:bg-gray-100 cursor-pointer'}
-            `}
+            aria-label={`${day.dayOfWeek} ${day.dayOfMonth}: ${day.logsCount} of ${plannedCount} logged, ${statusLabels[day.status]}`}
+            className={cn(
+              'flex min-h-11 flex-col items-center rounded-lg p-1.5 transition-[background-color,box-shadow,opacity,transform] duration-150 ease-out touch-manipulation active:scale-[0.96] sm:rounded-xl sm:p-3',
+              selectedDate === day.date && 'bg-accent-50',
+              day.isFuture ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 active:bg-gray-100'
+            )}
           >
-            <span className={`mb-0.5 text-xs font-medium sm:mb-1 ${day.isToday ? 'text-orange-700' : 'text-gray-500'}`}>
+            <span
+              className={cn(
+                'mb-1 text-xs sm:mb-1.5',
+                day.isToday ? 'font-semibold text-gray-900' : 'font-medium text-gray-500'
+              )}
+            >
               <span className="sm:hidden">{shortDayNames[index]}</span>
               <span className="hidden sm:inline">{day.dayOfWeek}</span>
             </span>
             <div
-              className={`
-                w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold text-xs sm:text-sm
-                ${statusColors[day.status]}
-                ${day.isToday ? 'ring-2 ring-orange-500' : ''}
-              `}
+              className={cn(
+                'flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold sm:h-10 sm:w-10 sm:text-sm',
+                statusColors[day.status],
+                day.isToday && 'ring-2 ring-gray-900 ring-offset-1 sm:ring-offset-2'
+              )}
             >
               {day.dayOfMonth}
             </div>
-            <div className="mt-1 sm:mt-2 flex items-center justify-center h-3 sm:h-4">
-              {!day.isFuture && statusIcons[day.status]}
-            </div>
-            {!day.isFuture && day.status !== 'future' && (
-              <span className="mt-0.5 text-xs tabular-nums text-gray-500 sm:mt-1">
-                {day.logsCount}/{plannedCount}
-              </span>
-            )}
           </button>
         ))}
       </div>
@@ -193,16 +191,16 @@ export function WeeklyCalendar({
       {/* Legend */}
       <div className="flex items-center justify-center gap-3 sm:gap-4 mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-100">
         <div className="flex items-center gap-1 sm:gap-1.5">
-          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-success-600" />
           <span className="text-xs text-gray-600">Complete</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">
-          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-yellow-400" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-accent-200" />
           <span className="text-xs text-gray-600">Partial</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">
-          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-gray-200" />
-          <span className="text-xs text-gray-600">Missed</span>
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-gray-100" />
+          <span className="text-xs text-gray-600">Not logged</span>
         </div>
       </div>
     </Card>

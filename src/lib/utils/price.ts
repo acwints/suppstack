@@ -78,12 +78,12 @@ export function getPriceTier(costPerServing: number): {
   color: string;
 } {
   if (costPerServing < 0.10) {
-    return { label: 'Budget', color: 'text-green-600' };
+    return { label: 'Budget', color: 'text-success-600' };
   } else if (costPerServing < 0.30) {
-    return { label: 'Value', color: 'text-blue-600' };
+    return { label: 'Value', color: 'text-info-600' };
   } else if (costPerServing < 0.75) {
     return { label: 'Premium', color: 'text-purple-600' };
   } else {
-    return { label: 'Luxury', color: 'text-amber-600' };
+    return { label: 'Luxury', color: 'text-warning-600' };
   }
 }

@@ -71,7 +71,7 @@ export default function SavedPage() {
                 type="button"
                 onClick={() => removeSaved(item.product_id)}
                 aria-label={`Remove ${item.product_name} from saved`}
-                className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-50 hover:text-red-600 active:bg-gray-100"
+                className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-50 hover:text-error-600 active:bg-gray-100"
               >
                 <FiTrash2 size={18} aria-hidden="true" />
               </button>

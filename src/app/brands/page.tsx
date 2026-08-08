@@ -106,7 +106,7 @@ export default function BrandsPage() {
                             Math.min(...brand.products.map((product) => product.product_price))
                           )}
                         </p>
-                        <p className="text-xs font-medium text-orange-700 mt-2">
+                        <p className="text-xs font-medium text-accent-700 mt-2">
                           {brand.commerceReadyCount} purchase-ready picks
                         </p>
                       </div>

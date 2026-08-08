@@ -107,7 +107,7 @@ export function ReviewList({
 
       {/* User's Review Section */}
       {userReview && !isEditingReview && (
-        <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
+        <div className="bg-accent-50 rounded-xl p-6 border border-accent-100">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-gray-900">Your Review</h3>
             <div className="flex gap-2">
@@ -172,7 +172,7 @@ export function ReviewList({
       {/* Login Prompt */}
       {!isLoggedIn && !showReviewForm && (
         <div className="bg-gray-50 rounded-xl p-6 text-center">
-          <FaStar className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
+          <FaStar className="w-8 h-8 text-warning-400 mx-auto mb-3" />
           <h3 className="font-semibold text-gray-900 mb-2">
             Share your experience
           </h3>

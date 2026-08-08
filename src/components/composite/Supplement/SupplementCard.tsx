@@ -32,7 +32,7 @@ export function SupplementCard({ group, index }: SupplementCardProps) {
       <div className="group flex h-full flex-col overflow-hidden rounded bg-white shadow-surface transition-[box-shadow,transform] duration-150 ease-out hover:shadow-surface-hover active:scale-[0.96]">
         <div className="relative aspect-square w-full bg-white">
           {isResearch && (
-            <span className="absolute left-2 top-2 z-10 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-900">
+            <span className="absolute left-2 top-2 z-10 rounded-full border border-warning-300 bg-warning-50 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-warning-900">
               Research
             </span>
           )}

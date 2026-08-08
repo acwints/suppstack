@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { FiCheck, FiPlus, FiLoader } from 'react-icons/fi';
+import { FiCheck, FiLoader, FiPlus } from 'react-icons/fi';
+import { cn } from '@/lib/design-system';
 
 export interface LogButtonProps {
   productId: string;
@@ -11,10 +12,21 @@ export interface LogButtonProps {
   onLog: (productId: string) => Promise<void>;
   onUnlog?: (productId: string) => Promise<void>;
   size?: 'sm' | 'md' | 'lg';
-  showLabel?: boolean;
   className?: string;
 }
 
+const sizeStyles = {
+  sm: 'h-10 w-10',
+  md: 'h-11 w-11',
+  lg: 'h-12 w-12',
+} as const;
+
+const iconSizes = { sm: 18, md: 20, lg: 22 } as const;
+
+/**
+ * Circular check-off toggle for a single supplement. Empty circle invites the
+ * tap; a filled success check confirms it.
+ */
 export function LogButton({
   productId,
   productName,
@@ -23,12 +35,11 @@ export function LogButton({
   onLog,
   onUnlog,
   size = 'md',
-  showLabel = true,
   className = '',
 }: LogButtonProps) {
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleClick = async () => {
+  const handleClick = async (): Promise<void> => {
     if (isProcessing || isLoading) return;
 
     setIsProcessing(true);
@@ -47,64 +58,33 @@ export function LogButton({
 
   const buttonLoading = isLoading || isProcessing;
 
-  // Larger touch targets on mobile - minimum 44px recommended
-  const sizeClasses = {
-    sm: 'min-h-11 min-w-11 p-2 sm:min-h-10 sm:min-w-10 sm:p-1.5',
-    md: 'min-h-11 min-w-11 p-2.5 sm:min-h-10 sm:min-w-10 sm:p-2',
-    lg: 'p-3 min-w-[48px] min-h-[48px] sm:p-3 sm:min-w-0 sm:min-h-0',
-  };
-
-  const iconSizes = {
-    sm: 16,
-    md: 20,
-    lg: 24,
-  };
-
-  if (isLogged) {
-    return (
-      <button
-        onClick={handleClick}
-        disabled={buttonLoading}
-        className={`
-          flex items-center justify-center gap-2 rounded-full
-          bg-green-100 text-green-700 hover:bg-green-200 active:bg-green-300
-          transition-[color,background-color,transform] duration-150 ease-out touch-manipulation active:scale-[0.96]
-          ${sizeClasses[size]}
-          ${buttonLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-          ${className}
-        `}
-        title={`${productName} - Logged`}
-      >
-        {buttonLoading ? (
-          <FiLoader className="animate-spin" size={iconSizes[size]} />
-        ) : (
-          <FiCheck size={iconSizes[size]} />
-        )}
-        {showLabel && <span className="text-sm font-medium pr-1 hidden xs:inline">Taken</span>}
-      </button>
-    );
-  }
-
   return (
     <button
+      type="button"
       onClick={handleClick}
       disabled={buttonLoading}
-      className={`
-        flex items-center justify-center gap-2 rounded-full
-        bg-orange-50 text-orange-900 hover:bg-orange-100 active:bg-orange-200
-        transition-[color,background-color,transform] duration-150 ease-out touch-manipulation active:scale-[0.96]
-        ${sizeClasses[size]}
-        ${buttonLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        ${className}
-      `}
-      title={`Log ${productName}`}
+      aria-pressed={isLogged}
+      aria-label={isLogged ? `Unlog ${productName}` : `Log ${productName}`}
+      title={isLogged ? `${productName} — taken today` : `Log ${productName}`}
+      className={cn(
+        'flex shrink-0 items-center justify-center rounded-full border-2 touch-manipulation',
+        'transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.92]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2',
+        sizeStyles[size],
+        isLogged
+          ? 'border-success-600 bg-success-600 text-white hover:border-success-700 hover:bg-success-700'
+          : 'border-gray-300 bg-white text-gray-400 hover:border-gray-400 hover:text-gray-600',
+        buttonLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
+        className
+      )}
     >
       {buttonLoading ? (
-        <FiLoader className="animate-spin" size={iconSizes[size]} />
+        <FiLoader className="animate-spin" size={iconSizes[size]} aria-hidden="true" />
+      ) : isLogged ? (
+        <FiCheck size={iconSizes[size]} strokeWidth={2.5} aria-hidden="true" />
       ) : (
-        <FiPlus size={iconSizes[size]} />
+        <FiPlus size={iconSizes[size]} aria-hidden="true" />
       )}
-      {showLabel && <span className="text-sm font-medium pr-1 hidden xs:inline">Log</span>}
     </button>
   );
 }

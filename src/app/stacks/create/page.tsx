@@ -326,7 +326,7 @@ export default function CreateStackPage() {
                           <div className="flex flex-wrap items-center gap-2">
                             <h4 className="font-medium text-gray-900">{supplement.supplement_name}</h4>
                             {supplement.research_only && (
-                              <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-900">
+                              <span className="rounded-full border border-warning-300 bg-warning-50 px-2 py-0.5 text-xs font-semibold text-warning-900">
                                 Reference
                               </span>
                             )}
@@ -349,7 +349,7 @@ export default function CreateStackPage() {
                         type="button"
                         onClick={() => removeSupplement(supplement.supplement_id)}
                         aria-label={`Remove ${supplement.supplement_name}`}
-                        className="flex min-h-11 min-w-11 items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-red-600 active:bg-gray-200"
+                        className="flex min-h-11 min-w-11 items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-error-600 active:bg-gray-200"
                       >
                         <FiX size={18} aria-hidden="true" />
                       </button>
@@ -437,7 +437,7 @@ export default function CreateStackPage() {
                           <FiPlus className="text-gray-400" size={14} />
                           <span className="min-w-0 flex-1 truncate">{supplement.supplement_name}</span>
                           {supplement.research_only && (
-                            <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-900">
+                            <span className="rounded-full border border-warning-300 bg-warning-50 px-2 py-0.5 text-xs font-semibold text-warning-900">
                               Reference
                             </span>
                           )}
@@ -521,7 +521,7 @@ export default function CreateStackPage() {
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
+            <div className="bg-error-50 border border-error-200 rounded-lg p-4 text-error-700 text-sm">
               {error}
             </div>
           )}

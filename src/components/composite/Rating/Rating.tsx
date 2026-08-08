@@ -82,7 +82,7 @@ export function Rating({
               type="button"
               className={`
                 ${sizeClasses[size]}
-                ${fill === 'empty' ? 'text-gray-200' : 'text-yellow-400'}
+                ${fill === 'empty' ? 'text-gray-200' : 'text-warning-400'}
                 ${!readonly ? 'cursor-pointer hover:scale-110 transition-transform' : 'cursor-default'}
               `}
               onMouseEnter={() => handleMouseEnter(starIndex)}

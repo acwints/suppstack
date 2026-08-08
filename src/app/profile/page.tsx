@@ -388,7 +388,7 @@ export default function Profile() {
                           setDeleteConfirm({ stackId: stack.stack_id, stackName: stack.stack_name })
                         }
                         aria-label={`Delete ${stack.stack_name}`}
-                        className="flex min-h-11 min-w-11 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-50 hover:text-red-600 active:bg-gray-100"
+                        className="flex min-h-11 min-w-11 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-50 hover:text-error-600 active:bg-gray-100"
                       >
                         <FiTrash2 size={18} aria-hidden="true" />
                       </button>
@@ -556,8 +556,8 @@ export default function Profile() {
                 </Stack>
               </form>
 
-              <div className="mt-12 border-t border-red-100 pt-8">
-                <h3 className="text-sm font-medium uppercase tracking-wider text-red-700">
+              <div className="mt-12 border-t border-error-100 pt-8">
+                <h3 className="text-sm font-medium uppercase tracking-wider text-error-700">
                   Account
                 </h3>
                 <p className="mt-3 text-sm text-gray-600">
@@ -613,7 +613,7 @@ export default function Profile() {
             id="delete-account-confirm"
             value={accountDeleteInput}
             onChange={(event) => setAccountDeleteInput(event.target.value)}
-            className="mt-2 w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-red-600 focus:outline-none focus:ring-1 focus:ring-red-600"
+            className="mt-2 w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-error-600 focus:outline-none focus:ring-1 focus:ring-error-600"
             autoComplete="off"
             inputMode="text"
           />

@@ -118,7 +118,7 @@ export function ReviewForm({
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-error-50 text-error-700 px-4 py-3 rounded-lg text-sm">
           {error}
         </div>
       )}
@@ -177,7 +177,7 @@ export function ReviewForm({
       {/* Review Body */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Your Review <span className="text-red-500">*</span>
+          Your Review <span className="text-error-500">*</span>
         </label>
         <textarea
           value={reviewBody}
@@ -199,13 +199,13 @@ export function ReviewForm({
         </label>
         <div className="space-y-2">
           {pros.map((pro, index) => (
-            <div key={index} className="flex items-center gap-2 bg-green-50 px-3 py-2 rounded-lg">
-              <span className="text-green-600">+</span>
+            <div key={index} className="flex items-center gap-2 bg-success-50 px-3 py-2 rounded-lg">
+              <span className="text-success-600">+</span>
               <span className="flex-1 text-sm">{pro}</span>
               <button
                 type="button"
                 onClick={() => removePro(index)}
-                className="text-gray-400 hover:text-red-500"
+                className="text-gray-400 hover:text-error-500"
               >
                 <FaTimes className="w-3 h-3" />
               </button>
@@ -235,13 +235,13 @@ export function ReviewForm({
         </label>
         <div className="space-y-2">
           {cons.map((con, index) => (
-            <div key={index} className="flex items-center gap-2 bg-red-50 px-3 py-2 rounded-lg">
-              <span className="text-red-600">-</span>
+            <div key={index} className="flex items-center gap-2 bg-error-50 px-3 py-2 rounded-lg">
+              <span className="text-error-600">-</span>
               <span className="flex-1 text-sm">{con}</span>
               <button
                 type="button"
                 onClick={() => removeCon(index)}
-                className="text-gray-400 hover:text-red-500"
+                className="text-gray-400 hover:text-error-500"
               >
                 <FaTimes className="w-3 h-3" />
               </button>
@@ -284,7 +284,7 @@ export function ReviewForm({
               type="radio"
               checked={wouldRecommend === true}
               onChange={() => setWouldRecommend(true)}
-              className="w-4 h-4 text-green-600"
+              className="w-4 h-4 text-success-600"
             />
             <span className="text-sm">Yes, I would recommend</span>
           </label>
@@ -293,7 +293,7 @@ export function ReviewForm({
               type="radio"
               checked={wouldRecommend === false}
               onChange={() => setWouldRecommend(false)}
-              className="w-4 h-4 text-red-600"
+              className="w-4 h-4 text-error-600"
             />
             <span className="text-sm">No, I would not recommend</span>
           </label>

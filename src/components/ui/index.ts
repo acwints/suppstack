@@ -32,6 +32,9 @@ export type { SkeletonProps } from './Skeleton';
 export { Modal } from './Modal';
 export type { ModalProps } from './Modal';
 
+export { ProgressRing } from './ProgressRing';
+export type { ProgressRingProps, ProgressRingSize, ProgressRingTone } from './ProgressRing';
+
 // =============================================================================
 // Layout Primitives
 // =============================================================================

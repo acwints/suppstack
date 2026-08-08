@@ -15,7 +15,7 @@ const sizeClasses = {
 };
 
 const colorClasses = {
-  primary: 'border-orange-500 border-t-transparent',
+  primary: 'border-accent-500 border-t-transparent',
   secondary: 'border-gray-600 border-t-transparent',
   white: 'border-white border-t-transparent',
   gray: 'border-gray-300 border-t-gray-100',

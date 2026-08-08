@@ -204,9 +204,9 @@ export function RestockReminders({ className }: RestockRemindersProps) {
               className={cn(
                 'p-3 rounded-lg border transition-colors',
                 item.urgency === 'critical'
-                  ? 'border-red-200 bg-red-50'
+                  ? 'border-error-200 bg-error-50'
                   : item.urgency === 'soon'
-                  ? 'border-amber-200 bg-amber-50'
+                  ? 'border-warning-200 bg-warning-50'
                   : 'border-gray-100 bg-white'
               )}
             >
@@ -217,7 +217,7 @@ export function RestockReminders({ className }: RestockRemindersProps) {
                       {item.product_name}
                     </h4>
                     {item.urgency === 'critical' && (
-                      <FiAlertCircle className="text-red-500 shrink-0" size={14} />
+                      <FiAlertCircle className="text-error-500 shrink-0" size={14} />
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mt-0.5">{item.brand_name}</p>
@@ -228,9 +228,9 @@ export function RestockReminders({ className }: RestockRemindersProps) {
                         className={cn(
                           'font-medium',
                           item.urgency === 'critical'
-                            ? 'text-red-600'
+                            ? 'text-error-600'
                             : item.urgency === 'soon'
-                            ? 'text-amber-600'
+                            ? 'text-warning-600'
                             : 'text-gray-600'
                         )}
                       >
@@ -250,10 +250,10 @@ export function RestockReminders({ className }: RestockRemindersProps) {
                       className={cn(
                         'h-full rounded-full transition-[width]',
                         item.urgency === 'critical'
-                          ? 'bg-red-500'
+                          ? 'bg-error-500'
                           : item.urgency === 'soon'
-                          ? 'bg-amber-500'
-                          : 'bg-green-500'
+                          ? 'bg-warning-500'
+                          : 'bg-success-500'
                       )}
                       style={{
                         width: `${Math.min(100, (item.days_until_restock / item.days_supply) * 100)}%`,

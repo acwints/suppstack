@@ -87,7 +87,7 @@ export function ReviewCard({
             <p>{review.review_body.slice(0, 300)}...</p>
             <button
               onClick={() => setIsExpanded(true)}
-              className="text-orange-600 hover:text-orange-700 font-medium mt-1"
+              className="text-accent-600 hover:text-accent-700 font-medium mt-1"
             >
               Read more
             </button>
@@ -102,11 +102,11 @@ export function ReviewCard({
         <div className="grid grid-cols-2 gap-4 mb-4">
           {review.pros && review.pros.length > 0 && (
             <div>
-              <h5 className="text-sm font-semibold text-green-700 mb-2">Pros</h5>
+              <h5 className="text-sm font-semibold text-success-700 mb-2">Pros</h5>
               <ul className="space-y-1">
                 {review.pros.map((pro, i) => (
                   <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
-                    <span className="text-green-500 mt-0.5">+</span>
+                    <span className="text-success-500 mt-0.5">+</span>
                     {pro}
                   </li>
                 ))}
@@ -115,11 +115,11 @@ export function ReviewCard({
           )}
           {review.cons && review.cons.length > 0 && (
             <div>
-              <h5 className="text-sm font-semibold text-red-700 mb-2">Cons</h5>
+              <h5 className="text-sm font-semibold text-error-700 mb-2">Cons</h5>
               <ul className="space-y-1">
                 {review.cons.map((con, i) => (
                   <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
-                    <span className="text-red-500 mt-0.5">-</span>
+                    <span className="text-error-500 mt-0.5">-</span>
                     {con}
                   </li>
                 ))}
@@ -165,7 +165,7 @@ export function ReviewCard({
         <p
           className={cn(
             'mb-4 flex items-center gap-1.5 text-sm font-medium',
-            review.would_recommend ? 'text-green-600' : 'text-red-600'
+            review.would_recommend ? 'text-success-600' : 'text-error-600'
           )}
         >
           {review.would_recommend ? (
@@ -186,14 +186,14 @@ export function ReviewCard({
           <div className="flex items-center gap-2">
             <button
               onClick={() => onVoteHelpful?.(review.review_id, true)}
-              className="flex items-center gap-1 text-sm text-gray-600 hover:text-green-600 transition-colors"
+              className="flex items-center gap-1 text-sm text-gray-600 hover:text-success-600 transition-colors"
             >
               <FaThumbsUp className="w-3 h-3" />
               <span>Yes ({review.helpful_count})</span>
             </button>
             <button
               onClick={() => onVoteHelpful?.(review.review_id, false)}
-              className="flex items-center gap-1 text-sm text-gray-600 hover:text-red-600 transition-colors"
+              className="flex items-center gap-1 text-sm text-gray-600 hover:text-error-600 transition-colors"
             >
               <FaThumbsDown className="w-3 h-3" />
               <span>No</span>

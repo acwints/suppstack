@@ -12,7 +12,7 @@ import { twMerge } from 'tailwind-merge';
 
 /**
  * Merge class names with Tailwind CSS conflict resolution
- * Usage: cn('px-4 py-2', condition && 'bg-red-500', 'hover:bg-blue-500')
+ * Usage: cn('px-4 py-2', condition && 'bg-error-500', 'hover:bg-info-500')
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

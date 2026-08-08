@@ -97,7 +97,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
             )}
           >
             {verified ? (
-              <VerifiedIcon className={cn(config.badgeIcon, 'text-blue-500')} />
+              <VerifiedIcon className={cn(config.badgeIcon, 'text-info-500')} />
             ) : (
               <InfluencerIcon className={cn(config.badgeIcon, 'text-purple-500')} />
             )}
