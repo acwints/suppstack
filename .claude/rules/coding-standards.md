@@ -29,6 +29,13 @@ The palette is professional editorial (grays + warm accent):
 
 If a user requests a color outside the palette, explain the design philosophy and suggest the closest alternative from the palette.
 
+**No red/green "traffic light" coding.** Do not color-code ratings, tiers,
+statuses, or progress with red-to-green gradients. Communicate state in
+monochrome ink (filled / outlined / empty shapes, weight, opacity) with the
+warm accent used sparingly for progress and celebration. `success`/`error`/
+`warning`/`info` are for transient feedback only (toasts, form errors,
+destructive confirmation) — never for decorating persistent UI.
+
 ### Rule 3: Avoid Heavy Visual Elements
 The design is **understated and professional**. Avoid:
 - Heavy shadows (`shadow-lg`, `shadow-xl`)

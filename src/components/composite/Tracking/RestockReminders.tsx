@@ -205,8 +205,6 @@ export function RestockReminders({ className }: RestockRemindersProps) {
                 'p-3 rounded-lg border transition-colors',
                 item.urgency === 'critical'
                   ? 'border-error-200 bg-error-50'
-                  : item.urgency === 'soon'
-                  ? 'border-warning-200 bg-warning-50'
                   : 'border-gray-100 bg-white'
               )}
             >
@@ -230,7 +228,7 @@ export function RestockReminders({ className }: RestockRemindersProps) {
                           item.urgency === 'critical'
                             ? 'text-error-600'
                             : item.urgency === 'soon'
-                            ? 'text-warning-600'
+                            ? 'text-gray-900'
                             : 'text-gray-600'
                         )}
                       >
@@ -251,9 +249,7 @@ export function RestockReminders({ className }: RestockRemindersProps) {
                         'h-full rounded-full transition-[width]',
                         item.urgency === 'critical'
                           ? 'bg-error-500'
-                          : item.urgency === 'soon'
-                          ? 'bg-warning-500'
-                          : 'bg-success-500'
+                          : 'bg-gray-900'
                       )}
                       style={{
                         width: `${Math.min(100, (item.days_until_restock / item.days_supply) * 100)}%`,

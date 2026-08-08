@@ -574,6 +574,28 @@ export default function Profile() {
                   Delete account
                 </Button>
               </div>
+
+              {/* App/legal links — the footer is desktop-only, so mobile and
+                  the native app reach these from here. */}
+              <div className="mt-12 border-t border-gray-200 pt-8">
+                <h3 className="text-sm font-medium uppercase tracking-wider text-gray-500">
+                  About
+                </h3>
+                <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+                  <Link href="/premium" className="text-gray-600 hover:text-gray-900">
+                    Premium
+                  </Link>
+                  <Link href="/support" className="text-gray-600 hover:text-gray-900">
+                    Support
+                  </Link>
+                  <Link href="/privacy" className="text-gray-600 hover:text-gray-900">
+                    Privacy Policy
+                  </Link>
+                  <Link href="/terms" className="text-gray-600 hover:text-gray-900">
+                    Terms
+                  </Link>
+                </div>
+              </div>
             </div>
           </section>
         )}

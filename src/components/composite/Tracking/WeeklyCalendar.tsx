@@ -109,9 +109,11 @@ export function WeeklyCalendar({
     return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   };
 
+  // Monochrome day states: filled = complete, outlined = partial, faint =
+  // nothing logged. No traffic-light coding.
   const statusColors = {
-    perfect: 'bg-success-600 text-white',
-    partial: 'bg-accent-200 text-accent-900',
+    perfect: 'bg-gray-900 text-white',
+    partial: 'border-2 border-gray-900 bg-white text-gray-900',
     missed: 'bg-gray-100 text-gray-400',
     future: 'bg-gray-50 text-gray-300',
   };
@@ -169,7 +171,7 @@ export function WeeklyCalendar({
             <span
               className={cn(
                 'mb-1 text-xs sm:mb-1.5',
-                day.isToday ? 'font-semibold text-gray-900' : 'font-medium text-gray-500'
+                day.isToday ? 'font-semibold text-accent-700' : 'font-medium text-gray-500'
               )}
             >
               <span className="sm:hidden">{shortDayNames[index]}</span>
@@ -179,7 +181,7 @@ export function WeeklyCalendar({
               className={cn(
                 'flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold sm:h-10 sm:w-10 sm:text-sm',
                 statusColors[day.status],
-                day.isToday && 'ring-2 ring-gray-900 ring-offset-1 sm:ring-offset-2'
+                day.isToday && 'ring-2 ring-accent-500 ring-offset-1 sm:ring-offset-2'
               )}
             >
               {day.dayOfMonth}
@@ -191,11 +193,11 @@ export function WeeklyCalendar({
       {/* Legend */}
       <div className="flex items-center justify-center gap-3 sm:gap-4 mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-100">
         <div className="flex items-center gap-1 sm:gap-1.5">
-          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-success-600" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-gray-900" />
           <span className="text-xs text-gray-600">Complete</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">
-          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-accent-200" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border-2 border-gray-900 bg-white" />
           <span className="text-xs text-gray-600">Partial</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">

@@ -95,6 +95,24 @@ Import from: `import { supabase } from '@/app/supabase'`
 - `reviews` - Product reviews
 - `profiles` - User profiles
 
+## Product Principles (owner-set, do not regress)
+1. **Mobile app first.** The iOS app (Capacitor shell loading the production
+   web app) is the priority surface; the website matters second, but the two
+   share code and must both work perfectly.
+2. **No footer in the app.** The website footer never renders in the native
+   app or on mobile-width viewports — the tab bar is the chrome there. Legal
+   links live on the Profile screen and desktop footer.
+3. **No red/green "traffic light" color coding.** Avoid the generic
+   red-to-green semantic gradients seen in every AI-generated app. State is
+   communicated in monochrome ink (filled / outlined / empty) plus the single
+   warm accent, used sparingly for progress and celebration moments.
+   Semantic colors (success/error/warning/info) are reserved for transient
+   feedback only: toasts, form errors, destructive confirmation.
+4. **Monetize the mobile app.** Premium subscriptions on iOS go through
+   Apple IAP via `@revenuecat/purchases-capacitor` with the same `premium`
+   entitlement as web billing (see PREMIUM_BILLING.md); physical goods keep
+   external merchant checkout per App Store guideline 3.1.3(e).
+
 ## Critical Rules
 1. Never hardcode colors/spacing - use the Tailwind theme (tailwind.config.ts)
 2. Always handle loading/error states in data components

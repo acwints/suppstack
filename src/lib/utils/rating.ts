@@ -58,12 +58,9 @@ export function getRatingLabel(rating: number): string {
  * Get rating color class based on numeric value
  */
 export function getRatingColor(rating: number): string {
-  if (rating >= 4.5) return 'text-success-600';
-  if (rating >= 4.0) return 'text-success-500';
-  if (rating >= 3.5) return 'text-warning-500';
-  if (rating >= 3.0) return 'text-warning-600';
-  if (rating >= 2.0) return 'text-accent-500';
-  return 'text-error-500';
+  // Ratings read in ink — the number carries the meaning. No traffic-light
+  // scales (see .claude/rules/coding-standards.md).
+  return rating > 0 ? 'text-gray-900' : 'text-gray-400';
 }
 
 /**

@@ -77,13 +77,14 @@ export function getPriceTier(costPerServing: number): {
   label: string;
   color: string;
 } {
+  // Tier labels read in ink — no per-tier color coding.
   if (costPerServing < 0.10) {
-    return { label: 'Budget', color: 'text-success-600' };
+    return { label: 'Budget', color: 'text-gray-600' };
   } else if (costPerServing < 0.30) {
-    return { label: 'Value', color: 'text-info-600' };
+    return { label: 'Value', color: 'text-gray-600' };
   } else if (costPerServing < 0.75) {
-    return { label: 'Premium', color: 'text-purple-600' };
+    return { label: 'Premium', color: 'text-gray-600' };
   } else {
-    return { label: 'Luxury', color: 'text-warning-600' };
+    return { label: 'Luxury', color: 'text-gray-600' };
   }
 }

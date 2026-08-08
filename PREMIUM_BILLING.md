@@ -55,11 +55,36 @@ Key properties:
    `SUPABASE_SERVICE_ROLE_KEY`.
 5. **Database:** apply `supabase/migrations/20260101000005_billing.sql`
    (`supabase db push`).
-6. **iOS (when the Capacitor branch ships):** create the subscription in App
-   Store Connect, add `@revenuecat/purchases-capacitor`, call
-   `Purchases.configure({ apiKey, appUserID: supabaseUserId })` after login,
-   and present the paywall with the same `premium` entitlement. Apple takes
-   15–30% of IAP vs ~3% on web, so web remains the primary purchase surface.
+6. **iOS (code is wired — owner-side setup remains):** the app already ships
+   `@revenuecat/purchases-capacitor` (registered in the native shell's
+   Package.swift) plus a bridge in `src/lib/billing/native-purchases.ts`.
+   `AuthContext` identifies the SDK with the Supabase user id after login,
+   and `/premium` shows a native Subscribe button (with Apple's localized
+   price) and the App-Review-required Restore Purchases action. To activate:
+
+   1. App Store Connect → the SuppStack AI app → Subscriptions: create a
+      subscription group and an auto-renewable subscription (e.g. product id
+      `premium_monthly_ios`, $4.99/mo). Fill in localization + review notes.
+   2. RevenueCat → project → add an **Apple App Store** app for bundle id
+      `app.suppstack`, upload the App Store Connect API key (or shared
+      secret), and import the product.
+   3. Attach the product to the `premium` entitlement and add it as the
+      first package of the **default offering** (the app buys
+      `offerings.current.availablePackages[0]`).
+   4. Set `NEXT_PUBLIC_REVENUECAT_APPLE_API_KEY` (the RevenueCat *public*
+      Apple SDK key, `appl_...`) in Vercel Production and redeploy. Until it
+      is set the iOS paywall shows "not available in this version" and
+      nothing breaks.
+   5. On the Mac: `npm install && npm run ios:sync`, open Xcode, bump the
+      Build number, archive, upload — the native binary changed, so this
+      needs a new App Store build (see APP_STORE_SUBMISSION.md).
+   6. Sandbox-test on TestFlight: purchase → webhook writes a
+      `user_entitlements` row with `store = 'app_store'`; Restore Purchases
+      works after reinstall; "Manage subscription" opens Apple's sheet.
+
+   Apple takes 15–30% of IAP vs ~3% on web, so web remains the primary
+   purchase surface; the iOS paywall exists to monetize mobile-first users
+   who will never open the website.
 
 ## Testing
 

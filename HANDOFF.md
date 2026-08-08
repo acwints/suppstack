@@ -101,10 +101,14 @@ has been uploaded. Key facts:
   goods must use external checkout not IAP (3.1.3(e)); account deletion
   must be reachable in-app (5.1.1); add Sign in with Apple if Google
   sign-in ships on iOS (4.8).
-- If Premium is enabled in the iOS app, digital subscriptions DO require
-  Apple IAP — integrate `@revenuecat/purchases-capacitor` with the same
-  `premium` entitlement (see the iOS section of `PREMIUM_BILLING.md`).
-  Simplest v1: don't surface Premium purchase in the iOS build.
+- Premium purchase in the iOS app is now WIRED via Apple IAP:
+  `@revenuecat/purchases-capacitor` is registered in the native shell and
+  `/premium` presents a native Subscribe + Restore Purchases flow. It stays
+  dormant ("not available in this version") until the owner-side setup in
+  the iOS section of `PREMIUM_BILLING.md` is done — App Store Connect
+  subscription product, RevenueCat Apple app config, and the
+  `NEXT_PUBLIC_REVENUECAT_APPLE_API_KEY` env var. The native binary changed,
+  so the next App Store upload must be a new build number.
 
 ## Task 4 — Optional: unblock future cloud agents
 

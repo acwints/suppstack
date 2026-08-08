@@ -74,15 +74,15 @@ export function DailyLogCard({
             <p
               className={cn(
                 'mt-1 text-sm',
-                logsComplete ? 'font-medium text-success-700' : 'text-gray-500'
+                logsComplete ? 'font-medium text-accent-800' : 'text-gray-500'
               )}
             >
               {subtitle}
             </p>
           </div>
-          <ProgressRing value={progress} size="md" tone={logsComplete ? 'success' : 'accent'}>
+          <ProgressRing value={progress} size="md" tone="accent">
             {logsComplete ? (
-              <FiCheck size={20} strokeWidth={2.5} className="text-success-600" aria-hidden="true" />
+              <FiCheck size={20} strokeWidth={2.5} className="text-accent-600" aria-hidden="true" />
             ) : (
               <span className="text-xs font-semibold tabular-nums text-gray-900">
                 {takenCount}/{regimen.length}
@@ -102,14 +102,14 @@ export function DailyLogCard({
               key={item.product_id}
               className={cn(
                 'flex items-center gap-3 p-4 transition-colors sm:gap-4',
-                isLogged && 'bg-success-50/60'
+                isLogged && 'bg-gray-50'
               )}
             >
               <div className="min-w-0 flex-1">
                 <h4
                   className={cn(
                     'truncate font-sans text-sm font-medium sm:text-base leading-5',
-                    isLogged ? 'text-success-800' : 'text-gray-900'
+                    isLogged ? 'text-gray-500' : 'text-gray-900'
                   )}
                 >
                   {item.products.product_name}
@@ -117,7 +117,7 @@ export function DailyLogCard({
                 <p
                   className={cn(
                     'truncate text-xs sm:text-sm',
-                    isLogged ? 'text-success-600' : 'text-gray-500'
+                    isLogged ? 'text-gray-400' : 'text-gray-500'
                   )}
                 >
                   {item.products.supplements.supplement_name}

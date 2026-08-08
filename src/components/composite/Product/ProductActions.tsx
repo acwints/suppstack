@@ -109,7 +109,7 @@ export function ProductActions({
             'flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 bg-white/95 text-gray-700 shadow-sm backdrop-blur transition-colors',
             'hover:border-gray-300 hover:bg-white hover:text-gray-950 active:bg-gray-50',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900',
-            'disabled:cursor-default disabled:border-success-200 disabled:bg-success-50 disabled:text-success-700',
+            'disabled:cursor-default disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-700',
             className
           )}
         >
@@ -134,7 +134,7 @@ export function ProductActions({
             size="lg"
             leftIcon={isInStack ? <FaCheck /> : <FaPlus />}
             isLoading={isUpdating}
-            className={cn('min-h-11 flex-1', isInStack && 'bg-success-50 text-success-700 border-success-200')}
+            className={cn('min-h-11 flex-1', isInStack && 'bg-gray-100 text-gray-700 border-gray-200')}
           >
             {isInStack ? 'In Stack' : 'Add'}
           </Button>
@@ -170,7 +170,7 @@ export function ProductActions({
           size="lg"
           leftIcon={isInStack ? <FaCheck /> : <FaPlus />}
           isLoading={isUpdating}
-          className={cn('flex-1', isInStack && 'bg-success-50 text-success-700 border-success-200')}
+          className={cn('flex-1', isInStack && 'bg-gray-100 text-gray-700 border-gray-200')}
         >
           {isInStack ? 'In Stack' : 'Add to Stack'}
         </Button>

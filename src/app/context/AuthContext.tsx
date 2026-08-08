@@ -11,6 +11,10 @@ import {
   onAppUrlOpen,
   openInNativeBrowser,
 } from '@/lib/native/capacitor';
+import {
+  configureNativePurchases,
+  resetNativePurchases,
+} from '@/lib/billing/native-purchases';
 
 /** Deep link Supabase redirects to after OAuth completes in the native shell. */
 const NATIVE_AUTH_CALLBACK = 'app.suppstack://auth-callback';
@@ -90,6 +94,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [router]);
 
+  // Identify the RevenueCat SDK with the Supabase user id in the native
+  // shell, so Apple IAP purchases attribute to the same entitlement row the
+  // web billing webhook writes. No-op on the web or without the API key.
+  useEffect(() => {
+    if (!isNativeApp()) return;
+    if (user) {
+      configureNativePurchases(user.id).catch((error) => {
+        console.error('Failed to configure native purchases:', error);
+      });
+    }
+  }, [user]);
+
   // Native OAuth return leg: Supabase redirects the in-app browser to the
   // app.suppstack:// deep link with a PKCE code; exchange it here in the
   // webview (where the code verifier lives), then dismiss the browser sheet.
@@ -162,6 +178,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = async () => {
+    await resetNativePurchases().catch(() => undefined);
     await supabase.auth.signOut();
   };
 

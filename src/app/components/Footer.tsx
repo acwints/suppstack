@@ -17,7 +17,9 @@ export default function Footer() {
   if (pathname === '/login' || isNative) return null;
 
   return (
-    <footer className="mt-auto border-t border-gray-200 bg-white px-4 py-6 text-gray-600 md:p-8">
+    // Mobile-width web mirrors the app: the tab bar is the chrome, so the
+    // footer only exists on desktop. Legal links live on Profile for mobile.
+    <footer className="mt-auto hidden border-t border-gray-200 bg-white px-4 py-6 text-gray-600 md:block md:p-8">
       <div className="container-custom">
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="text-center md:text-start">

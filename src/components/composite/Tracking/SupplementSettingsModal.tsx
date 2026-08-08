@@ -89,11 +89,7 @@ export function SupplementSettingsModal({
                 onClick={() => setStatus(option.value)}
                 className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   status === option.value
-                    ? option.value === 'active'
-                      ? 'bg-success-100 text-success-700 ring-2 ring-success-500'
-                      : option.value === 'paused'
-                      ? 'bg-warning-100 text-warning-700 ring-2 ring-warning-500'
-                      : 'bg-gray-200 text-gray-700 ring-2 ring-gray-400'
+                    ? 'bg-gray-900 text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >

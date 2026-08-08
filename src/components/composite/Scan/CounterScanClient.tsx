@@ -48,7 +48,7 @@ function statusLabel(status: CounterScanMatchedItem['matchStatus']) {
 }
 
 function statusClassName(status: CounterScanMatchedItem['matchStatus']) {
-  if (status === 'matched') return 'bg-success-50 text-success-700 shadow-[inset_0_0_0_1px_rgba(21,128,61,0.14)]';
+  if (status === 'matched') return 'bg-gray-100 text-gray-900 shadow-[inset_0_0_0_1px_rgba(17,24,39,0.10)]';
   if (status === 'ambiguous') return 'bg-warning-50 text-warning-800 shadow-[inset_0_0_0_1px_rgba(146,64,14,0.16)]';
   return 'bg-gray-100 text-gray-700 shadow-[inset_0_0_0_1px_rgba(17,24,39,0.08)]';
 }

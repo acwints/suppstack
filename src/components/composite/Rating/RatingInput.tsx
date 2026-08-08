@@ -50,8 +50,8 @@ export function RatingInput({
               type="button"
               className={`
                 ${sizeClasses[size].star}
-                ${starValue <= displayValue ? 'text-warning-400' : 'text-gray-200'}
-                transition-[color,transform] duration-150 ease-out hover:scale-110 hover:text-warning-400 active:scale-[0.96]
+                ${starValue <= displayValue ? 'text-gray-900' : 'text-gray-200'}
+                transition-[color,transform] duration-150 ease-out hover:scale-110 hover:text-gray-900 active:scale-[0.96]
               `}
               onMouseEnter={() => setHoverValue(starValue)}
               onMouseLeave={() => setHoverValue(null)}

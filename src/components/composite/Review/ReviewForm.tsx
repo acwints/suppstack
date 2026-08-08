@@ -199,8 +199,8 @@ export function ReviewForm({
         </label>
         <div className="space-y-2">
           {pros.map((pro, index) => (
-            <div key={index} className="flex items-center gap-2 bg-success-50 px-3 py-2 rounded-lg">
-              <span className="text-success-600">+</span>
+            <div key={index} className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
+              <span className="text-gray-900">+</span>
               <span className="flex-1 text-sm">{pro}</span>
               <button
                 type="button"
@@ -235,8 +235,8 @@ export function ReviewForm({
         </label>
         <div className="space-y-2">
           {cons.map((con, index) => (
-            <div key={index} className="flex items-center gap-2 bg-error-50 px-3 py-2 rounded-lg">
-              <span className="text-error-600">-</span>
+            <div key={index} className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
+              <span className="text-gray-400">-</span>
               <span className="flex-1 text-sm">{con}</span>
               <button
                 type="button"
@@ -284,7 +284,7 @@ export function ReviewForm({
               type="radio"
               checked={wouldRecommend === true}
               onChange={() => setWouldRecommend(true)}
-              className="w-4 h-4 text-success-600"
+              className="w-4 h-4 text-gray-900"
             />
             <span className="text-sm">Yes, I would recommend</span>
           </label>
@@ -293,7 +293,7 @@ export function ReviewForm({
               type="radio"
               checked={wouldRecommend === false}
               onChange={() => setWouldRecommend(false)}
-              className="w-4 h-4 text-error-600"
+              className="w-4 h-4 text-gray-900"
             />
             <span className="text-sm">No, I would not recommend</span>
           </label>

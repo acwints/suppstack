@@ -72,7 +72,7 @@ export function LogButton({
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2',
         sizeStyles[size],
         isLogged
-          ? 'border-success-600 bg-success-600 text-white hover:border-success-700 hover:bg-success-700'
+          ? 'border-gray-900 bg-gray-900 text-white hover:border-gray-800 hover:bg-gray-800'
           : 'border-gray-300 bg-white text-gray-400 hover:border-gray-400 hover:text-gray-600',
         buttonLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
         className

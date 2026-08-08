@@ -172,7 +172,7 @@ export function ReviewList({
       {/* Login Prompt */}
       {!isLoggedIn && !showReviewForm && (
         <div className="bg-gray-50 rounded-xl p-6 text-center">
-          <FaStar className="w-8 h-8 text-warning-400 mx-auto mb-3" />
+          <FaStar className="w-8 h-8 text-gray-900 mx-auto mb-3" />
           <h3 className="font-semibold text-gray-900 mb-2">
             Share your experience
           </h3>
