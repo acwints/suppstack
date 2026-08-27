@@ -16,10 +16,10 @@ const generatedResolutionFile = path.join(
 
 await runCapacitorSync();
 await restorePinnedCapacitorPackage();
-await restoreCustomHealthPlugin();
+await restoreCustomNativePlugins();
 await rm(generatedResolutionFile, { force: true });
 
-console.log('iOS sync complete; restored pinned Capacitor binaries and SuppStackHealthPlugin.');
+console.log('iOS sync complete; restored pinned Capacitor binaries and custom native plugins.');
 
 function runCapacitorSync() {
   return new Promise((resolve, reject) => {
@@ -67,11 +67,13 @@ async function restorePinnedCapacitorPackage() {
   await writeFile(packageFile, restored);
 }
 
-async function restoreCustomHealthPlugin() {
+async function restoreCustomNativePlugins() {
   const config = JSON.parse(await readFile(nativeConfigFile, 'utf8'));
   const classList = Array.isArray(config.packageClassList) ? config.packageClassList : [];
-  if (!classList.includes('SuppStackHealthPlugin')) {
-    classList.push('SuppStackHealthPlugin');
+  for (const pluginClass of ['SuppStackHealthPlugin', 'SuppStackAppleSignInPlugin']) {
+    if (!classList.includes(pluginClass)) {
+      classList.push(pluginClass);
+    }
   }
   config.packageClassList = classList;
 

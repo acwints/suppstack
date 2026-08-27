@@ -1,0 +1,23 @@
+diff --git a/node_modules/@revenuecat/purchases-capacitor/Package.swift b/node_modules/@revenuecat/purchases-capacitor/Package.swift
+index a619dfd..dae2188 100644
+--- a/node_modules/@revenuecat/purchases-capacitor/Package.swift
++++ b/node_modules/@revenuecat/purchases-capacitor/Package.swift
+@@ -10,15 +10,15 @@ let package = Package(
+             targets: ["RevenuecatPurchasesCapacitor"])
+     ],
+     dependencies: [
+-        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "8.0.0"),
++        .package(name: "CapacitorBinaries", path: "../../../ios/App/CapacitorBinaries"),
+         .package(url: "https://github.com/RevenueCat/purchases-hybrid-common.git", exact: "18.29.0")
+     ],
+     targets: [
+         .target(
+             name: "RevenuecatPurchasesCapacitor",
+             dependencies: [
+-                .product(name: "Capacitor", package: "capacitor-swift-pm"),
+-                .product(name: "Cordova", package: "capacitor-swift-pm"),
++                .product(name: "Capacitor", package: "CapacitorBinaries"),
++                .product(name: "Cordova", package: "CapacitorBinaries"),
+                 .product(name: "PurchasesHybridCommon", package: "purchases-hybrid-common")
+             ],
+             path: "ios/Sources/RevenuecatPurchasesCapacitor")

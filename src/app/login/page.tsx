@@ -8,6 +8,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../context/AuthContext';
 import { Spinner, useToast } from '@/components/ui';
 import { isNativeApp } from '@/lib/native/capacitor';
+import { isNativeAppleSignInCancellation } from '@/lib/native/apple-sign-in';
 
 /**
  * Full-bleed, single-decision auth screen (Etsy iOS onboarding pattern).
@@ -40,7 +41,14 @@ function BrandMark() {
 }
 
 export default function Login() {
-  const { user, loading, loginWithApple, loginWithGoogle } = useAuth();
+  const {
+    user,
+    loading,
+    authError,
+    clearAuthError,
+    loginWithApple,
+    loginWithGoogle,
+  } = useAuth();
   const router = useRouter();
   const toast = useToast();
   const [nextPath, setNextPath] = useState('/log');
@@ -60,6 +68,12 @@ export default function Login() {
     }
   }, [nextPath, user, loading, router]);
 
+  useEffect(() => {
+    if (!authError) return;
+    toast.error(authError);
+    clearAuthError();
+  }, [authError, clearAuthError, toast]);
+
   const handleLogin = async (provider: 'apple' | 'google') => {
     setPendingProvider(provider);
     try {
@@ -70,7 +84,14 @@ export default function Login() {
       }
     } catch (error) {
       console.error(`Error logging in with ${provider}:`, error);
-      toast.error('Sign-in didn’t complete. Please try again.');
+      if (!isNativeAppleSignInCancellation(error)) {
+        const message =
+          error instanceof Error && error.message.trim()
+            ? error.message
+            : 'Sign-in didn’t complete. Please try again.';
+        toast.error(message);
+      }
+    } finally {
       setPendingProvider(null);
     }
   };

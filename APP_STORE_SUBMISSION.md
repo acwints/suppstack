@@ -13,6 +13,9 @@ project is complete.
   routes, so it is served remotely rather than bundled. Shipping web updates
   does not require an App Store release.
 - Native integrations are bridged into the remote page by Capacitor:
+  - Sign in with Apple uses Apple's native Authentication Services sheet and
+    exchanges the resulting ID token directly with Supabase. It does not rely
+    on an in-app browser or deep-link callback.
   - Merchant checkout and Google sign-in open in SFSafariViewController
     (in-app browser), so users never leave the app.
   - Google OAuth returns via the `app.suppstack://auth-callback` deep link
@@ -37,22 +40,66 @@ project is complete.
    `http://localhost:3000/**`, and `app.suppstack://auth-callback`.
 4. Supabase Apple provider - because the onboarding screen offers Google
    sign-in, keep Sign in with Apple enabled for App Review. The live Apple
-   OAuth provider is configured with:
+   provider must accept both the web Services ID and the native bundle ID:
    - Team ID: `VRTT45LLND`
    - Native App ID / bundle ID: `app.suppstack`
    - Services ID / Supabase Apple client ID: `app.suppstack.web`
+   - Supabase Client IDs field: `app.suppstack.web,app.suppstack` (Services ID
+     first so web OAuth continues to use it; the native App ID must also be
+     present so `signInWithIdToken` accepts the iOS token audience)
    - Supabase callback registered in Apple Developer:
      `https://ftjnxqyvqhpawsipfkay.supabase.co/auth/v1/callback`
    - Apple private key ID: `FX8R3SY6HF`
+5. Apple Developer identifier - enable **Sign in with Apple** for
+   `app.suppstack`. The Xcode target and `App.entitlements` already declare
+   the capability; automatic signing will generate a matching profile.
+
+## Resubmitting version 1.1 after Guideline 2.1(a)
+
+Apple rejected build 55 on August 13, 2026 because Sign in with Apple left the
+login screen loading indefinitely on an iPad Air 11-inch (M3). The review fix
+does three things:
+
+- presents Apple's system-native authorization sheet on iOS and iPadOS;
+- exchanges Apple's ID token with a cryptographic nonce directly through
+  Supabase, removing the Apple browser/deep-link return dependency; and
+- clears every pending UI state on success, cancellation, timeout, or error.
+
+Before resubmitting:
+
+1. Confirm the Apple Developer capability and the two Supabase Client IDs
+   described above.
+2. Deploy the web changes to `https://www.suppstack.app`; the native shell
+   loads that production app, so the updated token exchange and loading-state
+   recovery must be live before review.
+3. Produce an Xcode Cloud build newer than 55. The CI pre-build script stamps
+   `CURRENT_PROJECT_VERSION` from `CI_BUILD_NUMBER`.
+4. On a physical iPad or iPad simulator signed into an Apple Account, delete
+   the previous app, install the release/TestFlight build, and verify:
+   - successful first-time Apple sign-in;
+   - returning Apple sign-in;
+   - Hide My Email;
+   - cancellation returns to enabled buttons with no permanent spinner;
+   - network failure returns an actionable error and permits retry.
+5. Attach the new build to version 1.1 and resubmit with this Resolution Center
+   reply:
+
+> We resolved the Sign in with Apple issue reported under Guideline 2.1(a).
+> The app now uses Apple's native Authentication Services flow on iOS and
+> iPadOS and exchanges the Apple identity token directly with our authentication
+> service. We also added bounded session-exchange handling and ensured the login
+> controls always recover after cancellation or an error. We tested a clean
+> install of version 1.1 on iPad, including successful sign-in, cancellation,
+> and retry. Please review the newly submitted build.
 
 ## Current repo status
 
 The native Capacitor project has been restored and configured for
 `app.suppstack` / SuppStack AI. The App Store Connect record for this bundle is
-Apple ID `6788166423` with SKU `suppstack-ai-ios`. Build `1` for version
-`1.0.0` has been uploaded and processed as `VALID`; delivery UUID
-`599455c8-3fad-4ebe-9e15-659e12a9badc`. The build is attached to App Store
-version `1.0`, which provides the app icon/logo for the version page.
+Apple ID `6788166423` with SKU `suppstack-ai-ios`. Version 1.1 build 55 was
+reviewed on August 13, 2026 and rejected under Guideline 2.1(a) for the Apple
+login hang addressed above. The original version 1.0 build 1 delivery UUID was
+`599455c8-3fad-4ebe-9e15-659e12a9badc`.
 
 The old App Store Connect record (`6788125138`) is parked as
 `SuppStack AI Legacy` because it is locked to the prior
@@ -80,9 +127,9 @@ In Xcode:
 
 1. Select the `App` target > Signing & Capabilities > choose your team.
    Signing is automatic; the bundle ID is already `app.suppstack`.
-2. Set Version (e.g. `1.0.0`) and Build (`1`) on the General tab.
+2. Keep Version at `1.1` and use a build number newer than `55`.
 3. Product > Archive, then Distribute App > App Store Connect > Upload.
-4. In App Store Connect, attach the build to the 1.0 version, fill in the
+4. In App Store Connect, attach the build to version 1.1, fill in the
    listing, and submit for review. Use TestFlight first to smoke-test on a
    real device (checkout flow, Google sign-in, deep-link return).
 
@@ -105,7 +152,8 @@ Generated screenshot assets live in `assets/app-store/`. Run
 
 Apple rejects apps that are plain website wrappers. Mitigations already in
 place: native HealthKit integration, native in-app browser checkout, native
-OAuth deep-link flow, splash and status-bar integration, offline fallback. If the reviewer still flags 4.2, the
+Apple authentication, Google OAuth deep-link return, splash and status-bar
+integration, and an offline fallback. If the reviewer still flags 4.2, the
 strongest next additions are push notifications for restock reminders (the
 web app already computes restock dates) and iOS widgets. Plan for one
 resubmission cycle; respond in Resolution Center describing the native

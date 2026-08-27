@@ -15,6 +15,10 @@ import {
   configureNativePurchases,
   resetNativePurchases,
 } from '@/lib/billing/native-purchases';
+import {
+  authorizeWithNativeApple,
+  hasNativeAppleSignInBridge,
+} from '@/lib/native/apple-sign-in';
 
 /** Deep link Supabase redirects to after OAuth completes in the native shell. */
 const NATIVE_AUTH_CALLBACK = 'app.suppstack://auth-callback';
@@ -23,6 +27,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  authError: string | null;
+  clearAuthError: () => void;
   loginWithGoogle: (nextPath?: string) => Promise<void>;
   loginWithApple: (nextPath?: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -42,6 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -106,7 +113,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user]);
 
-  // Native OAuth return leg: Supabase redirects the in-app browser to the
+  // Native Google OAuth return leg (also retained as a compatibility fallback
+  // for older iOS builds): Supabase redirects the in-app browser to the
   // app.suppstack:// deep link with a PKCE code; exchange it here in the
   // webview (where the code verifier lives), then dismiss the browser sheet.
   useEffect(() => {
@@ -117,13 +125,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       await closeNativeBrowser();
       try {
-        const code = new URL(url.replace(NATIVE_AUTH_CALLBACK, 'https://callback')).searchParams.get('code');
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
+        const callbackUrl = new URL(
+          url.replace(NATIVE_AUTH_CALLBACK, 'https://callback')
+        );
+        const callbackError =
+          callbackUrl.searchParams.get('error_description') ||
+          callbackUrl.searchParams.get('error');
+        if (callbackError) throw new Error(callbackError);
+
+        const code = callbackUrl.searchParams.get('code');
+        if (!code) {
+          throw new Error('The sign-in response did not include an authorization code.');
         }
+
+        const { error } = await withTimeout(
+          supabase.auth.exchangeCodeForSession(code),
+          20_000,
+          'The sign-in response took too long. Please try again.'
+        );
+        if (error) throw error;
+        setAuthError(null);
       } catch (error) {
         console.error('Failed to complete native OAuth callback:', error);
+        setAuthError(readableAuthError(error));
       }
     });
   }, []);
@@ -131,6 +155,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const startOAuth = async (provider: 'google' | 'apple', nextPath = '/stack') => {
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem('suppstack_post_login_path', nextPath);
+    }
+
+    if (provider === 'apple' && hasNativeAppleSignInBridge()) {
+      const { credential, rawNonce } = await authorizeWithNativeApple();
+      const { error } = await withTimeout(
+        supabase.auth.signInWithIdToken({
+          provider: 'apple',
+          token: credential.identityToken,
+          nonce: rawNonce,
+        }),
+        20_000,
+        'Apple approved the sign-in, but creating your session took too long. Please try again.'
+      );
+      if (error) throw error;
+      return;
     }
 
     if (isNativeApp()) {
@@ -182,9 +221,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await supabase.auth.signOut();
   };
 
+  const clearAuthError = () => setAuthError(null);
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, loginWithGoogle, loginWithApple, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        loading,
+        authError,
+        clearAuthError,
+        loginWithGoogle,
+        loginWithApple,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
+
+function readableAuthError(error: unknown): string {
+  if (error instanceof Error && error.message.trim()) return error.message;
+  return 'Sign-in didn\u2019t complete. Please try again.';
+}
+
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  message: string
+): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeout = setTimeout(() => reject(new Error(message)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
