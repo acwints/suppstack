@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
+import { getUserProfileId } from '@/lib/account/profile';
 import type { Stack } from '@/types';
 
 export interface UseStackLikesResult {
@@ -30,13 +31,12 @@ export function useStackLikes(stackId?: string): UseStackLikesResult {
         return;
       }
 
-      const { data } = await supabase
-        .from('user_profiles')
-        .select('profile_id')
-        .eq('user_id', user.id)
-        .single();
-
-      setProfileId(data?.profile_id || null);
+      try {
+        setProfileId(await getUserProfileId(user));
+      } catch (error) {
+        console.error('Error loading account profile:', error);
+        setProfileId(null);
+      }
     }
 
     getProfileId();

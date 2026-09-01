@@ -117,7 +117,6 @@ export interface ProductContainingIngredient {
 
 export interface UserProfile {
   profile_id: string;
-  user_id: string;
   username: string;
   display_name: string;
   bio?: string;
@@ -125,10 +124,6 @@ export interface UserProfile {
   is_verified: boolean;
   is_influencer: boolean;
   follower_count: number;
-  date_of_birth?: string;
-  gender?: string;
-  height?: number; // in cm
-  weight?: number; // in kg
 }
 
 export interface RegimenItem {

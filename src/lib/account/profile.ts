@@ -7,15 +7,15 @@ export interface AccountProfile {
   username: string;
   display_name: string | null;
   profile_image: string | null;
-  bio?: string | null;
-  date_of_birth?: string | null;
-  gender?: string | null;
-  height?: number | null;
-  weight?: number | null;
-  website?: string | null;
-  twitter_handle?: string | null;
-  instagram_handle?: string | null;
-  youtube_channel?: string | null;
+  bio: string | null;
+  date_of_birth: string | null;
+  gender: string | null;
+  height: number | null;
+  weight: number | null;
+  website: string | null;
+  twitter_handle: string | null;
+  instagram_handle: string | null;
+  youtube_channel: string | null;
 }
 
 function slugUsername(value: string) {
@@ -37,13 +37,12 @@ function profileDefaults(user: User) {
     username: `${baseUsername}-${user.id.slice(0, 6)}`,
     display_name: metadata.full_name || metadata.name || emailName,
     profile_image: metadata.avatar_url || metadata.picture || null,
-    is_public: true,
   };
 }
 
 // profile_id never changes for a user, so it is safe to memoize per session.
 // This keeps product grids (15+ cards each checking stack membership)
-// from re-querying user_profiles once per card.
+// from re-running the account-profile command once per card.
 const profileIdCache = new Map<string, Promise<string>>();
 
 export function getUserProfileId(user: User): Promise<string> {
@@ -57,44 +56,18 @@ export function getUserProfileId(user: User): Promise<string> {
 }
 
 export async function getOrCreateUserProfile(user: User): Promise<AccountProfile> {
-  const { data: existing, error: fetchError } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1);
-
-  if (fetchError && fetchError.code !== 'PGRST116') {
-    throw fetchError;
-  }
-
-  if (existing?.[0]) {
-    return existing[0] as AccountProfile;
-  }
-
   const defaults = profileDefaults(user);
-  const { data: created, error: createError } = await supabase
-    .from('user_profiles')
-    .insert(defaults)
-    .select('*')
+  const { data, error } = await supabase
+    .rpc('get_or_create_own_account_profile', {
+      p_username: defaults.username,
+      p_display_name: defaults.display_name,
+      p_profile_image: defaults.profile_image,
+    })
     .single();
 
-  if (!createError && created) {
-    return created as AccountProfile;
-  }
-
-  const { data: retry, error: retryError } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1);
-
-  if (retryError || !retry?.[0]) {
-    throw createError || retryError || new Error('Unable to create user profile');
-  }
-
-  return retry[0] as AccountProfile;
+  if (error) throw error;
+  if (!data) throw new Error('Unable to load account profile');
+  return data as AccountProfile;
 }
 
 export interface UpdateUserProfileInput {
@@ -110,20 +83,26 @@ export interface UpdateUserProfileInput {
   youtube_channel: string | null;
 }
 
-/** Upsert the user's editable profile fields, keyed by profile_id. */
+/** Atomically update the authenticated user's public and private profile fields. */
 export async function updateUserProfile(
-  user: User,
-  profile: AccountProfile,
   input: UpdateUserProfileInput
-): Promise<void> {
-  const { error } = await supabase.from('user_profiles').upsert(
-    {
-      profile_id: profile.profile_id,
-      user_id: user.id,
-      username: profile.username,
-      ...input,
-    },
-    { onConflict: 'profile_id' }
-  );
+): Promise<AccountProfile> {
+  const { data, error } = await supabase
+    .rpc('update_own_account_profile', {
+      p_display_name: input.display_name,
+      p_bio: input.bio,
+      p_website: input.website,
+      p_twitter_handle: input.twitter_handle,
+      p_instagram_handle: input.instagram_handle,
+      p_youtube_channel: input.youtube_channel,
+      p_date_of_birth: input.date_of_birth,
+      p_gender: input.gender,
+      p_height: input.height,
+      p_weight: input.weight,
+    })
+    .single();
+
   if (error) throw error;
+  if (!data) throw new Error('Unable to update account profile');
+  return data as AccountProfile;
 }

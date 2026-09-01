@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
+import { getUserProfileId } from '@/lib/account/profile';
 import type { Review, ReviewInput, ProductRatingStats } from '@/types';
 
 export type ReviewSortBy = 'newest' | 'oldest' | 'highest' | 'lowest' | 'helpful';
@@ -185,19 +186,14 @@ export function useReviews({
     if (!user) throw new Error('Must be logged in to submit a review');
 
     try {
-      // Get user profile
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('profile_id')
-        .eq('user_id', user.id)
-        .single();
+      const profileId = await getUserProfileId(user);
 
       const { error: insertError } = await supabase
         .from('product_reviews')
         .insert({
           ...review,
           user_id: user.id,
-          profile_id: profile?.profile_id,
+          profile_id: profileId,
         });
 
       if (insertError) throw insertError;

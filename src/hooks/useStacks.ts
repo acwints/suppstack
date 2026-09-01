@@ -94,7 +94,6 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
           *,
           profile:user_profiles(
             profile_id,
-            user_id,
             username,
             display_name,
             profile_image,
@@ -376,7 +375,6 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
         *,
         profile:user_profiles(
           profile_id,
-          user_id,
           username,
           display_name,
           profile_image,
@@ -432,7 +430,6 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
         *,
         profile:user_profiles(
           profile_id,
-          user_id,
           username,
           display_name,
           profile_image,

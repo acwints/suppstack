@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
+import { getUserProfileId } from '@/lib/account/profile';
 import type { UserProfile } from '@/types';
 
 export interface UseUserFollowsResult {
@@ -35,13 +36,12 @@ export function useUserFollows(targetProfileId?: string): UseUserFollowsResult {
         return;
       }
 
-      const { data } = await supabase
-        .from('user_profiles')
-        .select('profile_id')
-        .eq('user_id', user.id)
-        .single();
-
-      setMyProfileId(data?.profile_id || null);
+      try {
+        setMyProfileId(await getUserProfileId(user));
+      } catch (error) {
+        console.error('Error loading account profile:', error);
+        setMyProfileId(null);
+      }
     }
 
     getMyProfileId();
@@ -147,7 +147,6 @@ export function useUserFollows(targetProfileId?: string): UseUserFollowsResult {
         .select(`
           follower:user_profiles!user_follows_follower_id_fkey(
             profile_id,
-            user_id,
             username,
             display_name,
             profile_image,
@@ -184,7 +183,6 @@ export function useUserFollows(targetProfileId?: string): UseUserFollowsResult {
         .select(`
           following:user_profiles!user_follows_following_id_fkey(
             profile_id,
-            user_id,
             username,
             display_name,
             profile_image,

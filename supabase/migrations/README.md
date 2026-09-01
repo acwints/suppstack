@@ -30,6 +30,7 @@ schema. Each file is an ordered, idempotent migration.
 | 0023 | `20260721000023_fix_function_search_paths.sql` | Pins public trigger/helper function search paths to `public, pg_temp` to satisfy Supabase security advisor hardening. |
 | 0024 | `20260722000024_add_hiya_health_catalog.sql` | Adds Hiya Health official kids products, the `Immune Support Formula` bucket, and matching product ingredient composition rows. |
 | 0025 | `20260722000025_repair_hiya_health_catalog_support.sql` | Adds missing `Prebiotic Fiber` and `MCT Oil` supplement support rows so Hiya Fiber+ and ingredient composition materialize in DB-backed flows. |
+| 0026 | `20260831000026_expand_private_account_profiles.sql` | Expand phase for profile privacy: enforces one profile per authenticated user, adds the owner-only `user_private_profiles` table and safe backfill/mirroring, centralizes profile ownership for RLS, hardens follower counters, and adds authenticated atomic account-profile commands. Apply before the matching web client; the legacy columns/grants remain temporarily for rollout compatibility. |
 
 ## Applying
 
@@ -38,6 +39,7 @@ With the Supabase CLI (recommended):
 ```bash
 supabase db push          # apply to the linked project
 supabase migration up     # apply to a local dev database
+supabase test db          # run database contract tests against local Supabase
 ```
 
 Or paste each file, in order, into the Supabase dashboard SQL editor.
@@ -52,6 +54,9 @@ Or paste each file, in order, into the Supabase dashboard SQL editor.
 - **Counters are owned by the database.** `follower_count`, `following_count`,
   and `like_count` are maintained by triggers (migration 0001). Application code
   must not write these columns.
+- **Profile privacy uses expand/cutover/contract.** Apply 0026, deploy the client
+  that uses its RPCs, verify remote-client convergence, and only then add the
+  contract migration that removes legacy private columns and broad grants.
 - **`commerce_checkout_events` is service-role only.** It has RLS enabled with no
   policies; the `/api/commerce/checkout` route writes it with
   `SUPABASE_SERVICE_ROLE_KEY`.

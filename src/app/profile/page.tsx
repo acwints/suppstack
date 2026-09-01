@@ -141,8 +141,11 @@ export default function Profile() {
     const weightKg = weight ? lbsToKg(Number(weight)) : null;
 
     try {
-      const currentProfile = profile || (await getOrCreateUserProfile(user));
-      await updateUserProfile(user, currentProfile, {
+      if (!profile) {
+        await getOrCreateUserProfile(user);
+      }
+
+      const updatedProfile = await updateUserProfile({
         date_of_birth: dateOfBirth || null,
         gender: gender || null,
         height: heightCm,
@@ -154,6 +157,7 @@ export default function Profile() {
         instagram_handle: instagramHandle || null,
         youtube_channel: youtubeChannel || null,
       });
+      setProfile(updatedProfile);
       toast.success('Profile updated');
     } catch (error) {
       console.error('Error updating profile:', error);
