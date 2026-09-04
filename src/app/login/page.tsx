@@ -48,11 +48,15 @@ export default function Login() {
     clearAuthError,
     loginWithApple,
     loginWithGoogle,
+    loginWithPassword,
   } = useAuth();
   const router = useRouter();
   const toast = useToast();
   const [nextPath, setNextPath] = useState('/log');
-  const [pendingProvider, setPendingProvider] = useState<'apple' | 'google' | null>(null);
+  const [pendingProvider, setPendingProvider] = useState<'apple' | 'google' | 'email' | null>(null);
+  const [showEmailSignIn, setShowEmailSignIn] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -91,6 +95,23 @@ export default function Login() {
             : 'Sign-in didn’t complete. Please try again.';
         toast.error(message);
       }
+    } finally {
+      setPendingProvider(null);
+    }
+  };
+
+  const handlePasswordLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setPendingProvider('email');
+    try {
+      await loginWithPassword(email.trim(), password, nextPath);
+    } catch (error) {
+      console.error('Error logging in with email:', error);
+      const message =
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Sign-in didn\u2019t complete. Please check the email and password.';
+      toast.error(message);
     } finally {
       setPendingProvider(null);
     }
@@ -142,7 +163,7 @@ export default function Login() {
             type="button"
             onClick={() => handleLogin('apple')}
             disabled={pendingProvider !== null}
-            className="flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-lg bg-gray-900 px-4 text-base font-medium text-white transition-colors duration-150 hover:bg-gray-800 active:bg-gray-950 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
+            className="flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-lg bg-gray-900 px-4 text-base font-medium text-white transition-[background-color,transform] duration-150 hover:bg-gray-800 active:scale-[0.96] active:bg-gray-950 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 motion-reduce:transform-none"
           >
             {pendingProvider === 'apple' ? (
               <Spinner size="sm" color="white" />
@@ -155,7 +176,7 @@ export default function Login() {
             type="button"
             onClick={() => handleLogin('google')}
             disabled={pendingProvider !== null}
-            className="flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-lg border border-gray-300 bg-white px-4 text-base font-medium text-gray-900 transition-colors duration-150 hover:border-gray-400 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
+            className="flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-lg border border-gray-300 bg-white px-4 text-base font-medium text-gray-900 transition-[background-color,border-color,transform] duration-150 hover:border-gray-400 hover:bg-gray-50 active:scale-[0.96] active:bg-gray-100 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 motion-reduce:transform-none"
           >
             {pendingProvider === 'google' ? (
               <Spinner size="sm" color="secondary" />
@@ -164,6 +185,57 @@ export default function Login() {
             )}
             Continue with Google
           </button>
+
+          {showEmailSignIn ? (
+            <form className="space-y-3 pt-3" onSubmit={handlePasswordLogin}>
+              <div>
+                <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                  disabled={pendingProvider !== null}
+                  className="min-h-[52px] w-full rounded-lg border border-gray-300 px-4 text-base text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:bg-gray-50"
+                />
+              </div>
+              <div>
+                <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                  disabled={pendingProvider !== null}
+                  className="min-h-[52px] w-full rounded-lg border border-gray-300 px-4 text-base text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:bg-gray-50"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={pendingProvider !== null}
+                className="flex min-h-[52px] w-full items-center justify-center rounded-lg bg-gray-900 px-4 text-base font-medium text-white transition-[background-color,transform] duration-150 hover:bg-gray-800 active:scale-[0.96] active:bg-gray-950 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 motion-reduce:transform-none"
+              >
+                {pendingProvider === 'email' ? <Spinner size="sm" color="white" /> : 'Sign in'}
+              </button>
+            </form>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowEmailSignIn(true)}
+              disabled={pendingProvider !== null}
+              className="flex min-h-11 w-full items-center justify-center rounded px-4 text-sm font-medium text-gray-600 underline underline-offset-4 transition-[color,transform] duration-150 hover:text-gray-900 active:scale-[0.96] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 motion-reduce:transform-none"
+            >
+              Sign in with email
+            </button>
+          )}
         </div>
 
         {/* Guest escape hatch — web only; the native app is auth-first */}

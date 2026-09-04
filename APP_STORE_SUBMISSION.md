@@ -92,6 +92,28 @@ Before resubmitting:
 > install of version 1.1 on iPad, including successful sign-in, cancellation,
 > and retry. Please review the newly submitted build.
 
+## Responding to the August 31, 2026 expired-subscription demo-account request
+
+Apple paused review of version 1.1 build 60 because the App Review Information
+section said no demo credentials were required, while Premium access requires a
+signed-in account. The production app must expose the existing-account email
+sign-in control before updating the rejected submission.
+
+1. Provision a dedicated Supabase Auth user with a confirmed email and no
+   personal customer data.
+2. Insert a `user_entitlements` row for `premium` with `status = 'expired'`,
+   `store = 'app_store'`, `product_id = 'premium_monthly_ios'`,
+   `will_renew = false`, and a `current_period_end` in the past.
+3. Deploy the web app and verify in the native shell: Sign in with email → open
+   Premium → expired membership does not grant access → Apple purchase and
+   Restore Purchases actions are available.
+4. In App Store Connect, enable Sign-in required, enter the dedicated email and
+   password, and replace the prior "No demo credentials are required" note with
+   exact navigation and expired-entitlement details.
+5. Save the version metadata, reply in the Resolution Center, and use Update
+   Review to return the corrected submission to Apple. No new binary is needed
+   because build 60 loads the production web app.
+
 ## Current repo status
 
 The native Capacitor project has been restored and configured for

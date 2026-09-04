@@ -1,0 +1,11 @@
+.claude
+.cache
+.git
+.next
+assets
+build
+docs
+ios
+node_modules
+supabase
+*.tsbuildinfo

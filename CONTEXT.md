@@ -121,7 +121,7 @@ SuppStack helps a person answer three questions with minimal work:
 | Module | Interface | Implementation | Depth and seams |
 | --- | --- | --- | --- |
 | Catalog | Search, directory, product lookup, composition lookup | `src/lib/catalog/*`, curated TypeScript catalog, public Supabase catalog tables | Deep domain logic, but the static-ID/DB-ID split creates a high-cost Seam. |
-| Account | Auth session, profile, account deletion | Supabase Auth, `AuthContext`, `src/lib/account/*`, `/api/account/delete` | Native/web auth is hidden behind one Interface; profile privacy is not sufficiently separated. |
+| Account | Auth session, profile, account deletion | Supabase Auth, `AuthContext`, `src/lib/account/*`, `/api/account/delete` | Native Apple, Google OAuth, and existing-account email/password sign-in are hidden behind one Interface; profile privacy is not sufficiently separated. |
 | Personal stack | Membership and settings | `users_products`, `user_supplement_settings`, `useProductInStack`, `useRegimen` | Two tables represent one user action. Current Implementation is not transactional. |
 | Daily tracking | Log/unlog, streak, completion, restock | `supplement_logs`, `daily_tracking_summary`, triggers, tracking hooks/components | Business rules are split across client, database, and UTC/local clocks, reducing Locality. |
 | Ingredient intake | Daily ingredient rollup and overlap | pure `src/lib/ingredients/intake.ts` plus persistence mapper | Strong Module: small Interface, substantial hidden correctness, high Leverage. |
@@ -214,12 +214,12 @@ The customer can also branch from Evaluate into Save, Review, or Published Stack
 
 ### 7.2 Authentication and profile creation
 
-- **Customer experience:** Apple is first and native. Google opens a visible in-app browser. Successful login returns to the requested route; cancellations and timeouts restore usable buttons.
-- **Logic and data:** Apple identity token + raw nonce → Supabase `signInWithIdToken`; Google OAuth code → deep link → Supabase PKCE exchange. A profile is lazily created after sign-in.
+- **Customer experience:** Apple is first and native. Google opens a visible in-app browser. An existing-account email/password option supports users and App Review accounts that cannot use a reviewer-owned Apple or Google identity. Successful login returns to the requested route; cancellations and timeouts restore usable buttons.
+- **Logic and data:** Apple identity token + raw nonce → Supabase `signInWithIdToken`; Google OAuth code → deep link → Supabase PKCE exchange; email/password → Supabase `signInWithPassword`. A profile is lazily created after sign-in.
 - **Metadata/events today:** Failures go to `console.error`; no structured provider/outcome/duration/error-code event exists.
 - **Performance commentary:** The session exchange has a 20-second hard timeout. There is no measured p50/p95 by provider, app version, device class, or OS.
-- **UX/accessibility commentary:** Primary controls are 52 points high and cancellation is treated as a no-op. The five-second initial-session timeout can show a signed-out state during a slow restore and later redirect when auth state catches up.
-- **Status:** **Implemented** for the rejection path; **Partial** for observability and automated clean-install testing.
+- **UX/accessibility commentary:** Primary controls are 52 points high, email fields have explicit labels and autocomplete semantics, and cancellation is treated as a no-op. The five-second initial-session timeout can show a signed-out state during a slow restore and later redirect when auth state catches up.
+- **Status:** **Implemented** for Apple sign-in and App Review credential access; **Partial** for observability and automated clean-install testing.
 
 ### 7.3 Browse, goal discovery, brand discovery, and search
 
@@ -620,6 +620,7 @@ These are structural candidates, not permission to add product scope.
 | 2026-08-30 | Data/privacy audit | Anonymous production API can select private-profile columns from public profiles; aggregate check found zero public rows with a populated DOB/gender/height/weight at audit time. | P0 design risk; no populated exposure observed | Split public/private profile Interfaces before collecting those values. |
 | 2026-08-30 | Canonical documentation | Customer journey, architecture, invariants, telemetry contract, release gates, and risk register established here. | Implemented | Update this ledger with every material change. |
 | 2026-08-31 | Profile trust foundation | Added the phase-1 roadmap; built additive migration 0026, owner-only private profile storage, ownership/policy hardening, atomic authenticated profile commands, Account Profile caller cutover, and source/database contract checks. | Lint, production build, catalog, and ingredient checks pass; database test is not executed; not deployed or contract-complete | Run migration/tests on local Supabase; after App Review, apply expand migration, deploy/cut over, verify convergence, then build/apply the contract migration. |
+| 2026-09-04 | App Review | Apple paused build 60 under Guideline 2.1 because the prior metadata offered no demo account for the expired-subscription purchase path. Added an existing-account email/password sign-in path, provisioned a dedicated expired-Premium review account, deployed the production interface, saved credentials/navigation notes in App Store Connect, and replied to App Review. | Build 60 resubmitted after the item returned to `READY_FOR_REVIEW` | Keep the review account unchanged and monitor App Review. |
 
 ## 17. Official standards baseline
 

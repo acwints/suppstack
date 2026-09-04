@@ -31,6 +31,7 @@ interface AuthContextType {
   clearAuthError: () => void;
   loginWithGoogle: (nextPath?: string) => Promise<void>;
   loginWithApple: (nextPath?: string) => Promise<void>;
+  loginWithPassword: (email: string, password: string, nextPath?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -216,6 +217,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await startOAuth('apple', nextPath);
   };
 
+  const loginWithPassword = async (
+    email: string,
+    password: string,
+    nextPath = '/stack'
+  ) => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('suppstack_post_login_path', nextPath);
+    }
+
+    const { error } = await withTimeout(
+      supabase.auth.signInWithPassword({ email, password }),
+      20_000,
+      'The sign-in response took too long. Please try again.'
+    );
+    if (error) throw error;
+  };
+
   const logout = async () => {
     await resetNativePurchases().catch(() => undefined);
     await supabase.auth.signOut();
@@ -233,6 +251,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         clearAuthError,
         loginWithGoogle,
         loginWithApple,
+        loginWithPassword,
         logout,
       }}
     >
