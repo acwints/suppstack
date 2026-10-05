@@ -85,7 +85,8 @@ export default function Header() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const isLoginPage = pathname === '/login';
+  // Auth and first-run onboarding are full-bleed experiences — no app chrome.
+  const isLoginPage = pathname === '/login' || pathname === '/welcome';
   const mobileAppBar = getMobileAppBarConfig(pathname);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [hasInAppBackTarget, setHasInAppBackTarget] = useState(false);

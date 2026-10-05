@@ -35,7 +35,7 @@ import {
   ConfirmDialog,
 } from '@/components/ui';
 import { RestockReminders } from '@/components/composite/Tracking';
-import { PremiumGate } from '@/components/composite/Billing';
+import { PremiumGate, PremiumStatusRow } from '@/components/composite/Billing';
 
 // The current stack lives on the Stack tab; Profile is identity, analytics,
 // history, shared stacks, and account settings.
@@ -271,6 +271,8 @@ export default function Profile() {
           </Inline>
         </header>
 
+        <PremiumStatusRow />
+
         {/* Tab Navigation */}
         <Tabs.List variant="underline" className="mb-10">
           {tabItems.map((tab) => (
@@ -303,10 +305,7 @@ export default function Profile() {
               <span className="shrink-0 font-medium text-gray-900">Open →</span>
             </Link>
 
-            <PremiumGate
-              feature="Restock reminders"
-              description="Know when each container runs out based on your supplement logs."
-            >
+            <PremiumGate feature="restock">
               <RestockReminders />
             </PremiumGate>
           </section>

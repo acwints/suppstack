@@ -1,35 +1,30 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
-import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { FiLock } from 'react-icons/fi';
 import { usePremium } from '@/hooks/usePremium';
-import { PREMIUM_PRICE_LABEL } from '@/lib/billing/entitlements';
-import { isNativeApp } from '@/lib/native/capacitor';
+import { PREMIUM_FEATURES, type PremiumFeatureId } from '@/lib/billing/entitlements';
 import { Card, Skeleton } from '@/components/ui';
 
 export interface PremiumGateProps {
-  /** Feature name shown in the upsell card (e.g. "Restock reminders"). */
-  feature: string;
-  /** One-line description of what the member gets. */
-  description?: string;
+  /** Which Premium feature this wraps — drives the copy and the paywall. */
+  feature: PremiumFeatureId;
+  /** Optional one-line teaser shown on the locked card (e.g. "2 bottles run out this month"). */
+  teaser?: ReactNode;
   children: ReactNode;
 }
 
 /**
- * Wraps a premium feature. Members see the feature; everyone else sees an
- * upsell card that links to the pricing page. While entitlement status loads,
- * a skeleton avoids flashing the paywall at paying members.
+ * Wraps a premium feature. Members see the feature; everyone else sees a
+ * locked card that opens the paywall sheet. When Premium can't be bought on
+ * this surface (IAP not configured yet), the feature simply renders — the app
+ * never shows an upsell with no way to complete it.
  */
-export function PremiumGate({ feature, description, children }: PremiumGateProps) {
-  const { isPremium, loading } = usePremium();
-  const [platform, setPlatform] = useState<'checking' | 'native' | 'web'>('checking');
+export function PremiumGate({ feature, teaser, children }: PremiumGateProps) {
+  const { isPremium, purchasable, loading, openPaywall } = usePremium();
+  const definition = PREMIUM_FEATURES.find((item) => item.id === feature);
 
-  useEffect(() => {
-    setPlatform(isNativeApp() ? 'native' : 'web');
-  }, []);
-
-  if (loading || platform === 'checking') {
+  if (loading) {
     return (
       <Card padding="md">
         <Skeleton height={16} width={160} className="mb-3" />
@@ -39,37 +34,28 @@ export function PremiumGate({ feature, description, children }: PremiumGateProps
     );
   }
 
-  if (isPremium) return <>{children}</>;
-
-  if (platform === 'native') {
-    return (
-      <Card padding="md" className="text-center">
-        <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100">
-          <FiLock size={18} className="text-gray-500" />
-        </div>
-        <h3 className="text-base font-medium text-gray-900">{feature}</h3>
-        <p className="mx-auto mt-1 max-w-sm text-sm text-gray-500">
-          Sign in with an existing Premium membership to use this feature.
-        </p>
-      </Card>
-    );
-  }
+  if (isPremium || !purchasable) return <>{children}</>;
 
   return (
-    <Card padding="md" className="text-center">
-      <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100">
-        <FiLock size={18} className="text-gray-500" />
+    <Card padding="md">
+      <div className="flex items-start gap-3.5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-700">
+          <FiLock size={17} aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-base font-medium text-gray-900">{definition?.name}</h3>
+          <p className="mt-0.5 text-sm leading-5 text-gray-600">
+            {teaser ?? definition?.description}
+          </p>
+        </div>
       </div>
-      <h3 className="text-base font-medium text-gray-900">{feature}</h3>
-      <p className="mx-auto mt-1 max-w-sm text-sm text-gray-500">
-        {description || 'This feature is part of SuppStack Premium.'}
-      </p>
-      <Link
-        href="/premium"
-        className="mt-4 inline-flex items-center justify-center rounded bg-gray-900 px-5 py-2.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+      <button
+        type="button"
+        onClick={() => openPaywall(feature)}
+        className="mt-4 flex min-h-11 w-full items-center justify-center rounded-lg bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
       >
-        Upgrade — {PREMIUM_PRICE_LABEL}
-      </Link>
+        Unlock with Premium
+      </button>
     </Card>
   );
 }

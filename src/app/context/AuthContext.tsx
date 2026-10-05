@@ -20,6 +20,17 @@ import {
   hasNativeAppleSignInBridge,
 } from '@/lib/native/apple-sign-in';
 
+/**
+ * New accounts get first-run onboarding once. Existing accounts (created
+ * before onboarding shipped, or already through it) go straight in.
+ */
+const ONBOARDING_WINDOW_MS = 24 * 60 * 60 * 1000;
+export function needsOnboarding(user: User): boolean {
+  if (user.user_metadata?.onboarded_at) return false;
+  const created = Date.parse(user.created_at);
+  return Number.isFinite(created) && Date.now() - created < ONBOARDING_WINDOW_MS;
+}
+
 /** Deep link Supabase redirects to after OAuth completes in the native shell. */
 const NATIVE_AUTH_CALLBACK = 'app.suppstack://auth-callback';
 
@@ -95,7 +106,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (typeof window !== 'undefined') {
           window.sessionStorage.removeItem('suppstack_post_login_path');
         }
-        router.push(nextPath || '/stack');
+        const destination = nextPath || '/stack';
+        router.push(
+          needsOnboarding(session.user)
+            ? `/welcome?next=${encodeURIComponent(destination)}`
+            : destination
+        );
       }
     });
 

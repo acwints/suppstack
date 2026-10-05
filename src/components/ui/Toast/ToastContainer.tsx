@@ -27,7 +27,7 @@ export function ToastContainer({ position = 'bottom-right' }: ToastContainerProp
 
   return (
     <div
-      className={`fixed z-50 flex flex-col gap-2 ${positionStyles[position]}`}
+      className={`fixed z-[80] flex flex-col gap-2 ${positionStyles[position]}`}
       aria-live="polite"
       aria-label="Notifications"
     >

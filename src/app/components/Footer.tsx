@@ -14,7 +14,7 @@ export default function Footer() {
 
   // The auth screen is a full-bleed experience — no app chrome.
   // The native shell has its own app navigation; never show the website footer there.
-  if (pathname === '/login' || isNative) return null;
+  if (pathname === '/login' || pathname === '/welcome' || isNative) return null;
 
   return (
     // Mobile-width web mirrors the app: the tab bar is the chrome, so the

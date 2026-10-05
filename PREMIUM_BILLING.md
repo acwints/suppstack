@@ -1,8 +1,40 @@
 # Premium subscriptions (RevenueCat)
 
-SuppStack Premium gates the operational stack layer (adherence trends,
-restock reminders, and cost analytics) behind a subscription. The marketplace,
-wiki, stacks, and daily supplement logging stay free.
+SuppStack Premium unlocks three shipped features: unlimited AI stack scans
+(free accounts get 3 lifetime, metered server-side in `app_metadata`),
+restock forecasts, and the full per-ingredient breakdown. The marketplace,
+stacks, daily logging, and ingredient overlap warnings stay free.
+
+## Monetization surfaces (2026-10-04)
+
+- **Onboarding** (`/welcome`): new accounts (created < 24h, no
+  `user_metadata.onboarded_at`) go goals → add what you take → paywall
+  ("Not now" dismisses). Each step is skippable.
+- **Paywall** (`components/composite/Billing/Paywall.tsx`): annual-first plan
+  picker with Apple's localized prices, trial eligibility via RevenueCat,
+  trial timeline, and the App Review disclosures (auto-renew terms, Restore,
+  Terms of Use = Apple EULA, Privacy). Opened anywhere with
+  `usePremium().openPaywall(featureId)`; `/premium` renders it inline.
+- **Gates**: restock + ingredient breakdown on `/stack`, the scan quota
+  (402 `PREMIUM_REQUIRED` from `/api/catalog/photo-scan`), and the "Try
+  SuppStack Premium" row on the You tab.
+- **No dead ends**: when Premium isn't purchasable on a surface (iOS without
+  `NEXT_PUBLIC_REVENUECAT_APPLE_API_KEY`, web without a checkout URL) every
+  gate renders its feature and no upsell appears. Scan metering likewise only
+  starts once the Apple key is set.
+
+## App Store Connect products (created via API 2026-10-04)
+
+Subscription group `SuppStack Premium` (id 22441409), all 175 territories,
+USD-equalized prices:
+
+| Product id | ASC id | Price | Intro offer |
+| --- | --- | --- | --- |
+| `app.suppstack.premium.annual` | 6819149918 | $39.99/yr | 1-week free trial |
+| `app.suppstack.premium.monthly` | 6819150035 | $5.99/mo | none |
+
+In RevenueCat, attach both to the `premium` entitlement and add them to the
+default offering as the `$rc_annual` and `$rc_monthly` packages.
 
 ## Architecture
 

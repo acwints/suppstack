@@ -15,6 +15,7 @@ import {
   FiUpload,
 } from 'react-icons/fi';
 import { useAuth } from '@/app/context/AuthContext';
+import { usePremium } from '@/hooks/usePremium';
 import { ProductActions } from '@/components/composite/Product/ProductActions';
 import { ProductPriceLine } from '@/components/composite/Product/ProductPriceLine';
 import { ProductSourceBadge } from '@/components/composite/Product/ProductSourceBadge';
@@ -241,6 +242,7 @@ function ScanResultCard({ item }: { item: CounterScanMatchedItem }) {
 export function CounterScanClient() {
   const router = useRouter();
   const { user, session, loading } = useAuth();
+  const { openPaywall } = usePremium();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -318,6 +320,9 @@ export function CounterScanClient() {
         if (payload?.code === 'AUTH_REQUIRED') {
           router.push('/login?next=/scan');
           return;
+        }
+        if (payload?.code === 'PREMIUM_REQUIRED') {
+          openPaywall('scan');
         }
         throw new Error(payload?.error || 'Unable to scan this photo.');
       }
@@ -437,6 +442,17 @@ export function CounterScanClient() {
                 Review
               </p>
               <h2 className="mt-1 text-xl font-semibold text-gray-950">Recognized Supplements</h2>
+              {typeof scan?.freeScansRemaining === 'number' && (
+                <button
+                  type="button"
+                  onClick={() => openPaywall('scan')}
+                  className="mt-1 text-sm text-gray-500 underline underline-offset-2 hover:text-gray-900"
+                >
+                  {scan.freeScansRemaining === 0
+                    ? 'That was your last free scan'
+                    : `${scan.freeScansRemaining} free scan${scan.freeScansRemaining === 1 ? '' : 's'} left`}
+                </button>
+              )}
             </div>
             {statusText && (
               <span className="shrink-0 rounded bg-white px-2.5 py-1 text-xs font-semibold text-gray-600 shadow-surface">

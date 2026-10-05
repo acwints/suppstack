@@ -59,20 +59,39 @@ export function premiumCheckoutUrl(userId: string): string | null {
   return `${base.replace(/\/$/, '')}/${encodeURIComponent(userId)}`;
 }
 
-/** What the premium tier includes — single source for paywall/pricing copy. */
+/**
+ * What the premium tier includes — single source for paywall, gate, and
+ * pricing copy. Every item must be a shipped feature, never a roadmap promise.
+ */
 export const PREMIUM_FEATURES = [
   {
-    name: 'Stack adherence trends',
-    description: 'Weekly and monthly completion patterns from your supplement logs.',
+    id: 'scan',
+    name: 'Unlimited stack scans',
+    description: 'Photograph your bottles and add the whole shelf in seconds.',
   },
   {
-    name: 'Cost analytics',
-    description: 'Monthly and annual spend breakdowns across your whole regimen.',
+    id: 'restock',
+    name: 'Restock forecasts',
+    description: 'See when each bottle runs out, based on how you actually take it.',
   },
   {
-    name: 'Restock reminders',
-    description: 'Know when each container runs out based on your logging pace.',
+    id: 'ingredients',
+    name: 'Full ingredient breakdown',
+    description: 'Every ingredient and dose across your stack, product by product.',
   },
 ] as const;
 
-export const PREMIUM_PRICE_LABEL = '$4.99/mo';
+export type PremiumFeatureId = (typeof PREMIUM_FEATURES)[number]['id'];
+
+/** Lifetime scans a free account gets before Premium is required. */
+export const FREE_SCAN_LIMIT = 3;
+
+/** Web fallback labels; the iOS paywall always shows Apple's localized prices. */
+export const PREMIUM_PRICE_LABEL = '$5.99/mo';
+export const PREMIUM_ANNUAL_PRICE_LABEL = '$39.99/yr';
+
+/** Apple's standard EULA, which governs App Store subscriptions. */
+export const APPLE_EULA_URL = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
+
+/** Apple's subscription management sheet for the signed-in App Store account. */
+export const APPLE_SUBSCRIPTIONS_URL = 'https://apps.apple.com/account/subscriptions';

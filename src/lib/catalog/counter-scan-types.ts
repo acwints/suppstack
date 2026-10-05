@@ -28,6 +28,8 @@ export interface CounterScanApiResponse {
   matchedCount: number;
   unresolvedCount: number;
   items: CounterScanMatchedItem[];
+  /** Free scans left after this one; null when scans are unmetered. */
+  freeScansRemaining?: number | null;
 }
 
 export interface CounterScanApiError {
@@ -37,6 +39,7 @@ export interface CounterScanApiError {
     | 'AI_NOT_CONFIGURED'
     | 'INVALID_IMAGE'
     | 'IMAGE_TOO_LARGE'
-    | 'SCAN_FAILED';
+    | 'SCAN_FAILED'
+    | 'PREMIUM_REQUIRED';
   error: string;
 }

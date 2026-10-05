@@ -32,7 +32,7 @@ const TABS: TabItem[] = [
 ];
 
 /** Routes where the tab bar yields to a route-specific bottom bar (e.g. the PDP buy bar). */
-const HIDDEN_PREFIXES = ['/product/', '/login', '/privacy', '/terms'];
+const HIDDEN_PREFIXES = ['/product/', '/login', '/welcome', '/privacy', '/terms'];
 
 function matchingPrefix(tab: TabItem, pathname: string): string | null {
   const prefixes = [tab.href, ...tab.match];

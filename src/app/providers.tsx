@@ -1,6 +1,7 @@
 'use client';
 
 import { AuthProvider } from './context/AuthContext';
+import { PremiumProvider } from './context/PremiumContext';
 import { SavedProductsProvider } from './context/SavedProductsContext';
 import { StackIngredientsProvider } from './context/StackIngredientsContext';
 import { ToastProvider, ToastContainer } from '@/components/ui';
@@ -11,7 +12,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <StackIngredientsProvider>
         <SavedProductsProvider>
           <ToastProvider>
-            {children}
+            <PremiumProvider>{children}</PremiumProvider>
             <ToastContainer position="bottom-right" />
           </ToastProvider>
         </SavedProductsProvider>

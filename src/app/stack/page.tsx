@@ -11,6 +11,7 @@ import {
   RestockReminders,
   WeeklyCalendar,
 } from '@/components/composite/Tracking';
+import { PremiumGate } from '@/components/composite/Billing';
 import { MyStackSection } from '@/components/composite/Stack/MyStackSection';
 import {
   OverlapList,
@@ -125,7 +126,9 @@ export default function StackPage() {
           />
         ) : null}
         {regimen.length > 0 && (
-          <RestockReminders />
+          <PremiumGate feature="restock">
+            <RestockReminders />
+          </PremiumGate>
         )}
         <MyStackSection regimen={regimen} />
 
@@ -140,7 +143,12 @@ export default function StackPage() {
             ) : intakeError ? null : intake.ingredientCount > 0 ? (
               <>
                 <StackIntakeSummary intake={intake} />
-                <StackIngredientBreakdown intake={intake} />
+                <PremiumGate
+                  feature="ingredients"
+                  teaser={`${intake.ingredientCount} ingredients across your stack, with every dose.`}
+                >
+                  <StackIngredientBreakdown intake={intake} />
+                </PremiumGate>
                 <OverlapList intake={intake} />
               </>
             ) : (

@@ -10,6 +10,7 @@ import type {
   CounterScanApiResponse,
   CounterScanRecognizedInput,
 } from '@/lib/catalog/counter-scan-types';
+import { getScanAllowance, recordFreeScan } from '@/lib/server/scan-quota';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -220,6 +221,15 @@ export async function POST(request: Request) {
     return jsonError('AUTH_REQUIRED', 'Sign in to scan supplement photos.', 401);
   }
 
+  const allowance = await getScanAllowance(user);
+  if (!allowance.allowed) {
+    return jsonError(
+      'PREMIUM_REQUIRED',
+      'You\u2019ve used your free scans. Premium unlocks unlimited scans.',
+      402
+    );
+  }
+
   const formData = await request.formData();
   const image = formData.get('image');
   const hint = String(formData.get('hint') ?? '').trim();
@@ -251,7 +261,10 @@ export async function POST(request: Request) {
     }
 
     const items = matchCounterScanRecognitions(recognitions);
+    const freeScansRemaining =
+      allowance.freeScansRemaining === null ? null : await recordFreeScan(user);
     const response: CounterScanApiResponse = {
+      freeScansRemaining,
       mode: aiRecognitions ? 'ai' : 'text',
       scannedAt: new Date().toISOString(),
       matchedCount: items.filter((item) => item.matchStatus === 'matched').length,

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FaApple } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
-import { useAuth } from '../context/AuthContext';
+import { needsOnboarding, useAuth } from '../context/AuthContext';
 import { Spinner, useToast } from '@/components/ui';
 import { isNativeApp } from '@/lib/native/capacitor';
 import { isNativeAppleSignInCancellation } from '@/lib/native/apple-sign-in';
@@ -52,7 +52,7 @@ export default function Login() {
   } = useAuth();
   const router = useRouter();
   const toast = useToast();
-  const [nextPath, setNextPath] = useState('/log');
+  const [nextPath, setNextPath] = useState('/stack');
   const [pendingProvider, setPendingProvider] = useState<'apple' | 'google' | 'email' | null>(null);
   const [showEmailSignIn, setShowEmailSignIn] = useState(false);
   const [email, setEmail] = useState('');
@@ -68,7 +68,9 @@ export default function Login() {
 
   useEffect(() => {
     if (user && !loading) {
-      router.replace(nextPath);
+      router.replace(
+        needsOnboarding(user) ? `/welcome?next=${encodeURIComponent(nextPath)}` : nextPath
+      );
     }
   }, [nextPath, user, loading, router]);
 
