@@ -17,6 +17,17 @@ const REGIMEN_SELECT = `
 `;
 
 /** The user's current stack (products they take), shared by Log and stack UI. */
+/** ISO weekday (1 = Monday … 7 = Sunday), matching `schedule_days`. */
+export function isoWeekday(date: Date = new Date()): number {
+  return date.getDay() === 0 ? 7 : date.getDay();
+}
+
+/** Whether a stack item is scheduled on the given ISO weekday. */
+export function isScheduledOn(item: RegimenItem, weekday: number): boolean {
+  const days = item.settings?.schedule_days;
+  return !days || days.length === 0 || days.includes(weekday);
+}
+
 export function useRegimen() {
   const { user } = useAuth();
   const [regimen, setRegimen] = useState<RegimenItem[]>([]);
@@ -88,6 +99,7 @@ export function useRegimen() {
 
   const activeRegimen = regimen.filter((item) => (item.settings?.status ?? 'active') === 'active');
   const pausedRegimen = regimen.filter((item) => item.settings?.status === 'paused');
+  const todayRegimen = activeRegimen.filter((item) => isScheduledOn(item, isoWeekday()));
 
-  return { regimen, activeRegimen, pausedRegimen, isLoading, error, refetch };
+  return { regimen, activeRegimen, todayRegimen, pausedRegimen, isLoading, error, refetch };
 }

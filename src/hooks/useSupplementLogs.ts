@@ -187,6 +187,19 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
       .single();
 
     if (insertError) {
+      // One log per product per day: a double tap (or a second device) hits
+      // the unique constraint, which means it's already logged — not an error.
+      if (insertError.code === '23505') {
+        const { data: existing } = await supabase
+          .from('supplement_logs')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('product_id', input.product_id)
+          .eq('log_date', today)
+          .maybeSingle();
+        await fetchLogs();
+        if (existing) return existing as SupplementLog;
+      }
       throw insertError;
     }
 
@@ -197,7 +210,7 @@ export function useSupplementLogs(options: UseSupplementLogsOptions = {}): UseSu
     fetchStats();
 
     return data;
-  }, [user, today, fetchStats]);
+  }, [user, today, fetchStats, fetchLogs]);
 
   // Unlog a supplement
   const unlogSupplement = useCallback(async (logId: string): Promise<void> => {

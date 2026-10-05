@@ -5,11 +5,13 @@ import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { Card } from '@/components/ui';
 import { cn } from '@/lib/design-system';
 import type { SupplementLog, DailyTrackingSummary } from '@/types';
+import { getLocalDateKey } from '@/lib/utils';
 
 export interface WeeklyCalendarProps {
   logs: SupplementLog[];
   summaries?: DailyTrackingSummary[];
-  plannedCount: number;
+  /** Planned items per day: a constant, or by ISO weekday (1 = Mon … 7 = Sun). */
+  plannedCount: number | ((isoWeekday: number) => number);
   onDateSelect?: (date: string) => void;
   selectedDate?: string;
   className?: string;
@@ -22,8 +24,9 @@ interface DayData {
   isToday: boolean;
   isFuture: boolean;
   logsCount: number;
+  plannedCount: number;
   completionPercentage: number;
-  status: 'perfect' | 'partial' | 'missed' | 'future';
+  status: 'perfect' | 'partial' | 'missed' | 'rest' | 'future';
 }
 
 function getWeekDates(weekOffset: number = 0): Date[] {
@@ -42,9 +45,8 @@ function getWeekDates(weekOffset: number = 0): Date[] {
   return dates;
 }
 
-function formatDateKey(date: Date): string {
-  return date.toISOString().split('T')[0];
-}
+// Log dates are local calendar days, so keys must be local too (not UTC).
+const formatDateKey = getLocalDateKey;
 
 const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const shortDayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -70,9 +72,11 @@ export function WeeklyCalendar({
       const uniqueProducts = new Set(dayLogs.map(log => log.product_id));
       const logsCount = uniqueProducts.size;
 
+      const planned =
+        typeof plannedCount === 'function' ? plannedCount(index + 1) : plannedCount;
       const summary = summaries.find(s => s.summary_date === dateKey);
       const completionPercentage = summary?.completion_percentage ||
-        (plannedCount > 0 ? (logsCount / plannedCount) * 100 : 0);
+        (planned > 0 ? (logsCount / planned) * 100 : 0);
 
       const isToday = dateKey === today;
       const isFuture = date > new Date();
@@ -80,6 +84,8 @@ export function WeeklyCalendar({
       let status: DayData['status'] = 'missed';
       if (isFuture) {
         status = 'future';
+      } else if (planned === 0 && logsCount === 0) {
+        status = 'rest';
       } else if (completionPercentage >= 100) {
         status = 'perfect';
       } else if (logsCount > 0) {
@@ -93,6 +99,7 @@ export function WeeklyCalendar({
         isToday,
         isFuture,
         logsCount,
+        plannedCount: planned,
         completionPercentage: Math.min(100, completionPercentage),
         status,
       };
@@ -115,6 +122,7 @@ export function WeeklyCalendar({
     perfect: 'bg-gray-900 text-white',
     partial: 'border-2 border-gray-900 bg-white text-gray-900',
     missed: 'bg-gray-100 text-gray-400',
+    rest: 'bg-gray-50 text-gray-300',
     future: 'bg-gray-50 text-gray-300',
   };
 
@@ -122,6 +130,7 @@ export function WeeklyCalendar({
     perfect: 'complete',
     partial: 'partially logged',
     missed: 'not logged',
+    rest: 'nothing scheduled',
     future: 'upcoming',
   };
 
@@ -161,7 +170,7 @@ export function WeeklyCalendar({
             key={day.date}
             onClick={() => onDateSelect?.(day.date)}
             disabled={day.isFuture}
-            aria-label={`${day.dayOfWeek} ${day.dayOfMonth}: ${day.logsCount} of ${plannedCount} logged, ${statusLabels[day.status]}`}
+            aria-label={`${day.dayOfWeek} ${day.dayOfMonth}: ${day.logsCount} of ${day.plannedCount} logged, ${statusLabels[day.status]}`}
             className={cn(
               'flex min-h-11 flex-col items-center rounded-lg p-1.5 transition-[background-color,box-shadow,opacity,transform] duration-150 ease-out touch-manipulation active:scale-[0.96] sm:rounded-xl sm:p-3',
               selectedDate === day.date && 'bg-accent-50',

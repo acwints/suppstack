@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react';
 import { FiZap } from 'react-icons/fi';
 import { useSupplementLogs } from '@/hooks/useSupplementLogs';
 import { computeLogStreak, getLocalDateKey } from '@/lib/utils';
-import { useRegimen } from '@/hooks/useRegimen';
+import { isScheduledOn, useRegimen } from '@/hooks/useRegimen';
 import { EmptyState, Spinner, Stack, useToast } from '@/components/ui';
 import {
   DailyLogCard,
@@ -26,7 +26,7 @@ import { useStackIngredientsContext } from '@/app/context/StackIngredientsContex
  */
 export default function StackPage() {
   const toast = useToast();
-  const { regimen, activeRegimen, isLoading: isRegimenLoading } = useRegimen();
+  const { regimen, activeRegimen, todayRegimen, isLoading: isRegimenLoading } = useRegimen();
   const {
     intake,
     isLoading: isIntakeLoading,
@@ -107,17 +107,28 @@ export default function StackPage() {
       </header>
 
       <Stack gap={8}>
-        {activeRegimen.length > 0 ? (
+        {todayRegimen.length > 0 ? (
           <>
             <DailyLogCard
-              regimen={activeRegimen}
+              regimen={todayRegimen}
               todayLogs={todayLogs}
               onLog={handleLog}
               onUnlog={handleUnlog}
               isLoading={isLogsLoading}
             />
-            <WeeklyCalendar logs={logs} plannedCount={activeRegimen.length} />
+            <WeeklyCalendar
+              logs={logs}
+              plannedCount={(weekday) =>
+                activeRegimen.filter((item) => isScheduledOn(item, weekday)).length
+              }
+            />
           </>
+        ) : activeRegimen.length > 0 ? (
+          <EmptyState
+            title="Nothing scheduled today"
+            description="Your active supplements are scheduled for other days this week."
+            variant="card"
+          />
         ) : regimen.length > 0 ? (
           <EmptyState
             title="No active supplements today"
