@@ -330,6 +330,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
+#variable_conflict use_column
 DECLARE
   v_user_id UUID := (SELECT auth.uid());
   v_profile_id UUID;
@@ -442,6 +443,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
+#variable_conflict use_column
 DECLARE
   v_user_id UUID := (SELECT auth.uid());
   v_profile_id UUID;
