@@ -580,7 +580,7 @@ These are structural candidates, not permission to add product scope.
 
 ### Opportunity 6: Collapse catalog identity at the persistence Seam
 
-**Files:** `supplement-sync.ts`, `catalog-db-sync.ts`, catalog migrations, product/ingredient types  
+**Files:** `catalog-sync.ts`, `catalog-sync-server.ts`, catalog migrations, product/ingredient types  
 **Problem:** Static IDs, database serial IDs, aliases, names, and URLs all participate in identity resolution. Natural-key drift is handled repeatedly.  
 **Solution:** Assign immutable catalog UUIDs/keys to supplements and products, persist them with unique constraints, and make all Adapters translate once at ingress.  
 **Benefits:** Better Locality, fewer race paths, simpler foreign-key reasoning, and a deeper catalog Module.

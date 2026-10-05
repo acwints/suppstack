@@ -3,13 +3,11 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { FaThumbsUp, FaThumbsDown, FaCheckCircle, FaTimesCircle, FaFlag } from 'react-icons/fa';
-import type { Review } from '@/types';
-import { formatRelativeTime, getInitials } from '@/lib/utils/format';
-import { getRatingLabel } from '@/lib/utils/rating';
-import { cn } from '@/lib/design-system/utils';
+import { USAGE_DURATION_OPTIONS, type Review } from '@/types';
+import { formatRelativeTime, getInitials, getRatingLabel } from '@/lib/utils';
+import { cn } from '@/lib/design-system';
 import { Rating } from '@/components/composite/Rating';
 import { Badge, Button } from '@/components/ui';
-import { USAGE_DURATION_OPTIONS } from '@/types';
 
 export interface ReviewCardProps {
   review: Review;
@@ -209,5 +207,3 @@ export function ReviewCard({
     </div>
   );
 }
-
-export default ReviewCard;

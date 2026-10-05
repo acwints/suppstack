@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FiCamera, FiCheck, FiClock, FiLayers, FiX } from 'react-icons/fi';
 import { useAuth } from '@/app/context/AuthContext';
-import { usePremium } from '@/hooks/usePremium';
 import { openExternalUrl } from '@/lib/native/capacitor';
 import {
   APPLE_EULA_URL,
@@ -23,7 +22,9 @@ import {
   type PremiumOffer,
 } from '@/lib/billing/native-purchases';
 import { Spinner, useToast } from '@/components/ui';
-import { cn } from '@/lib/design-system/utils';
+import { cn } from '@/lib/design-system';
+import { loginHref } from '@/lib/navigation/login';
+import { usePremium } from '@/hooks';
 
 const FEATURE_ICONS: Record<PremiumFeatureId, typeof FiCamera> = {
   scan: FiCamera,
@@ -206,7 +207,7 @@ export function Paywall({ feature, onClose, closeLabel, className }: PaywallProp
             willRenew={entitlement?.will_renew ?? true}
           />
         ) : !user ? (
-          <Link href="/login?next=/premium" className={PRIMARY_CTA}>
+          <Link href={loginHref('/premium')} className={PRIMARY_CTA}>
             Sign in to continue
           </Link>
         ) : isNative ? (
@@ -414,8 +415,14 @@ function MemberState({
   );
 }
 
-/** Full-screen sheet wrapper around the paywall, opened via usePremium(). */
-export function PaywallSheet({
+/** Renders the app's single paywall sheet; open it with usePremium().openPaywall(). */
+export function PaywallHost() {
+  const { paywall, closePaywall } = usePremium();
+  return <PaywallSheet open={paywall.open} feature={paywall.feature} onClose={closePaywall} />;
+}
+
+/** Full-screen sheet wrapper around the paywall. */
+function PaywallSheet({
   open,
   feature,
   onClose,
@@ -453,5 +460,3 @@ export function PaywallSheet({
     </div>
   );
 }
-
-export default Paywall;

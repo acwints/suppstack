@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { FaStar, FaEdit, FaPlus } from 'react-icons/fa';
 import type { Review, ProductRatingStats, ReviewInput } from '@/types';
-import type { ReviewSortBy } from '@/hooks/useReviews';
+import type { ReviewSortBy } from '@/hooks';
 import { Button, Select, Skeleton, ConfirmDialog } from '@/components/ui';
 import { RatingBreakdown } from '@/components/composite/Rating';
-import ReviewCard from './ReviewCard';
-import ReviewForm from './ReviewForm';
+import { loginHref } from '@/lib/navigation/login';
+import { ReviewCard } from './ReviewCard';
+import { ReviewForm } from './ReviewForm';
 
 export interface ReviewListProps {
   productId: string;
@@ -52,6 +54,8 @@ export function ReviewList({
   onVoteHelpful,
   isLoggedIn,
 }: ReviewListProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [isEditingReview, setIsEditingReview] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -179,7 +183,7 @@ export function ReviewList({
           <p className="text-gray-600 mb-4">
             Log in to write a review and help others make informed decisions.
           </p>
-          <Button variant="primary" onClick={() => window.location.href = '/login'}>
+          <Button variant="primary" onClick={() => router.push(loginHref(pathname))}>
             Log In to Review
           </Button>
         </div>
@@ -286,5 +290,3 @@ export function ReviewList({
     </div>
   );
 }
-
-export default ReviewList;

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { FiFilter, FiX, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { Card } from '@/components/ui';
-import { cn } from '@/lib/design-system/utils';
+import { cn } from '@/lib/design-system';
 import type { Product, ProductFilters, ProductSortBy } from '@/types';
 
 export interface ProductFilterPanelProps {
@@ -216,5 +216,3 @@ export function ProductFilterPanel({
     </div>
   );
 }
-
-export default ProductFilterPanel;

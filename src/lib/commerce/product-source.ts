@@ -1,29 +1,18 @@
 import type { Product } from '@/types';
-
-function isShopifySearchUrl(value?: string | null) {
-  if (!value) return false;
-
-  try {
-    const url = new URL(value);
-    return url.hostname === 'www.shopify.com' && url.pathname.startsWith('/search');
-  } catch {
-    return false;
-  }
-}
+import { hasDirectShopifyCheckout, isShopifySearchUrl } from './shopify-ucp';
 
 export function hasShopifyVariant(product: Product) {
   return Boolean(product.shopify_store_domain && product.shopify_variant_gid);
-}
-
-export function hasDirectShopifyCheckout(product: Product) {
-  return Boolean(product.shopify_checkout_url && !isShopifySearchUrl(product.shopify_checkout_url));
 }
 
 export function isCatalogFallbackProduct(product: Product) {
   return product.data_source === 'catalog_fallback' || String(product.product_id).startsWith('catalog-');
 }
 
-/** Curated catalog products live in static code with `real-*` string IDs. */
+/**
+ * Curated catalog products live in static code with `real-*` or `catalog-*`
+ * string IDs (no database row until materialized).
+ */
 export function isCuratedCatalogProductId(productId: string | number) {
   return String(productId).startsWith('real-') || String(productId).startsWith('catalog-');
 }
@@ -32,7 +21,7 @@ export function hasOfficialProductUrl(product: Product) {
   return Boolean(product.product_url && !isShopifySearchUrl(product.product_url));
 }
 
-export function hasShopifyDiscoveryPath(product: Product) {
+function hasShopifyDiscoveryPath(product: Product) {
   return Boolean(
     product.ucp_enabled ||
       product.commerce_channel === 'shopify' ||
@@ -55,7 +44,7 @@ export function isVerifiedMerchantProduct(product: Product) {
   return !isCatalogFallbackProduct(product) && hasAnyPurchasePath(product);
 }
 
-export function getProductSourceRank(product: Product) {
+function getProductSourceRank(product: Product) {
   let score = 0;
 
   switch (product.inventory_status) {

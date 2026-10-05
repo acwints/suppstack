@@ -1,15 +1,7 @@
 import type { Product } from '@/types';
-import { canPurchase, getPurchaseDestination } from './shopify-ucp';
+import { canPurchase, getPurchaseDestination, type PurchaseSessionMode } from './shopify-ucp';
 
-export type PurchaseSessionMode =
-  | 'shopify_checkout'
-  | 'shopify_ucp_candidate'
-  | 'shopify_cart_permalink'
-  | 'shopify_discovery'
-  | 'amazon'
-  | 'official'
-  | 'marketplace'
-  | 'unavailable';
+export type { PurchaseSessionMode } from './shopify-ucp';
 
 export interface PurchaseSession {
   mode: PurchaseSessionMode;

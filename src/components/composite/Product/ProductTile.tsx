@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Product, ProductRatingStats } from '@/types';
+import type { Product } from '@/types';
 import { BrandLogo } from '@/components/composite/Brand';
 import { ProductActions } from './ProductActions';
 import { ProductPriceLine } from './ProductPriceLine';
@@ -16,7 +16,6 @@ import {
 
 export interface ProductTileProps {
   product: Product;
-  ratingStats?: ProductRatingStats | null;
 }
 
 export function ProductTile({ product }: ProductTileProps) {
@@ -74,5 +73,3 @@ export function ProductTile({ product }: ProductTileProps) {
     </article>
   );
 }
-
-export default ProductTile;

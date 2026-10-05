@@ -11,5 +11,3 @@ export type UsePremiumResult = PremiumContextValue;
 export function usePremium(): UsePremiumResult {
   return usePremiumContext();
 }
-
-export default usePremium;

@@ -1,20 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { FaCheck, FaPlus, FaShoppingCart } from 'react-icons/fa';
 import { FiBookmark } from 'react-icons/fi';
 import type { Product } from '@/types';
 import { Button, useToast } from '@/components/ui';
 import { EmbeddedCheckout } from '@/components/composite/Commerce';
 import { useAuth } from '@/app/context/AuthContext';
-import { useSavedProducts } from '@/app/context/SavedProductsContext';
-import { useStackIngredientsContext } from '@/app/context/StackIngredientsContext';
-import { useCommerceCheckout, useProductInStack } from '@/hooks';
-import { summarizeProductAddition } from '@/lib/ingredients/mapProductIngredients';
+import { useCommerceCheckout, useProductInStack, useSavedProducts, useStackIngredients } from '@/hooks';
+import { summarizeProductAddition } from '@/lib/ingredients';
 import { canPurchase, getPurchaseLabel } from '@/lib/commerce/shopify-ucp';
 import { hasShopifyVariant } from '@/lib/commerce/product-source';
-import { cn } from '@/lib/design-system/utils';
+import { cn } from '@/lib/design-system';
+import { loginHref } from '@/lib/navigation/login';
 
 export interface ProductActionsProps {
   product: Product;
@@ -30,6 +29,7 @@ export function ProductActions({
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const toast = useToast();
   const { isInStack, isUpdating, addToStack } = useProductInStack(product);
   const { isStartingCheckout, startCheckout } = useCommerceCheckout();
@@ -39,7 +39,7 @@ export function ProductActions({
   // renders inside every product tile/card. Absent/loading/errored context
   // degrades to the plain "Added to stack" toast and never blocks the add.
   const { ingredientNames, isLoading: isIntakeLoading, error: intakeError } =
-    useStackIngredientsContext();
+    useStackIngredients();
   const productId = String(product.product_id);
   const saved = isSaved(productId);
 
@@ -72,7 +72,7 @@ export function ProductActions({
   const handleAddToStack = async () => {
     if (!user) {
       toast.info('Please log in to add products to your stack');
-      router.push('/login');
+      router.push(loginHref(pathname));
       return;
     }
 
@@ -205,5 +205,3 @@ export function ProductActions({
     </>
   );
 }
-
-export default ProductActions;

@@ -1,10 +1,9 @@
 import {
-  hasDirectShopifyCheckout,
   hasOfficialProductUrl,
   hasShopifyVariant,
   isCatalogFallbackProduct,
 } from '@/lib/commerce/product-source';
-import { getShopifyCartPermalink } from '@/lib/commerce/shopify-ucp';
+import { getShopifyCartPermalink, hasDirectShopifyCheckout } from '@/lib/commerce/shopify-ucp';
 import { buildCatalogBrandDiscovery } from '@/lib/catalog/brand-discovery';
 import { getCuratedCatalogProducts, supplementCatalog } from '@/lib/catalog/supplement-catalog';
 

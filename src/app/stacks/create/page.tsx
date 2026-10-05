@@ -20,8 +20,8 @@ import {
 } from 'react-icons/fi';
 import { useAuth } from '@/app/context/AuthContext';
 import { useStacks, useSupplements, useDebounce } from '@/hooks';
-import { Button, Input, Badge, Spinner, Card, Stack, Inline, Grid } from '@/components/ui';
-import type { StackSupplementInput, Stack as StackType } from '@/types';
+import { Button, Input, Badge, Spinner, Card, VStack, Inline, Grid } from '@/components/ui';
+import type { StackSupplementInput, Stack } from '@/types';
 import { findCatalogSupplementById } from '@/lib/catalog/supplement-catalog';
 
 interface SupplementEntry extends StackSupplementInput {
@@ -35,7 +35,7 @@ interface StackableSupplement {
   research_only?: boolean;
 }
 
-const sourceTypes: { value: StackType['source_type']; label: string; icon: JSX.Element }[] = [
+const sourceTypes: { value: Stack['source_type']; label: string; icon: JSX.Element }[] = [
   { value: 'youtube', label: 'YouTube', icon: <FiYoutube /> },
   { value: 'podcast', label: 'Podcast', icon: <FiMic /> },
   { value: 'article', label: 'Article', icon: <FiFileText /> },
@@ -75,7 +75,7 @@ export default function CreateStackPage() {
   // Source state
   const [sourceTitle, setSourceTitle] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
-  const [sourceType, setSourceType] = useState<StackType['source_type'] | ''>('');
+  const [sourceType, setSourceType] = useState<Stack['source_type'] | ''>('');
   const [sourceDate, setSourceDate] = useState('');
 
   // Search state
@@ -143,7 +143,11 @@ export default function CreateStackPage() {
     );
   };
 
-  const updateSupplement = (supplementId: number, field: keyof SupplementEntry, value: any) => {
+  const updateSupplement = <K extends keyof SupplementEntry>(
+    supplementId: number,
+    field: K,
+    value: SupplementEntry[K]
+  ) => {
     setSupplements(
       supplements.map((s) => (s.supplement_id === supplementId ? { ...s, [field]: value } : s))
     );
@@ -171,7 +175,7 @@ export default function CreateStackPage() {
     }
 
     if (supplements.length === 0) {
-      setError('Add at least one supplement to your stack');
+      setError('Add at least one supplement to this stack');
       return;
     }
 
@@ -218,18 +222,18 @@ export default function CreateStackPage() {
         className="mb-6 hidden items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 md:inline-flex"
       >
         <FiArrowLeft />
-        <span>Back to My Stack</span>
+        <span>Back to profile</span>
       </Link>
 
-      <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-8">Create a Stack</h1>
+      <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-8">Create a Shared Stack</h1>
 
       <form onSubmit={handleSubmit}>
-        <Stack gap={8}>
+        <VStack gap={8}>
           {/* Basic Info */}
           <Card padding="lg">
             <h2 className="font-semibold text-gray-900 mb-4">Basic Information</h2>
 
-            <Stack gap={4}>
+            <VStack gap={4}>
               <Input
                 label="Stack Name *"
                 value={stackName}
@@ -282,7 +286,7 @@ export default function CreateStackPage() {
                   {isPublic ? 'Anyone can view and copy this stack' : 'Only you can see this stack'}
                 </p>
               </div>
-            </Stack>
+            </VStack>
           </Card>
 
           {/* Supplements */}
@@ -294,7 +298,7 @@ export default function CreateStackPage() {
 
             {/* Added Supplements */}
             {supplements.length > 0 && (
-              <Stack gap={3} className="mb-4">
+              <VStack gap={3} className="mb-4">
                 {supplements.map((supplement, index) => (
                   <div
                     key={supplement.supplement_id}
@@ -302,7 +306,7 @@ export default function CreateStackPage() {
                   >
                     <Inline justify="between" align="start" className="mb-3">
                       <Inline gap={3} align="center">
-                        <Stack gap={1}>
+                        <VStack gap={1}>
                           <button
                             type="button"
                             onClick={() => moveSupplement(index, 'up')}
@@ -321,7 +325,7 @@ export default function CreateStackPage() {
                           >
                             <FiChevronDown size={18} aria-hidden="true" />
                           </button>
-                        </Stack>
+                        </VStack>
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
                             <h4 className="font-medium text-gray-900">{supplement.supplement_name}</h4>
@@ -395,7 +399,7 @@ export default function CreateStackPage() {
                     </Grid>
                   </div>
                 ))}
-              </Stack>
+              </VStack>
             )}
 
             {/* Add Supplement Search */}
@@ -467,7 +471,7 @@ export default function CreateStackPage() {
               Optional - credit where you learned about this stack
             </p>
 
-            <Stack gap={4}>
+            <VStack gap={4}>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Source Type</label>
                 <Inline gap={2} wrap>
@@ -516,7 +520,7 @@ export default function CreateStackPage() {
                 value={sourceDate}
                 onChange={(e) => setSourceDate(e.target.value)}
               />
-            </Stack>
+            </VStack>
           </Card>
 
           {/* Error Message */}
@@ -543,7 +547,7 @@ export default function CreateStackPage() {
               Create Stack
             </Button>
           </Inline>
-        </Stack>
+        </VStack>
       </form>
     </main>
   );

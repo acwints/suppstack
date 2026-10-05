@@ -75,7 +75,3 @@ export async function requestAppleHealthSnapshot(
 
   return plugin.getSnapshot({ days: options.days ?? 14 });
 }
-
-export function hasAppleHealthBridge(): boolean {
-  return isNativeApp() && Boolean(getHealthPlugin());
-}

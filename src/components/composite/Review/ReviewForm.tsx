@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { FaPlus, FaTimes } from 'react-icons/fa';
-import type { ReviewInput } from '@/types';
-import { USAGE_DURATION_OPTIONS } from '@/types';
+import { USAGE_DURATION_OPTIONS, type ReviewInput } from '@/types';
 import { Button, Input, Select } from '@/components/ui';
 import { RatingInput } from '@/components/composite/Rating';
 
@@ -314,5 +313,3 @@ export function ReviewForm({
     </form>
   );
 }
-
-export default ReviewForm;

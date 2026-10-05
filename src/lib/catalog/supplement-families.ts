@@ -21,12 +21,12 @@ const FAMILY_BY_SUPPLEMENT_NAME = new Map<string, string>(
   )
 );
 
-export function familyNameForSupplement(supplementName?: string | null): string | null {
+function familyNameForSupplement(supplementName?: string | null): string | null {
   if (!supplementName) return null;
   return FAMILY_BY_SUPPLEMENT_NAME.get(supplementName.toLowerCase()) ?? null;
 }
 
-export function familyMemberNames(familyName: string): string[] {
+function familyMemberNames(familyName: string): string[] {
   return SUPPLEMENT_FAMILY_MEMBERS[familyName] ?? [];
 }
 
@@ -126,14 +126,6 @@ export function groupSupplementsForBrowse(supplements: Supplement[]): Supplement
   }
 
   return groups;
-}
-
-/**
- * For curated shelves that show individual supplements: keeps only one form
- * per family (the flagship) so an ingredient never appears twice.
- */
-export function collapseToFamilyFlagships(supplements: Supplement[]): Supplement[] {
-  return groupSupplementsForBrowse(supplements).map((group) => group.flagship);
 }
 
 /**

@@ -22,24 +22,25 @@ import {
   Card,
   Avatar,
   EmptyState,
-  Stack,
+  VStack,
   Inline,
   useToast,
 } from '@/components/ui';
-import { StackCard, BuyStackPanel, getStackSourceIcon } from '@/components/composite/Stack';
-import type { Stack as StackType } from '@/types';
+import { StackCard, BuyStackPanel, StackSourceIcon } from '@/components/composite/Stack';
+import type { Stack } from '@/types';
 
 export default function StackDetailPage() {
   const params = useParams();
   const router = useRouter();
   const toast = useToast();
   const stackId = params.id as string;
+  const loginHref = `/login?next=${encodeURIComponent(`/stacks/${stackId}`)}`;
 
   const { user } = useAuth();
   const { getStack, copyStack, getUserStacks } = useStacks({ enabled: false });
   const { isLiked, likeCount, toggleLike, isLoading: likeLoading } = useStackLikes(stackId);
-  const [stack, setStack] = useState<StackType | null>(null);
-  const [relatedStacks, setRelatedStacks] = useState<StackType[]>([]);
+  const [stack, setStack] = useState<Stack | null>(null);
+  const [relatedStacks, setRelatedStacks] = useState<Stack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCopying, setIsCopying] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -72,7 +73,7 @@ export default function StackDetailPage() {
 
   const handleCopyStack = async () => {
     if (!user) {
-      router.push('/login');
+      router.push(loginHref);
       return;
     }
 
@@ -93,7 +94,7 @@ export default function StackDetailPage() {
 
   const handleLike = async () => {
     if (!user) {
-      router.push('/login');
+      router.push(loginHref);
       return;
     }
     try {
@@ -105,7 +106,7 @@ export default function StackDetailPage() {
 
   const handleFollow = async () => {
     if (!user) {
-      router.push('/login');
+      router.push(loginHref);
       return;
     }
     try {
@@ -133,7 +134,6 @@ export default function StackDetailPage() {
     }
   };
 
-  const getSourceIcon = (sourceType: string) => getStackSourceIcon(sourceType, 20);
 
   if (isLoading) {
     return (
@@ -174,13 +174,13 @@ export default function StackDetailPage() {
         className="mb-6 hidden items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 md:inline-flex"
       >
         <FiArrowLeft />
-        <span>Back to My Stack</span>
+        <span>Back to profile</span>
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
         <div className="lg:col-span-2">
-          <Stack gap={6}>
+          <VStack gap={6}>
             {/* Stack Header */}
             <Card padding="md">
               <Inline justify="between" align="start" className="mb-4">
@@ -240,7 +240,7 @@ export default function StackDetailPage() {
                 <h3 className="font-semibold text-gray-900 mb-4">Source</h3>
                 <Inline gap={4} align="start">
                   <div className="p-3 bg-gray-100 rounded-lg">
-                    {getSourceIcon(stack.source_type)}
+                    <StackSourceIcon sourceType={stack.source_type} size={20} />
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">{stack.source_title}</p>
@@ -272,7 +272,7 @@ export default function StackDetailPage() {
                   <h3 className="font-semibold text-gray-900">Core Stack Picks</h3>
                   <Badge variant="primary">{coreSupplements.length}</Badge>
                 </Inline>
-                <Stack gap={3}>
+                <VStack gap={3}>
                   {coreSupplements.map((supplement, idx) => (
                     <div
                       key={supplement.supplement_id}
@@ -303,7 +303,7 @@ export default function StackDetailPage() {
                       </Inline>
                     </div>
                   ))}
-                </Stack>
+                </VStack>
               </Card>
             )}
 
@@ -314,7 +314,7 @@ export default function StackDetailPage() {
                   <h3 className="font-semibold text-gray-900">Optional Stack Picks</h3>
                   <Badge variant="secondary">{optionalSupplements.length}</Badge>
                 </Inline>
-                <Stack gap={3}>
+                <VStack gap={3}>
                   {optionalSupplements.map((supplement) => (
                     <div
                       key={supplement.supplement_id}
@@ -338,14 +338,14 @@ export default function StackDetailPage() {
                       )}
                     </div>
                   ))}
-                </Stack>
+                </VStack>
               </Card>
             )}
-          </Stack>
+          </VStack>
         </div>
 
         {/* Sidebar */}
-        <Stack gap={6}>
+        <VStack gap={6}>
           {/* Buy Stack Panel */}
           {stack.supplements && stack.supplements.length > 0 && (
             <BuyStackPanel
@@ -401,7 +401,7 @@ export default function StackDetailPage() {
               <h3 className="font-semibold text-gray-900 mb-4">
                 More from {stack.profile?.display_name}
               </h3>
-              <Stack gap={4}>
+              <VStack gap={4}>
                 {relatedStacks.map((relatedStack) => (
                   <StackCard
                     key={relatedStack.stack_id}
@@ -410,7 +410,7 @@ export default function StackDetailPage() {
                     compact
                   />
                 ))}
-              </Stack>
+              </VStack>
             </Card>
           )}
 
@@ -421,14 +421,14 @@ export default function StackDetailPage() {
               <p className="text-sm text-gray-700 mb-4">
                 Sign in to copy this stack, track refill cost, and keep your supplements organized.
               </p>
-              <Link href="/login">
+              <Link href={loginHref}>
                 <Button variant="primary" fullWidth>
                   Sign In
                 </Button>
               </Link>
             </div>
           )}
-        </Stack>
+        </VStack>
       </div>
     </main>
   );

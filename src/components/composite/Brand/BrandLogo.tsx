@@ -66,5 +66,3 @@ export function BrandLogo({ domain, brandName, size = 'md', className }: BrandLo
     />
   );
 }
-
-export default BrandLogo;

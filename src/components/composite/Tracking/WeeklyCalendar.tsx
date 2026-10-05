@@ -4,17 +4,13 @@ import { useState, useMemo } from 'react';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { Card } from '@/components/ui';
 import { cn } from '@/lib/design-system';
-import type { SupplementLog, DailyTrackingSummary } from '@/types';
+import type { SupplementLog } from '@/types';
 import { getLocalDateKey } from '@/lib/utils';
 
 export interface WeeklyCalendarProps {
   logs: SupplementLog[];
-  summaries?: DailyTrackingSummary[];
   /** Planned items per day: a constant, or by ISO weekday (1 = Mon … 7 = Sun). */
   plannedCount: number | ((isoWeekday: number) => number);
-  onDateSelect?: (date: string) => void;
-  selectedDate?: string;
-  className?: string;
 }
 
 interface DayData {
@@ -22,10 +18,8 @@ interface DayData {
   dayOfWeek: string;
   dayOfMonth: number;
   isToday: boolean;
-  isFuture: boolean;
   logsCount: number;
   plannedCount: number;
-  completionPercentage: number;
   status: 'perfect' | 'partial' | 'missed' | 'rest' | 'future';
 }
 
@@ -45,38 +39,27 @@ function getWeekDates(weekOffset: number = 0): Date[] {
   return dates;
 }
 
-// Log dates are local calendar days, so keys must be local too (not UTC).
-const formatDateKey = getLocalDateKey;
-
 const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const shortDayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-export function WeeklyCalendar({
-  logs,
-  summaries = [],
-  plannedCount,
-  onDateSelect,
-  selectedDate,
-  className = '',
-}: WeeklyCalendarProps) {
+export function WeeklyCalendar({ logs, plannedCount }: WeeklyCalendarProps) {
   const [weekOffset, setWeekOffset] = useState(0);
 
-  const today = formatDateKey(new Date());
+  // Log dates are local calendar days, so keys must be local too (not UTC).
+  const today = getLocalDateKey();
 
   const weekData = useMemo((): DayData[] => {
     const dates = getWeekDates(weekOffset);
 
     return dates.map((date, index) => {
-      const dateKey = formatDateKey(date);
+      const dateKey = getLocalDateKey(date);
       const dayLogs = logs.filter(log => log.log_date === dateKey);
       const uniqueProducts = new Set(dayLogs.map(log => log.product_id));
       const logsCount = uniqueProducts.size;
 
       const planned =
         typeof plannedCount === 'function' ? plannedCount(index + 1) : plannedCount;
-      const summary = summaries.find(s => s.summary_date === dateKey);
-      const completionPercentage = summary?.completion_percentage ||
-        (planned > 0 ? (logsCount / planned) * 100 : 0);
+      const completionPercentage = planned > 0 ? (logsCount / planned) * 100 : 0;
 
       const isToday = dateKey === today;
       const isFuture = date > new Date();
@@ -97,14 +80,12 @@ export function WeeklyCalendar({
         dayOfWeek: dayNames[index],
         dayOfMonth: date.getDate(),
         isToday,
-        isFuture,
         logsCount,
         plannedCount: planned,
-        completionPercentage: Math.min(100, completionPercentage),
         status,
       };
     });
-  }, [logs, summaries, plannedCount, weekOffset, today]);
+  }, [logs, plannedCount, weekOffset, today]);
 
   // Get week label
   const getWeekLabel = (): string => {
@@ -135,7 +116,7 @@ export function WeeklyCalendar({
   };
 
   return (
-    <Card variant="modern" className={`p-4 sm:p-6 ${className}`}>
+    <Card variant="modern" className="p-4 sm:p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h3 className="text-base sm:text-lg font-semibold text-gray-900">Weekly Overview</h3>
@@ -166,16 +147,11 @@ export function WeeklyCalendar({
       {/* Calendar Grid */}
       <div className="grid grid-cols-7 gap-1 sm:gap-2">
         {weekData.map((day, index) => (
-          <button
+          <div
             key={day.date}
-            onClick={() => onDateSelect?.(day.date)}
-            disabled={day.isFuture}
+            role="img"
             aria-label={`${day.dayOfWeek} ${day.dayOfMonth}: ${day.logsCount} of ${day.plannedCount} logged, ${statusLabels[day.status]}`}
-            className={cn(
-              'flex min-h-11 flex-col items-center rounded-lg p-1.5 transition-[background-color,box-shadow,opacity,transform] duration-150 ease-out touch-manipulation active:scale-[0.96] sm:rounded-xl sm:p-3',
-              selectedDate === day.date && 'bg-accent-50',
-              day.isFuture ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 active:bg-gray-100'
-            )}
+            className="flex min-h-11 flex-col items-center rounded-lg p-1.5 sm:rounded-xl sm:p-3"
           >
             <span
               className={cn(
@@ -195,7 +171,7 @@ export function WeeklyCalendar({
             >
               {day.dayOfMonth}
             </div>
-          </button>
+          </div>
         ))}
       </div>
 
@@ -217,5 +193,3 @@ export function WeeklyCalendar({
     </Card>
   );
 }
-
-export default WeeklyCalendar;

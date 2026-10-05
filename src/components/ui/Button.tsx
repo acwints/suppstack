@@ -164,5 +164,3 @@ function LoadingSpinner({ size }: { size: ButtonSize }) {
     </svg>
   );
 }
-
-export default Button;

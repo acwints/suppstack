@@ -1,6 +1,6 @@
 import type { Product } from '@/types';
 import { createFallbackPurchaseSession, type PurchaseSession } from './purchase-session';
-import { getPreferredPurchaseUrl } from './shopify-ucp';
+import { getPreferredPurchaseUrl, normalizeShopifyStoreOrigin } from './shopify-ucp';
 
 const PROFILE_URL = 'https://shopify.dev/ucp/agent-profiles/2026-04-08/valid-with-capabilities.json';
 
@@ -11,19 +11,36 @@ interface UcpDiscovery {
   tools: string[];
 }
 
-function normalizeOrigin(value?: string | null) {
-  if (!value) return null;
-
-  try {
-    const candidate = value.startsWith('http') ? value : `https://${value}`;
-    const url = new URL(candidate);
-    return `https://${url.hostname.toLowerCase()}`;
-  } catch {
-    return null;
-  }
+/** The `/.well-known/ucp` discovery document (untyped JSON from the merchant). */
+interface UcpDocument {
+  ucp?: {
+    services?: Record<string, Array<{ transport?: string; endpoint?: string } | null> | undefined>;
+    capabilities?: Record<string, unknown>;
+  };
 }
 
-async function callJsonRpc(endpoint: string, method: string, params: Record<string, unknown>) {
+/** A JSON-RPC response envelope from a UCP MCP endpoint (untyped JSON). */
+interface UcpRpcPayload {
+  error?: { message?: string };
+  result?: {
+    tools?: Array<{ name?: unknown } | null>;
+    structuredContent?: unknown;
+    isError?: boolean;
+  };
+}
+
+/** The cart / checkout object in a tool call's structured content. */
+interface UcpStructuredContent {
+  id?: string;
+  continue_url?: string;
+  cart?: UcpStructuredContent;
+}
+
+async function callJsonRpc(
+  endpoint: string,
+  method: string,
+  params: Record<string, unknown>
+): Promise<UcpRpcPayload> {
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
@@ -43,7 +60,7 @@ async function callJsonRpc(endpoint: string, method: string, params: Record<stri
     throw new Error(`Shopify UCP request failed with HTTP ${response.status}`);
   }
 
-  const payload = await response.json();
+  const payload = (await response.json()) as UcpRpcPayload;
   if (payload?.error) {
     throw new Error(payload.error.message || 'Shopify UCP returned a JSON-RPC error');
   }
@@ -51,7 +68,7 @@ async function callJsonRpc(endpoint: string, method: string, params: Record<stri
   return payload;
 }
 
-function extractEndpoint(document: any, origin: string) {
+function extractEndpoint(document: UcpDocument, origin: string) {
   const services = document?.ucp?.services?.['dev.ucp.shopping'];
   if (Array.isArray(services)) {
     const service = services.find((item) => item?.transport === 'mcp' && item?.endpoint);
@@ -62,7 +79,7 @@ function extractEndpoint(document: any, origin: string) {
 }
 
 async function discoverShopifyUcp(storeDomain?: string | null): Promise<UcpDiscovery | null> {
-  const origin = normalizeOrigin(storeDomain);
+  const origin = normalizeShopifyStoreOrigin(storeDomain);
   if (!origin) return null;
 
   const response = await fetch(`${origin}/.well-known/ucp`, {
@@ -72,7 +89,7 @@ async function discoverShopifyUcp(storeDomain?: string | null): Promise<UcpDisco
 
   if (!response.ok) return null;
 
-  const document = await response.json();
+  const document = (await response.json()) as UcpDocument;
   const endpoint = extractEndpoint(document, origin);
   let tools: string[] = [];
 
@@ -85,7 +102,7 @@ async function discoverShopifyUcp(storeDomain?: string | null): Promise<UcpDisco
       },
     });
     tools = (toolPayload?.result?.tools || [])
-      .map((tool: any) => tool?.name)
+      .map((tool) => tool?.name)
       .filter(Boolean)
       .map(String);
   } catch {
@@ -123,7 +140,7 @@ function toProductVariantGid(value?: string | null) {
   return match ? `gid://shopify/ProductVariant/${match[1]}` : value;
 }
 
-function structuredContent(payload: any) {
+function structuredContent(payload: UcpRpcPayload): UcpStructuredContent {
   const structured = payload?.result?.structuredContent;
   if (!structured || typeof structured !== 'object') {
     throw new Error('Shopify UCP response did not include structured content.');
@@ -131,7 +148,7 @@ function structuredContent(payload: any) {
   if (payload?.result?.isError) {
     throw new Error('Shopify UCP returned an error result.');
   }
-  return structured;
+  return structured as UcpStructuredContent;
 }
 
 export async function resolveShopifyPurchaseSession(
@@ -198,7 +215,7 @@ export async function resolveShopifyPurchaseSession(
 
     const cart = structuredContent(cartPayload)?.cart || structuredContent(cartPayload);
     const cartId = cart?.id;
-    let checkout: any = null;
+    let checkout: UcpStructuredContent | null = null;
 
     if (cartId && toolSupported(discovery, 'create_checkout')) {
       try {

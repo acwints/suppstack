@@ -11,7 +11,7 @@
  */
 
 import type { ProductIngredient } from '@/types';
-import { summarizeAddition, type ProductIngredientInput } from '@/lib/ingredients';
+import { summarizeAddition, type ProductIngredientInput } from './intake';
 
 /**
  * Map the DB/catalog `ProductIngredient[]` shape to the pure module's

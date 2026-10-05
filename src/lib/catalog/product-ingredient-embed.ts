@@ -1,5 +1,13 @@
 import type { IngredientUnit, ProductIngredient } from '@/types';
 
+/** One `product_ingredients(amount, unit, order_index, supplements(...))` embed row. */
+export interface EmbeddedIngredientRow {
+  amount: number | null;
+  unit: string | null;
+  order_index: number;
+  supplements: { supplement_id: number; supplement_name: string };
+}
+
 /**
  * Maps a nested `product_ingredients` embed row (as returned by a Supabase
  * `products(... product_ingredients(amount, unit, order_index,
@@ -9,9 +17,9 @@ import type { IngredientUnit, ProductIngredient } from '@/types';
  * This is the DB→`ProductIngredient` embed mapping shared by `useProduct` and
  * `useStackIngredients`. It is NOT the pure-input boundary — that translation
  * (`ProductIngredient` → `ProductIngredientInput`) lives in
- * `src/lib/ingredients/mapProductIngredients.ts`.
+ * `src/lib/ingredients/map-product-ingredients.ts`.
  */
-export function mapEmbeddedIngredient(row: any): ProductIngredient {
+export function mapEmbeddedIngredient(row: EmbeddedIngredientRow): ProductIngredient {
   return {
     supplement_id: row.supplements?.supplement_id,
     supplement_name: row.supplements?.supplement_name ?? '',

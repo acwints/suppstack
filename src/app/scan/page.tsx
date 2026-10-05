@@ -10,6 +10,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function CounterScanPage() {
+export default function ScanPage() {
   return <CounterScanClient />;
 }

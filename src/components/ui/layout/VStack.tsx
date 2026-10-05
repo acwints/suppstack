@@ -17,7 +17,7 @@ const gapMap: Record<SpacingValue, string> = {
   16: 'gap-16',
 };
 
-export interface StackProps extends HTMLAttributes<HTMLElement> {
+export interface VStackProps extends HTMLAttributes<HTMLElement> {
   /** Vertical spacing between children */
   gap?: SpacingValue;
   /** Horizontal alignment */
@@ -36,15 +36,15 @@ const alignMap = {
 };
 
 /**
- * Stack - Vertical flex container with consistent spacing
+ * VStack - Vertical flex container with consistent spacing
  *
  * @example
- * <Stack gap={4}>
+ * <VStack gap={4}>
  *   <Card>Item 1</Card>
  *   <Card>Item 2</Card>
- * </Stack>
+ * </VStack>
  */
-export const Stack = forwardRef<HTMLDivElement, StackProps>(
+export const VStack = forwardRef<HTMLDivElement, VStackProps>(
   ({ gap = 4, align = 'stretch', fullWidth = true, as: Component = 'div', className, children, ...props }, ref) => {
     return (
       <Component
@@ -64,4 +64,4 @@ export const Stack = forwardRef<HTMLDivElement, StackProps>(
   }
 );
 
-Stack.displayName = 'Stack';
+VStack.displayName = 'VStack';

@@ -81,5 +81,3 @@ export const ProgressRing = forwardRef<HTMLDivElement, ProgressRingProps>(
 );
 
 ProgressRing.displayName = 'ProgressRing';
-
-export default ProgressRing;

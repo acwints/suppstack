@@ -1,51 +1,41 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { FiCalendar } from 'react-icons/fi';
 import { Modal, Button, Input } from '@/components/ui';
-import type { UserSupplementSettings, UserSupplementSettingsInput, SupplementStatus } from '@/types';
-import { SUPPLEMENT_STATUS_OPTIONS, DAYS_OF_WEEK } from '@/types';
+import {
+  DAYS_OF_WEEK,
+  SUPPLEMENT_STATUS_OPTIONS,
+  type MyStackItem,
+  type SupplementStatus,
+  type UserSupplementSettingsInput,
+} from '@/types';
 
 export interface SupplementSettingsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
   productId: string;
   productName: string;
-  existingSettings?: UserSupplementSettings;
+  /** Current settings; the form starts from these. */
+  settings: MyStackItem['settings'];
+  onClose: () => void;
   onSave: (settings: UserSupplementSettingsInput) => Promise<void>;
+  /** Ask to remove the product from the stack (the caller confirms). */
+  onRemove: () => void;
 }
 
+/** Per-product dose, schedule, and status for one item in the user's stack. */
 export function SupplementSettingsModal({
-  isOpen,
-  onClose,
   productId,
   productName,
-  existingSettings,
+  settings,
+  onClose,
   onSave,
+  onRemove,
 }: SupplementSettingsModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Form state
-  const [customDosage, setCustomDosage] = useState('');
-  const [servingsPerDay, setServingsPerDay] = useState(1);
-  const [scheduleDays, setScheduleDays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
-  const [status, setStatus] = useState<SupplementStatus>('active');
-
-  // Initialize form from existing settings
-  useEffect(() => {
-    if (existingSettings) {
-      setCustomDosage(existingSettings.custom_dosage || '');
-      setServingsPerDay(existingSettings.servings_per_day || 1);
-      setScheduleDays(existingSettings.schedule_days || [1, 2, 3, 4, 5, 6, 7]);
-      setStatus(existingSettings.status || 'active');
-    } else {
-      // Reset to defaults
-      setCustomDosage('');
-      setServingsPerDay(1);
-      setScheduleDays([1, 2, 3, 4, 5, 6, 7]);
-      setStatus('active');
-    }
-  }, [existingSettings, isOpen]);
+  const [customDosage, setCustomDosage] = useState(settings.custom_dosage ?? '');
+  const [servingsPerDay, setServingsPerDay] = useState(settings.servings_per_day);
+  const [scheduleDays, setScheduleDays] = useState<number[]>(settings.schedule_days);
+  const [status, setStatus] = useState<SupplementStatus>(settings.status);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,12 +61,12 @@ export function SupplementSettingsModal({
     setScheduleDays(prev =>
       prev.includes(day)
         ? prev.filter(d => d !== day)
-        : [...prev, day].sort()
+        : [...prev, day].sort((a, b) => a - b)
     );
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Settings: ${productName}`}>
+    <Modal isOpen onClose={onClose} title={`Settings: ${productName}`}>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Status */}
         <div>
@@ -149,6 +139,9 @@ export function SupplementSettingsModal({
 
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t">
+          <Button type="button" variant="ghost" onClick={onRemove} className="mr-auto">
+            Remove from stack
+          </Button>
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
@@ -160,5 +153,3 @@ export function SupplementSettingsModal({
     </Modal>
   );
 }
-
-export default SupplementSettingsModal;

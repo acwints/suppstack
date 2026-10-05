@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { FiArrowRight, FiPlus } from 'react-icons/fi';
 import type { Supplement } from '@/types';
-import { cn } from '@/lib/design-system/utils';
+import { cn } from '@/lib/design-system';
 
 export interface PeptideReferenceShelfProps {
   supplements: Supplement[];
@@ -78,5 +78,3 @@ export function PeptideReferenceShelf({
     </div>
   );
 }
-
-export default PeptideReferenceShelf;

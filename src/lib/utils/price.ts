@@ -31,60 +31,17 @@ export function calculatePrices(
   };
 }
 
-/**
- * Format a price value to a display string
- */
-export function formatPrice(value: number, decimals: number = 2): string {
-  return value.toFixed(decimals);
-}
+const usdFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
 /**
- * Format price with currency symbol
+ * Format a USD amount for display, e.g. 12.99 -> "$12.99".
+ * The single money formatter for the app — never hand-build "$" strings.
  */
-export function formatCurrency(value: number, currency: string = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-/**
- * Calculate total monthly cost for a list of regimen items
- */
-export function calculateTotalMonthlyCost(
-  items: Array<{
-    product_price: number;
-    servings_per_container: number;
-    servings_per_day: number;
-  }>
-): number {
-  return items.reduce((total, item) => {
-    const { monthlyCost } = calculatePrices(
-      item.product_price,
-      item.servings_per_container,
-      item.servings_per_day
-    );
-    return total + monthlyCost;
-  }, 0);
-}
-
-/**
- * Get price tier label based on cost per serving
- */
-export function getPriceTier(costPerServing: number): {
-  label: string;
-  color: string;
-} {
-  // Tier labels read in ink — no per-tier color coding.
-  if (costPerServing < 0.10) {
-    return { label: 'Budget', color: 'text-gray-600' };
-  } else if (costPerServing < 0.30) {
-    return { label: 'Value', color: 'text-gray-600' };
-  } else if (costPerServing < 0.75) {
-    return { label: 'Premium', color: 'text-gray-600' };
-  } else {
-    return { label: 'Luxury', color: 'text-gray-600' };
-  }
+export function formatCurrency(value: number): string {
+  return usdFormatter.format(value);
 }

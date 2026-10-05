@@ -2,8 +2,8 @@
 
 import { forwardRef, useId } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
-import type { InputSize } from '@/types';
-import { cn } from '@/lib/design-system/utils';
+import type { InputSize } from './Input';
+import { cn } from '@/lib/design-system';
 
 export interface SelectOption {
   value: string;
@@ -103,5 +103,3 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 );
 
 Select.displayName = 'Select';
-
-export default Select;

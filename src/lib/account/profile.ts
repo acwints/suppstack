@@ -26,6 +26,18 @@ function slugUsername(value: string) {
     .slice(0, 28);
 }
 
+/** The auth user's name from their sign-in provider, else their email's local part. */
+export function getUserDisplayName(user: User): string | null {
+  const metadata = user.user_metadata ?? {};
+  return metadata.full_name || metadata.name || user.email?.split('@')[0] || null;
+}
+
+/** The auth user's avatar from their sign-in provider, if any. */
+export function getUserAvatarUrl(user: User): string | null {
+  const metadata = user.user_metadata ?? {};
+  return metadata.avatar_url || metadata.picture || null;
+}
+
 function profileDefaults(user: User) {
   const metadata = user.user_metadata ?? {};
   const emailName = user.email?.split('@')[0] ?? 'member';
@@ -35,14 +47,14 @@ function profileDefaults(user: User) {
   return {
     user_id: user.id,
     username: `${baseUsername}-${user.id.slice(0, 6)}`,
-    display_name: metadata.full_name || metadata.name || emailName,
-    profile_image: metadata.avatar_url || metadata.picture || null,
+    display_name: getUserDisplayName(user) ?? 'member',
+    profile_image: getUserAvatarUrl(user),
   };
 }
 
 // profile_id never changes for a user, so it is safe to memoize per session.
-// This keeps product grids (15+ cards each checking stack membership)
-// from re-running the account-profile command once per card.
+// This keeps review, like, and follow actions from re-running the
+// account-profile command on every call.
 const profileIdCache = new Map<string, Promise<string>>();
 
 export function getUserProfileId(user: User): Promise<string> {

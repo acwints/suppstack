@@ -14,9 +14,17 @@ export interface UseProductsWithIngredientResult {
 
 const DB_SELECT = 'amount, unit, is_primary, products(*, brands(brand_name), supplements(supplement_name))';
 
+/** Row shape of DB_SELECT (one `product_ingredients` edge). */
+interface ProductIngredientEdgeRow {
+  amount: number | null;
+  unit: string | null;
+  is_primary: boolean;
+  products: Product | null;
+}
+
 /** Map a DB `product_ingredients` row into a `ProductContainingIngredient`. */
-function mapDbRow(row: any): ProductContainingIngredient | null {
-  const product = row.products as Product | null;
+function mapDbRow(row: ProductIngredientEdgeRow): ProductContainingIngredient | null {
+  const product = row.products;
   if (!product) return null;
   return {
     product,
@@ -69,18 +77,20 @@ export function useProductsWithIngredient(
           if (supplementError) throw supplementError;
 
           const dbSupplementIds = (supplementRows ?? [])
-            .map((row: any) => row.supplement_id)
+            .map((row: { supplement_id: number }) => row.supplement_id)
             .filter((id: unknown): id is number => typeof id === 'number');
 
           if (dbSupplementIds.length > 0) {
             const { data, error: dbError } = await supabase
               .from('product_ingredients')
               .select(DB_SELECT)
-              .in('ingredient_supplement_id', dbSupplementIds);
+              .in('ingredient_supplement_id', dbSupplementIds)
+              // The client is untyped and infers embeds as arrays; `products` is to-one.
+              .overrideTypes<ProductIngredientEdgeRow[], { merge: false }>();
 
             if (dbError) throw dbError;
 
-            dbMatches = ((data ?? []) as any[])
+            dbMatches = (data ?? [])
               .map(mapDbRow)
               .filter((match): match is ProductContainingIngredient => match !== null);
           }

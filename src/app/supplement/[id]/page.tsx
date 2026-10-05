@@ -3,10 +3,10 @@
 import { useState, useEffect, useMemo, use } from 'react';
 import Link from 'next/link';
 import { FiArrowLeft, FiPackage, FiPlus } from 'react-icons/fi';
-import { supabase } from '../../supabase';
-import ProductCard from '../../components/ProductCard';
+import { supabase } from '@/app/supabase';
+import { ProductTile } from '@/components/composite/Product';
 import type { Supplement, Product, ProductFilters, ProductSortBy } from '@/types';
-import { Spinner, Button, EmptyState, Stack, Inline, Grid } from '@/components/ui';
+import { Spinner, Button, EmptyState, VStack, Inline, Grid } from '@/components/ui';
 import { ProductFilterPanel } from '@/components/composite/Filter';
 import {
   CompareProducts,
@@ -22,6 +22,7 @@ import {
 } from '@/lib/catalog/supplement-catalog';
 import { familyForSupplement, familyFormLabel } from '@/lib/catalog/supplement-families';
 import { getSupplementKnowledge } from '@/lib/catalog/supplement-knowledge';
+import { isCuratedCatalogProductId } from '@/lib/commerce/product-source';
 
 export default function SupplementPage(props: { params: Promise<{ id: string }> }) {
   const params = use(props.params);
@@ -204,7 +205,7 @@ export default function SupplementPage(props: { params: Promise<{ id: string }> 
         <span>All products</span>
       </Link>
       {/* Header */}
-      <Stack gap={2} className="mb-5 sm:mb-6">
+      <VStack gap={2} className="mb-5 sm:mb-6">
         <div className="flex flex-wrap items-center gap-2">
           {supplement.category && (
             <span className="rounded border border-gray-200 px-2 py-1 text-xs font-medium text-gray-600">
@@ -262,8 +263,8 @@ export default function SupplementPage(props: { params: Promise<{ id: string }> 
             })}
           </div>
         )}
-      </Stack>
-      <Stack gap={6}>
+      </VStack>
+      <VStack gap={6}>
         {isResearchOnly ? (
           /* Research-only compounds are documented, not sold. No shopping
              surface — just a prominent safety disclaimer and the wiki. */
@@ -331,7 +332,7 @@ export default function SupplementPage(props: { params: Promise<{ id: string }> 
               <>
                 <Grid cols={{ sm: 1, md: 2, lg: 3, xl: 4 }} gap={4}>
                   {displayedProducts.map((product) => (
-                    <ProductCard key={product.product_id} product={product} />
+                    <ProductTile key={product.product_id} product={product} />
                   ))}
                 </Grid>
 
@@ -348,11 +349,7 @@ export default function SupplementPage(props: { params: Promise<{ id: string }> 
             {/* Compare Products — only for database-backed products, since the
                 compare picker queries Supabase and local catalog products have no
                 rows there. */}
-            {products.filter(
-              (product) =>
-                !String(product.product_id).startsWith('real-') &&
-                !String(product.product_id).startsWith('catalog-')
-            ).length >= 2 && <CompareProducts supplementId={supplementId} />}
+            {products.filter((product) => !isCuratedCatalogProductId(product.product_id)).length >= 2 && <CompareProducts supplementId={supplementId} />}
 
             {/* Reverse map: every product that contains this ingredient. */}
             <ProductsWithIngredient ingredientName={supplement.supplement_name} />
@@ -362,7 +359,7 @@ export default function SupplementPage(props: { params: Promise<{ id: string }> 
         {/* Knowledge / wiki surface — shown for every supplement so the
             platform reads as a marketplace + wiki, not just a store. */}
         <SupplementKnowledge supplement={supplement} knowledge={knowledge} />
-      </Stack>
+      </VStack>
     </main>
   );
 }

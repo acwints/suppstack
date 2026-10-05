@@ -6,17 +6,49 @@ import Link from 'next/link';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
 import { Card, Button, Spinner, Badge } from '@/components/ui';
-import { cn } from '@/lib/design-system/utils';
+import { cn } from '@/lib/design-system';
 import { fetchUserProductLinks } from '@/lib/account/user-products';
-import { formatPrice } from '@/lib/utils';
-import { DAYS_PER_MONTH } from '@/types';
+import { formatCurrency, getLocalDateKey } from '@/lib/utils';
+import { DAYS_PER_MONTH, type Product, type SupplementStatus } from '@/types';
 
 export interface RestockRemindersProps {
   className?: string;
 }
 
+/** Row shape of the `users_products` select below. */
+interface RestockLinkRow {
+  product_id: number;
+  created_at: string;
+  products:
+    | (Pick<
+        Product,
+        | 'product_name'
+        | 'product_price'
+        | 'servings_per_container'
+        | 'servings_per_day'
+        | 'amazon_url'
+        | 'product_url'
+      > & { brands: { brand_name: string } | null })
+    | null;
+}
+
+/** Row shape of the `supplement_logs` select below. */
+interface RestockLogRow {
+  product_id: number;
+  log_date: string;
+  servings_taken: number | null;
+}
+
+/** Row shape of the `user_supplement_settings` select below. */
+interface RestockSettingRow {
+  product_id: number;
+  servings_per_day: number | null;
+  start_date: string | null;
+  status: SupplementStatus | null;
+}
+
 interface RestockItem {
-  product_id: string;
+  product_id: number;
   product_name: string;
   brand_name: string;
   product_price: number;
@@ -59,7 +91,7 @@ export function RestockReminders({ className }: RestockRemindersProps) {
     try {
       // Fetch user's products with settings
       const [products, logsResult, settingsResult] = await Promise.all([
-        fetchUserProductLinks<any>(
+        fetchUserProductLinks<RestockLinkRow>(
           user,
           `
             product_id,
@@ -76,7 +108,7 @@ export function RestockReminders({ className }: RestockRemindersProps) {
           .from('supplement_logs')
           .select('product_id, log_date, servings_taken')
           .eq('user_id', user.id)
-          .gte('log_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]),
+          .gte('log_date', getLocalDateKey(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))),
         supabase
           .from('user_supplement_settings')
           .select('product_id, servings_per_day, start_date, status')
@@ -90,8 +122,8 @@ export function RestockReminders({ className }: RestockRemindersProps) {
       const settings = settingsResult.data || [];
 
       // Compute average daily logs per product
-      const dailyLogMap = new Map<string, { totalServings: number; uniqueDays: Set<string> }>();
-      logs.forEach((log: any) => {
+      const dailyLogMap = new Map<number, { totalServings: number; uniqueDays: Set<string> }>();
+      logs.forEach((log: RestockLogRow) => {
         const existing = dailyLogMap.get(log.product_id) || {
           totalServings: 0,
           uniqueDays: new Set<string>(),
@@ -102,13 +134,13 @@ export function RestockReminders({ className }: RestockRemindersProps) {
       });
 
       // Settings map
-      const settingsMap = new Map<string, any>();
-      settings.forEach((s: any) => {
+      const settingsMap = new Map<number, RestockSettingRow>();
+      settings.forEach((s: RestockSettingRow) => {
         settingsMap.set(s.product_id, s);
       });
 
       const restockItems: RestockItem[] = products
-        .map((item: any) => {
+        .map((item): RestockItem | null => {
           const p = item.products;
           if (!p) return null;
 
@@ -272,7 +304,7 @@ export function RestockReminders({ className }: RestockRemindersProps) {
                     </a>
                   )}
                   <span className="text-xs text-gray-500 text-center">
-                    ${formatPrice(item.product_price)}
+                    {formatCurrency(item.product_price)}
                   </span>
                 </div>
               </div>
@@ -283,5 +315,3 @@ export function RestockReminders({ className }: RestockRemindersProps) {
     </Card>
   );
 }
-
-export default RestockReminders;

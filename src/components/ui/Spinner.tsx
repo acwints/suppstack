@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/design-system/utils';
+import { cn } from '@/lib/design-system';
 
 export interface SpinnerProps {
   size?: 'sm' | 'md' | 'lg';
@@ -39,5 +39,3 @@ export function Spinner({
     />
   );
 }
-
-export default Spinner;

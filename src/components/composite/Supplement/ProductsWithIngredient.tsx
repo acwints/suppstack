@@ -6,21 +6,14 @@ import type { ProductContainingIngredient } from '@/types';
 import { Spinner } from '@/components/ui';
 import { BrandLogo } from '@/components/composite/Brand';
 import { ProductPriceLine } from '@/components/composite/Product';
-import { useProductsWithIngredient } from '@/hooks';
-import { useStackIngredientsContext } from '@/app/context/StackIngredientsContext';
+import { useProductsWithIngredient, useStackIngredients } from '@/hooks';
 import { formatNumber } from '@/lib/utils';
+import { normalizeProductUrl } from '@/lib/ingredients';
 import { cn } from '@/lib/design-system';
 
 export interface ProductsWithIngredientProps {
   ingredientName: string;
   className?: string;
-}
-
-/** Normalize a product_url into the same stable key `useStackIngredients` uses. */
-function normalizeProductUrl(url: unknown): string | null {
-  if (typeof url !== 'string') return null;
-  const cleaned = url.trim().toLowerCase();
-  return cleaned === '' ? null : cleaned;
 }
 
 /** Per-serving amount, right-aligned. Unquantified edges render nothing. */
@@ -66,7 +59,7 @@ export function ProductsWithIngredient({
   className,
 }: ProductsWithIngredientProps) {
   const { products, isLoading, error } = useProductsWithIngredient(ingredientName);
-  const { stackProductUrls } = useStackIngredientsContext();
+  const { stackProductUrls } = useStackIngredients();
 
   // "In your stack" is keyed on the product's stable `product_url`, robust to
   // the catalog-id vs DB-id namespace split.
@@ -212,5 +205,3 @@ export function ProductsWithIngredient({
     </section>
   );
 }
-
-export default ProductsWithIngredient;

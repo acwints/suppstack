@@ -1,6 +1,6 @@
 'use client';
 
-import { useToast } from './ToastContext';
+import { useToast, useToastList } from './ToastContext';
 import { Toast } from './Toast';
 
 export type ToastPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center' | 'bottom-center';
@@ -21,7 +21,8 @@ const positionStyles: Record<ToastPosition, string> = {
 };
 
 export function ToastContainer({ position = 'bottom-right' }: ToastContainerProps) {
-  const { toasts, removeToast } = useToast();
+  const toasts = useToastList();
+  const { removeToast } = useToast();
 
   if (toasts.length === 0) return null;
 

@@ -211,5 +211,3 @@ export function ConfirmDialog({
   if (typeof window === 'undefined') return null;
   return createPortal(dialog, document.body);
 }
-
-export default ConfirmDialog;

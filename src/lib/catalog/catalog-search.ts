@@ -126,7 +126,7 @@ function goalMatchesCatalogQuery(goal: HealthGoalDefinition, query: string) {
     goal.title,
     goal.shortTitle,
     goal.description,
-    goal.signalLabel,
+    goal.focus,
     goal.commerceAngle,
     ...goal.supplementNames,
   ]);
@@ -159,9 +159,9 @@ export function searchCatalog(
       type: 'goal' as const,
       id: goal.id,
       name: goal.title,
-      subtitle: goal.signalLabel,
+      subtitle: goal.focus,
       href: healthGoalHref(goal.id),
-      rank: scoreFields(trimmed, [goal.title, goal.shortTitle, goal.signalLabel]),
+      rank: scoreFields(trimmed, [goal.title, goal.shortTitle, goal.focus]),
       goal,
     }))
     .sort((a, b) => b.rank - a.rank || a.name.localeCompare(b.name))

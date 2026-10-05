@@ -1,8 +1,8 @@
 'use client';
 
 import type { ProductRatingStats } from '@/types';
-import { calculateRatingDistribution, getRatingLabel } from '@/lib/utils/rating';
-import Rating from './Rating';
+import { calculateRatingDistribution, getRatingLabel } from '@/lib/utils';
+import { Rating } from './Rating';
 
 export interface RatingBreakdownProps {
   stats: ProductRatingStats;
@@ -61,5 +61,3 @@ export function RatingBreakdown({ stats, showRecommendation = true }: RatingBrea
     </div>
   );
 }
-
-export default RatingBreakdown;

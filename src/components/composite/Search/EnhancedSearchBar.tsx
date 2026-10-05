@@ -5,7 +5,7 @@ import { FaSearch, FaTimes, FaHistory, FaArrowRight } from 'react-icons/fa';
 import { FiActivity, FiPackage, FiHash, FiTag } from 'react-icons/fi';
 import Link from 'next/link';
 import { useDebounce } from '@/hooks';
-import { cn } from '@/lib/design-system/utils';
+import { cn } from '@/lib/design-system';
 import {
   buildCatalogSearchIndex,
   searchCatalog,
@@ -479,5 +479,3 @@ export function EnhancedSearchBar({
     </div>
   );
 }
-
-export default EnhancedSearchBar;

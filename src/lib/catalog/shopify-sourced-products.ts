@@ -1,4 +1,4 @@
-import type { CuratedProductSeed } from './supplement-catalog';
+import type { CuratedProductSeed } from './catalog-seed';
 
 /**
  * Shopify-sourced product seeds covering every catalog supplement that does

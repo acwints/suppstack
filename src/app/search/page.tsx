@@ -4,7 +4,7 @@ import { Suspense, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FiArrowRight, FiHash, FiTag } from 'react-icons/fi';
-import ProductCard from '@/app/components/ProductCard';
+import { ProductTile } from '@/components/composite/Product';
 import { EnhancedSearchBar } from '@/components/composite/Search';
 import { EmptyState, Spinner } from '@/components/ui';
 import { buildProductDirectory } from '@/lib/catalog/product-directory';
@@ -140,7 +140,7 @@ function SearchResults() {
               </p>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {productResults.map((product) => (
-                  <ProductCard key={product.product_id} product={product} />
+                  <ProductTile key={product.product_id} product={product} />
                 ))}
               </div>
             </>

@@ -8,9 +8,9 @@ import {
   FaCopy,
 } from 'react-icons/fa';
 import type { Stack } from '@/types';
-import { formatCompactNumber } from '@/lib/utils/format';
-import { Badge, Card, Avatar, Stack as StackLayout, Inline } from '@/components/ui';
-import { getStackSourceIcon } from './sourceIcons';
+import { formatCompactNumber } from '@/lib/utils';
+import { Badge, Card, Avatar, VStack, Inline } from '@/components/ui';
+import { StackSourceIcon } from './StackSourceIcon';
 
 export interface StackCardProps {
   stack: Stack;
@@ -104,7 +104,7 @@ export function StackCard({
 
         {/* Content */}
         <div className="p-6">
-          <StackLayout gap={4}>
+          <VStack gap={4}>
             <div>
               <h4 className="font-bold text-lg text-gray-900 mb-2 line-clamp-1">
                 {stack.stack_name}
@@ -116,7 +116,7 @@ export function StackCard({
             {stack.supplements && stack.supplements.length > 0 && (
               <div>
                 <h5 className="text-sm font-semibold text-gray-700 mb-2">Core Stack Picks:</h5>
-                <StackLayout gap={1}>
+                <VStack gap={1}>
                   {stack.supplements
                     .filter((s) => s.is_core)
                     .slice(0, 3)
@@ -137,7 +137,7 @@ export function StackCard({
                       +{stack.supplements.filter((s) => s.is_core).length - 3} more
                     </span>
                   )}
-                </StackLayout>
+                </VStack>
               </div>
             )}
 
@@ -145,7 +145,7 @@ export function StackCard({
             {stack.source_title && (
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <Inline gap={2} align="center" className="mb-1">
-                  {getStackSourceIcon(stack.source_type)}
+                  <StackSourceIcon sourceType={stack.source_type} />
                   <span className="text-xs font-medium text-gray-700">Source</span>
                 </Inline>
                 <p className="text-xs text-gray-600 line-clamp-1 mb-2">{stack.source_title}</p>
@@ -179,11 +179,9 @@ export function StackCard({
                 <FaCopy className="w-3 h-3" /> {stack.copy_count || 0}
               </Inline>
             </Inline>
-          </StackLayout>
+          </VStack>
         </div>
       </Card>
     </Link>
   );
 }
-
-export default StackCard;

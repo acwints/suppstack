@@ -15,10 +15,8 @@ import {
   FiUpload,
 } from 'react-icons/fi';
 import { useAuth } from '@/app/context/AuthContext';
-import { usePremium } from '@/hooks/usePremium';
-import { ProductActions } from '@/components/composite/Product/ProductActions';
-import { ProductPriceLine } from '@/components/composite/Product/ProductPriceLine';
-import { ProductSourceBadge } from '@/components/composite/Product/ProductSourceBadge';
+import { loginHref } from '@/lib/navigation/login';
+import { ProductActions, ProductPriceLine, ProductSourceBadge } from '@/components/composite/Product';
 import { BrandLogo } from '@/components/composite/Brand';
 import { Button, Spinner } from '@/components/ui';
 import {
@@ -34,6 +32,7 @@ import type {
   CounterScanMatchedItem,
 } from '@/lib/catalog/counter-scan-types';
 import type { Product } from '@/types';
+import { usePremium } from '@/hooks';
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 const MAX_IMAGE_DIMENSION = 1600;
@@ -289,7 +288,7 @@ export function CounterScanClient() {
       return;
     }
     if (!user || !session?.access_token) {
-      router.push('/login?next=/scan');
+      router.push(loginHref('/scan'));
       return;
     }
 
@@ -318,7 +317,7 @@ export function CounterScanClient() {
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as CounterScanApiError | null;
         if (payload?.code === 'AUTH_REQUIRED') {
-          router.push('/login?next=/scan');
+          router.push(loginHref('/scan'));
           return;
         }
         if (payload?.code === 'PREMIUM_REQUIRED') {
@@ -505,5 +504,3 @@ export function CounterScanClient() {
     </div>
   );
 }
-
-export default CounterScanClient;

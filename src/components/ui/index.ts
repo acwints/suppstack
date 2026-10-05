@@ -8,11 +8,11 @@ export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
 export { Badge } from './Badge';
 export type { BadgeProps, BadgeVariant, BadgeSize } from './Badge';
 
-export { Card, CardHeader, CardBody, CardFooter } from './Card';
-export type { CardProps, CardHeaderProps, CardBodyProps, CardFooterProps, CardVariant, CardPadding } from './Card';
+export { Card } from './Card';
+export type { CardProps, CardVariant, CardPadding } from './Card';
 
 export { Input } from './Input';
-export type { InputProps } from './Input';
+export type { InputProps, InputVariant, InputSize } from './Input';
 
 export { Select } from './Select';
 export type { SelectProps, SelectOption } from './Select';
@@ -23,8 +23,6 @@ export type { SpinnerProps } from './Spinner';
 export {
   Skeleton,
   SkeletonCard,
-  SkeletonProductCard,
-  SkeletonStackCard,
   SkeletonGrid
 } from './Skeleton';
 export type { SkeletonProps } from './Skeleton';
@@ -39,8 +37,8 @@ export type { ProgressRingProps, ProgressRingSize, ProgressRingTone } from './Pr
 // Layout Primitives
 // =============================================================================
 
-export { Stack, Inline, Grid } from './layout';
-export type { StackProps, InlineProps, GridProps } from './layout';
+export { VStack, Inline, Grid } from './layout';
+export type { VStackProps, InlineProps, GridProps } from './layout';
 
 // =============================================================================
 // New Components
@@ -52,7 +50,7 @@ export type { AvatarProps, AvatarSize } from './Avatar';
 export { EmptyState } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
 
-export { Tabs, TabList, Tab } from './Tabs';
+export { Tabs } from './Tabs';
 export type { TabListProps, TabProps } from './Tabs';
 
 export { ConfirmDialog } from './ConfirmDialog';

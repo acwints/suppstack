@@ -1,8 +1,10 @@
 'use client';
 
 import { forwardRef, useId } from 'react';
-import type { InputVariant, InputSize } from '@/types';
-import { cn } from '@/lib/design-system/utils';
+import { cn } from '@/lib/design-system';
+
+export type InputVariant = 'default' | 'search';
+export type InputSize = 'sm' | 'md' | 'lg';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   variant?: InputVariant;
@@ -96,5 +98,3 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 );
 
 Input.displayName = 'Input';
-
-export default Input;

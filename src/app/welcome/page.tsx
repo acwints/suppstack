@@ -6,11 +6,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FiArrowLeft, FiCamera, FiCheck, FiPlus } from 'react-icons/fi';
 import { supabase } from '@/app/supabase';
-import { usePremium } from '@/hooks/usePremium';
-import { useProductInStack } from '@/hooks/useProductInStack';
 import { Paywall } from '@/components/composite/Billing';
 import { Spinner, useToast } from '@/components/ui';
-import { cn } from '@/lib/design-system/utils';
+import { cn } from '@/lib/design-system';
 import { isNativeApp } from '@/lib/native/capacitor';
 import {
   HEALTH_GOAL_DEFINITIONS,
@@ -23,6 +21,7 @@ import {
   PRODUCT_IMAGE_FALLBACK,
 } from '@/lib/catalog/product-image';
 import type { Product } from '@/types';
+import { usePremium, useProductInStack } from '@/hooks';
 
 /**
  * First-run onboarding for new accounts: pick goals → add what you already

@@ -2,14 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
-import { FiActivity, FiArrowRight, FiMoon, FiTrendingUp, FiZap } from 'react-icons/fi';
-import { TbScaleOutline } from 'react-icons/tb';
-import {
-  buildHealthGoalDirectory,
-  healthGoalHref,
-  type HealthGoalId,
-} from '@/lib/catalog/health-goal-directory';
+import { FiArrowRight } from 'react-icons/fi';
+import { buildHealthGoalDirectory, healthGoalHref } from '@/lib/catalog/health-goal-directory';
+import { HEALTH_GOAL_ICONS } from '@/lib/catalog/health-goal-icons';
 import { isRemoteImageSrc } from '@/lib/catalog/product-image';
 import type { Supplement } from '@/types';
 
@@ -17,20 +12,13 @@ export interface HealthGoalDirectoryProps {
   supplements: Supplement[];
 }
 
-const goalIcons: Record<HealthGoalId, ReactNode> = {
-  'sleep-recovery': <FiMoon size={18} />,
-  'body-composition': <TbScaleOutline size={19} />,
-  'training-output': <FiZap size={18} />,
-  'metabolic-health': <FiTrendingUp size={18} />,
-  'daily-foundation': <FiActivity size={18} />,
-};
-
 export function HealthGoalDirectory({ supplements }: HealthGoalDirectoryProps) {
   const goals = buildHealthGoalDirectory(supplements);
 
   return (
     <div className="scrollbar-hide -mx-3 flex snap-x snap-mandatory gap-4 overflow-x-auto px-3 pb-2 sm:-mx-6 sm:px-6 lg:gap-5">
       {goals.map((goal) => {
+        const GoalIcon = HEALTH_GOAL_ICONS[goal.id];
         return (
           <Link
             key={goal.id}
@@ -40,7 +28,7 @@ export function HealthGoalDirectory({ supplements }: HealthGoalDirectoryProps) {
             {/* One header row: icon, title, count + arrow. */}
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded border border-gray-200 bg-white text-gray-700">
-                {goalIcons[goal.id]}
+                <GoalIcon size={18} />
               </span>
               <h3 className="min-w-0 flex-1 text-lg font-semibold leading-6 text-gray-900">
                 {goal.title}
@@ -82,5 +70,3 @@ export function HealthGoalDirectory({ supplements }: HealthGoalDirectoryProps) {
     </div>
   );
 }
-
-export default HealthGoalDirectory;

@@ -16,5 +16,3 @@ export function SupplementGrid({ groups }: SupplementGridProps) {
     </div>
   );
 }
-
-export default SupplementGrid;

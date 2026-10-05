@@ -98,5 +98,3 @@ export function StackIngredientBreakdown({ intake, className }: StackIngredientB
     </section>
   );
 }
-
-export default StackIngredientBreakdown;

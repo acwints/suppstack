@@ -28,7 +28,7 @@ const TABS: TabItem[] = [
     match: ['/supplement', '/brands', '/products', '/health', '/search', '/scan', '/saved', '/peptides'],
   },
   { href: '/stack', label: 'Stack', icon: FiLayers, match: [] },
-  { href: '/profile', label: 'You', icon: FiUser, match: ['/stacks', '/premium', '/health/tracker'] },
+  { href: '/profile', label: 'You', icon: FiUser, match: ['/stacks', '/premium'] },
 ];
 
 /** Routes where the tab bar yields to a route-specific bottom bar (e.g. the PDP buy bar). */
@@ -55,7 +55,7 @@ function isTabActive(tab: TabItem, pathname: string): boolean {
   });
 }
 
-export default function BottomTabBar() {
+export function BottomTabBar() {
   const pathname = usePathname();
 
   if (HIDDEN_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix))) {

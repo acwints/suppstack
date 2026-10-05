@@ -79,8 +79,8 @@ for (const requiredFragment of [
   requireText(migration, requiredFragment, `Profile privacy migration is missing: ${requiredFragment}`);
 }
 
-if (!fs.existsSync(path.join(root, 'supabase/tests/profile_privacy_expand_test.sql'))) {
-  failures.push('Database contract coverage for the profile privacy expand phase is missing.');
+if (!fs.existsSync(path.join(root, 'supabase/tests/profile_privacy_test.sql'))) {
+  failures.push('Database contract coverage for profile privacy is missing.');
 }
 
 if (failures.length > 0) {

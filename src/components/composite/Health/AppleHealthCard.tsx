@@ -3,13 +3,12 @@
 import { useEffect, useState } from 'react';
 import { FaApple } from 'react-icons/fa';
 import { Button, Spinner } from '@/components/ui';
+import { kgToLbs } from '@/lib/utils';
 import {
   getAppleHealthAvailability,
   requestAppleHealthSnapshot,
   type HealthMetricSnapshot,
 } from '@/lib/native/apple-health';
-
-const KG_TO_LB = 2.20462;
 
 interface MetricTile {
   label: string;
@@ -33,10 +32,10 @@ function buildMetricTiles(snapshot: HealthMetricSnapshot): MetricTile[] {
   if (snapshot.weightKg != null) {
     tiles.push({
       label: 'Weight',
-      value: `${Math.round(snapshot.weightKg * KG_TO_LB)} lb`,
+      value: `${Math.round(kgToLbs(snapshot.weightKg))} lb`,
       detail:
         snapshot.weightTrendKg != null
-          ? `${snapshot.weightTrendKg >= 0 ? '+' : ''}${(snapshot.weightTrendKg * KG_TO_LB).toFixed(1)} lb trend`
+          ? `${snapshot.weightTrendKg >= 0 ? '+' : ''}${kgToLbs(snapshot.weightTrendKg).toFixed(1)} lb trend`
           : undefined,
     });
   }
@@ -152,5 +151,3 @@ export function AppleHealthCard() {
     </div>
   );
 }
-
-export default AppleHealthCard;

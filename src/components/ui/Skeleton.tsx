@@ -60,69 +60,6 @@ export function SkeletonCard() {
   );
 }
 
-export function SkeletonProductCard() {
-  return (
-    <Card className="animate-pulse">
-      <Skeleton variant="rounded" className="h-64 rounded-t-xl rounded-b-none" />
-      <CardBody>
-        <Skeleton height={12} width={100} className="mb-2" />
-        <Skeleton height={20} className="mb-3" />
-        <div className="flex items-center gap-2 mb-4">
-          <Skeleton variant="circular" width={16} height={16} />
-          <Skeleton variant="circular" width={16} height={16} />
-          <Skeleton variant="circular" width={16} height={16} />
-          <Skeleton variant="circular" width={16} height={16} />
-          <Skeleton variant="circular" width={16} height={16} />
-          <Skeleton height={12} width={80} className="ml-2" />
-        </div>
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <Skeleton variant="rounded" height={60} />
-          <Skeleton variant="rounded" height={60} />
-        </div>
-        <Skeleton height={12} className="mb-4" />
-        <Skeleton variant="rounded" height={44} />
-        <div className="flex gap-2 mt-3">
-          <Skeleton variant="rounded" height={36} className="flex-1" />
-          <Skeleton variant="rounded" height={36} className="flex-1" />
-        </div>
-      </CardBody>
-    </Card>
-  );
-}
-
-export function SkeletonStackCard() {
-  return (
-    <Card className="animate-pulse">
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-start gap-4">
-          <Skeleton variant="circular" width={60} height={60} />
-          <div className="flex-1">
-            <Skeleton height={16} width={120} className="mb-2" />
-            <Skeleton height={12} width={180} className="mb-2" />
-            <div className="flex gap-2">
-              <Skeleton variant="rounded" height={20} width={60} />
-              <Skeleton variant="rounded" height={20} width={70} />
-            </div>
-          </div>
-        </div>
-      </div>
-      <CardBody>
-        <Skeleton height={20} className="mb-2" />
-        <Skeleton height={12} className="mb-4" />
-        <Skeleton height={12} className="mb-1" />
-        <Skeleton height={12} className="mb-1" />
-        <Skeleton height={12} className="mb-4 w-3/4" />
-        <Skeleton variant="rounded" height={60} className="mb-4" />
-        <div className="flex gap-4">
-          <Skeleton height={12} width={50} />
-          <Skeleton height={12} width={50} />
-          <Skeleton height={12} width={50} />
-        </div>
-      </CardBody>
-    </Card>
-  );
-}
-
 export function SkeletonGrid({
   count = 12,
   CardComponent = SkeletonCard,
@@ -146,5 +83,3 @@ export function SkeletonGrid({
     </div>
   );
 }
-
-export default Skeleton;

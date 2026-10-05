@@ -6,7 +6,7 @@
  *
  * Regenerate with: node src/scripts/sourceBrandLogos.mjs
  */
-export const brandLogoByDomain: Record<string, string> = {
+const brandLogoByDomain: Record<string, string> = {
   '1stphorm.com': 'https://1stphorm.com/cdn/shop/files/1st_Phorm_Logo_1f647b08-280e-40be-9f8b-f370f755d573_32x32.png?v=1675721983',
   'animalpak.com': 'https://www.animalpak.com/cdn/shop/files/a_favicon_32x32.png?v=1675442592',
   'ancestralsupplements.com': 'https://ancestralsupplements.com/cdn/shop/files/Group_86_1.png?crop=center&height=32&v=1614317422&width=32',
@@ -73,7 +73,7 @@ export const brandLogoByDomain: Record<string, string> = {
   'zoe.com': 'https://zoe.com/favicon.png',
 };
 
-export function normalizeStoreDomain(domain: string) {
+function normalizeStoreDomain(domain: string) {
   return domain.toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
 }
 

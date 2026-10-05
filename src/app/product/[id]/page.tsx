@@ -1,28 +1,26 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
 import { FiShield } from 'react-icons/fi';
-import { useAuth } from '../../context/AuthContext';
-import { useReviews } from '@/hooks/useReviews';
-import { recordProductView } from '@/hooks/useRecentlyViewed';
-import { useProduct } from '@/hooks';
+import { useAuth } from '@/app/context/AuthContext';
+import { useProduct, useReviews, type ReviewSortBy } from '@/hooks';
 import {
   Spinner,
   Badge,
   Card,
   EmptyState,
-  Stack,
+  VStack,
   Inline,
   Grid,
 } from '@/components/ui';
 import { Rating } from '@/components/composite/Rating';
-import { ReviewList } from '@/components/composite/Review/ReviewList';
+import { ReviewList } from '@/components/composite/Review';
 import { BrandLogo } from '@/components/composite/Brand';
-import type { ReviewSortBy } from '@/hooks/useReviews';
-import { findDatabaseProductId, resolveDatabaseProductId } from '@/lib/catalog/supplement-sync';
+import { findDatabaseProductId, resolveDatabaseProductId } from '@/lib/catalog/catalog-sync';
+import { isCuratedCatalogProductId } from '@/lib/commerce/product-source';
 import {
   getProductImageSrc,
   isRemoteImageSrc,
@@ -41,7 +39,7 @@ export default function ProductPage(props: { params: Promise<{ id: string }> }) 
   const { product, isLoading } = useProduct(params.id);
   const [productImageSrc, setProductImageSrc] = useState(PRODUCT_IMAGE_FALLBACK);
   const [sortBy, setSortBy] = useState<ReviewSortBy>('newest');
-  const isLocalCatalogProductId = params.id.startsWith('catalog-') || params.id.startsWith('real-');
+  const isLocalCatalogProductId = isCuratedCatalogProductId(params.id);
 
   // Reviews are keyed by database product ids. Catalog products resolve
   // (and lazily materialize) their database identity so reviews and ratings
@@ -72,20 +70,22 @@ export default function ProductPage(props: { params: Promise<{ id: string }> }) 
     setProductImageSrc(getProductImageSrc(product?.product_image));
   }, [product?.product_image]);
 
-  // Feed the home screen's "Recently Viewed" strip.
-  useEffect(() => {
-    if (product) recordProductView(product);
-  }, [product]);
-
   // Resolve the database identity for catalog products so reviews attach to
   // the canonical DB row when one already exists. Signed-in users may create
   // that row through the authenticated catalog sync route.
+  const productId = product?.product_id;
+  const productRef = useRef(product);
+  useEffect(() => {
+    productRef.current = product;
+  }, [product]);
+
   useEffect(() => {
     if (!isLocalCatalogProductId) {
       setReviewProductId(params.id);
       return;
     }
 
+    const product = productRef.current;
     if (!product) {
       setReviewProductId(null);
       return;
@@ -107,8 +107,7 @@ export default function ProductPage(props: { params: Promise<{ id: string }> }) 
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id, product?.product_id, isLocalCatalogProductId, user?.id]);
+  }, [params.id, productId, isLocalCatalogProductId, user]);
 
   if (isLoading) {
     return (
@@ -173,7 +172,7 @@ export default function ProductPage(props: { params: Promise<{ id: string }> }) 
         </Card>
 
         {/* Product Info */}
-        <Stack gap={6}>
+        <VStack gap={6}>
           {/* Brand */}
           <span className="flex items-center gap-2">
             <BrandLogo
@@ -238,7 +237,7 @@ export default function ProductPage(props: { params: Promise<{ id: string }> }) 
               <Badge variant="secondary">{product.supplements.supplement_name}</Badge>
             </div>
           )}
-        </Stack>
+        </VStack>
       </Grid>
 
       {/* Sticky purchase bar (mobile) — the tab bar yields to this on /product routes */}

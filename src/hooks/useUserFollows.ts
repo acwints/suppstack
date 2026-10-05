@@ -157,13 +157,15 @@ export function useUserFollows(targetProfileId?: string): UseUserFollowsResult {
           )
         `)
         .eq('following_id', profileId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        // The client is untyped and infers embeds as arrays; this one is to-one.
+        .overrideTypes<{ follower: UserProfile | null }[], { merge: false }>();
 
       if (error) throw error;
 
       const followerProfiles = (data || [])
-        .map((item: any) => item.follower)
-        .filter(Boolean);
+        .map((item) => item.follower)
+        .filter((profile): profile is UserProfile => Boolean(profile));
 
       setFollowers(followerProfiles);
     } catch (err) {
@@ -193,13 +195,15 @@ export function useUserFollows(targetProfileId?: string): UseUserFollowsResult {
           )
         `)
         .eq('follower_id', profileId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        // The client is untyped and infers embeds as arrays; this one is to-one.
+        .overrideTypes<{ following: UserProfile | null }[], { merge: false }>();
 
       if (error) throw error;
 
       const followingProfiles = (data || [])
-        .map((item: any) => item.following)
-        .filter(Boolean);
+        .map((item) => item.following)
+        .filter((profile): profile is UserProfile => Boolean(profile));
 
       setFollowing(followingProfiles);
     } catch (err) {
@@ -221,5 +225,3 @@ export function useUserFollows(targetProfileId?: string): UseUserFollowsResult {
     fetchFollowing,
   };
 }
-
-export default useUserFollows;

@@ -5,14 +5,14 @@ import { FiCheck, FiLoader, FiPlus } from 'react-icons/fi';
 import { cn } from '@/lib/design-system';
 
 export interface LogButtonProps {
-  productId: string;
   productName: string;
   isLogged: boolean;
   isLoading?: boolean;
-  onLog: (productId: string) => Promise<void>;
-  onUnlog?: (productId: string) => Promise<void>;
+  /** Check the product off for today. */
+  onLog: () => Promise<void>;
+  /** Undo today's check-off. */
+  onUnlog: () => Promise<void>;
   size?: 'sm' | 'md' | 'lg';
-  className?: string;
 }
 
 const sizeStyles = {
@@ -25,17 +25,15 @@ const iconSizes = { sm: 18, md: 20, lg: 22 } as const;
 
 /**
  * Circular check-off toggle for a single supplement. Empty circle invites the
- * tap; a filled success check confirms it.
+ * tap; a filled ink check confirms it.
  */
 export function LogButton({
-  productId,
   productName,
   isLogged,
   isLoading = false,
   onLog,
   onUnlog,
   size = 'md',
-  className = '',
 }: LogButtonProps) {
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -44,10 +42,10 @@ export function LogButton({
 
     setIsProcessing(true);
     try {
-      if (isLogged && onUnlog) {
-        await onUnlog(productId);
-      } else if (!isLogged) {
-        await onLog(productId);
+      if (isLogged) {
+        await onUnlog();
+      } else {
+        await onLog();
       }
     } catch (error) {
       console.error('Error toggling log:', error);
@@ -74,8 +72,7 @@ export function LogButton({
         isLogged
           ? 'border-gray-900 bg-gray-900 text-white hover:border-gray-800 hover:bg-gray-800'
           : 'border-gray-300 bg-white text-gray-400 hover:border-gray-400 hover:text-gray-600',
-        buttonLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
-        className
+        buttonLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
       )}
     >
       {buttonLoading ? (
@@ -88,5 +85,3 @@ export function LogButton({
     </button>
   );
 }
-
-export default LogButton;

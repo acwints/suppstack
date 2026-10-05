@@ -2,9 +2,9 @@
 
 import type { ReactNode } from 'react';
 import { FiLock } from 'react-icons/fi';
-import { usePremium } from '@/hooks/usePremium';
 import { PREMIUM_FEATURES, type PremiumFeatureId } from '@/lib/billing/entitlements';
 import { Card, Skeleton } from '@/components/ui';
+import { usePremium } from '@/hooks';
 
 export interface PremiumGateProps {
   /** Which Premium feature this wraps — drives the copy and the paywall. */
@@ -59,5 +59,3 @@ export function PremiumGate({ feature, teaser, children }: PremiumGateProps) {
     </Card>
   );
 }
-
-export default PremiumGate;

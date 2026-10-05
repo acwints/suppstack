@@ -8,7 +8,7 @@ import { isCuratedCatalogProductId } from '@/lib/commerce/product-source';
 
 const UNIQUE_VIOLATION = '23505';
 
-export async function findDatabaseSupplementRowWithClient(
+async function findDatabaseSupplementRowWithClient(
   supabase: SupabaseClient,
   catalogSupplement: Supplement
 ) {
@@ -94,7 +94,7 @@ async function resolveDatabaseBrandIdWithClient(
   return null;
 }
 
-export async function findDatabaseProductIdWithClient(
+async function findDatabaseProductIdWithClient(
   supabase: SupabaseClient,
   product: Product
 ): Promise<number | string | null> {

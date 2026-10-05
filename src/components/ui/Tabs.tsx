@@ -22,7 +22,7 @@ const listVariantStyles = {
   underline: 'gap-0 border-b border-gray-200',
 };
 
-export const TabList = forwardRef<HTMLDivElement, TabListProps>(
+const TabList = forwardRef<HTMLDivElement, TabListProps>(
   ({ variant = 'pills', size = 'md', fullWidth = false, className, children, ...props }, ref) => {
     return (
       <div
@@ -91,7 +91,7 @@ const tabSizeStyles = {
   md: 'px-4 py-2 text-sm',
 };
 
-export const Tab = forwardRef<HTMLButtonElement, TabProps>(
+const Tab = forwardRef<HTMLButtonElement, TabProps>(
   (
     {
       isActive = false,
@@ -140,5 +140,3 @@ export const Tabs = {
   List: TabList,
   Tab: Tab,
 };
-
-export default Tabs;

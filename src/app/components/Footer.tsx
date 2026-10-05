@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { isNativeApp } from '@/lib/native/capacitor';
 
-export default function Footer() {
+export function Footer() {
   const pathname = usePathname();
   const [isNative, setIsNative] = useState(false);
 

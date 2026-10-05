@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { FiSearch, FiX } from 'react-icons/fi';
-import ProductCard from '@/app/components/ProductCard';
+import { ProductTile } from './ProductTile';
 import { Button } from '@/components/ui';
 import type {
   ProductDirectoryGoalFilter,
@@ -11,7 +11,7 @@ import type {
   ProductDirectoryShelf,
 } from '@/lib/catalog/product-directory';
 import type { HealthGoalId } from '@/lib/catalog/health-goal-directory';
-import { formatPrice } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { productMatchesCatalogQuery } from '@/lib/catalog/catalog-search';
 
 export interface ProductDirectoryClientProps {
@@ -213,7 +213,7 @@ export function ProductDirectoryClient({
               </div>
               {shelf.priceFrom != null && (
                 <p className={isActive ? 'mt-2 text-xs text-gray-300' : 'mt-2 text-xs text-gray-500'}>
-                  from ${formatPrice(shelf.priceFrom)}
+                  from {formatCurrency(shelf.priceFrom)}
                 </p>
               )}
             </button>
@@ -331,7 +331,7 @@ export function ProductDirectoryClient({
       {filteredProducts.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredProducts.map((product) => (
-            <ProductCard key={product.product_id} product={product} />
+            <ProductTile key={product.product_id} product={product} />
           ))}
         </div>
       ) : (
@@ -363,5 +363,3 @@ function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }
     </button>
   );
 }
-
-export default ProductDirectoryClient;

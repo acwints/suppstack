@@ -102,5 +102,3 @@ export function ProductIngredientList({ product, className }: ProductIngredientL
     </section>
   );
 }
-
-export default ProductIngredientList;

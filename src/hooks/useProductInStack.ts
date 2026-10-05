@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
-import type { Product } from '@/types';
-import { findDatabaseProductId, resolveDatabaseProductId } from '@/lib/catalog/supplement-sync';
+import { getLocalDateKey } from '@/lib/utils';
+import { DEFAULT_SCHEDULE_DAYS, type Product } from '@/types';
+import { findDatabaseProductId, resolveDatabaseProductId } from '@/lib/catalog/catalog-sync';
 
 export interface UseProductInStackResult {
   isInStack: boolean;
@@ -12,23 +13,31 @@ export interface UseProductInStackResult {
   isUpdating: boolean;
   error: Error | null;
   addToStack: () => Promise<void>;
-  removeFromStack: () => Promise<void>;
-  toggleInStack: () => Promise<void>;
 }
 
 const UNIQUE_VIOLATION = '23505';
-const DEFAULT_SCHEDULE_DAYS = [1, 2, 3, 4, 5, 6, 7];
 
-async function findUserProductLink(userId: string, productId: number | string) {
-  const { data, error } = await supabase
-    .from('users_products')
-    .select('product_id')
-    .eq('user_id', userId)
-    .eq('product_id', productId)
-    .limit(1);
+async function isInUserStack(userId: string, productId: number | string): Promise<boolean> {
+  const [linkResult, settingResult] = await Promise.all([
+    supabase
+      .from('users_products')
+      .select('product_id')
+      .eq('user_id', userId)
+      .eq('product_id', productId)
+      .limit(1),
+    supabase
+      .from('user_supplement_settings')
+      .select('status')
+      .eq('user_id', userId)
+      .eq('product_id', productId)
+      .maybeSingle(),
+  ]);
 
-  if (error) throw error;
-  return data?.[0] ?? null;
+  if (linkResult.error) throw linkResult.error;
+  if (settingResult.error) throw settingResult.error;
+  // Legacy 'stopped' rows count as removed; adding the product again
+  // reactivates them.
+  return (linkResult.data?.length ?? 0) > 0 && settingResult.data?.status !== 'stopped';
 }
 
 async function insertUserProductLink(userId: string, productId: number | string) {
@@ -55,31 +64,11 @@ async function upsertDefaultProductSettings(
         servings_per_day: servingsPerDay,
         schedule_days: DEFAULT_SCHEDULE_DAYS,
         status: 'active',
-        start_date: new Date().toISOString().split('T')[0],
+        start_date: getLocalDateKey(),
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'user_id,product_id' }
     );
-
-  if (error) throw error;
-}
-
-async function deleteUserProductLink(userId: string, productId: number | string) {
-  const { error } = await supabase
-    .from('users_products')
-    .delete()
-    .eq('user_id', userId)
-    .eq('product_id', productId);
-
-  if (error) throw error;
-}
-
-async function deleteUserProductSettings(userId: string, productId: number | string) {
-  const { error } = await supabase
-    .from('user_supplement_settings')
-    .delete()
-    .eq('user_id', userId)
-    .eq('product_id', productId);
 
   if (error) throw error;
 }
@@ -96,8 +85,17 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Callers often pass a fresh object for the same product each render; key
+  // the callbacks on the product id and read the latest object from a ref.
+  const productId = product?.product_id;
+  const productRef = useRef(product);
+  useEffect(() => {
+    productRef.current = product;
+  }, [product]);
+
   // Check if product is in user's stack
   const checkIfInStack = useCallback(async () => {
+    const product = productRef.current;
     if (!user || !product) {
       setIsInStack(false);
       setIsLoading(false);
@@ -114,27 +112,25 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
         return;
       }
 
-      const data = await findUserProductLink(user.id, databaseProductId);
-
-      setIsInStack(!!data);
+      setIsInStack(await isInUserStack(user.id, databaseProductId));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to check stack status'));
       console.error('Error checking if product is in stack:', err);
     } finally {
       setIsLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, product?.product_id]);
+  }, [user]);
 
   useEffect(() => {
     checkIfInStack();
-  }, [checkIfInStack]);
+  }, [checkIfInStack, productId]);
 
   const addToStack = useCallback(async () => {
     if (!user) {
       throw new Error('Please log in to add products to your stack');
     }
 
+    const product = productRef.current;
     if (!product) {
       throw new Error('Product is still loading');
     }
@@ -158,48 +154,7 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
     } finally {
       setIsUpdating(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, product?.product_id, isInStack]);
-
-  const removeFromStack = useCallback(async () => {
-    if (!user || !product) {
-      throw new Error('Please log in to manage your stack');
-    }
-
-    if (!isInStack) {
-      return; // Not in stack
-    }
-
-    setIsUpdating(true);
-    setError(null);
-
-    try {
-      const databaseProductId = await findDatabaseProductId(product);
-      if (databaseProductId === null) {
-        setIsInStack(false);
-        return;
-      }
-
-      await deleteUserProductLink(user.id, databaseProductId);
-      await deleteUserProductSettings(user.id, databaseProductId);
-
-      setIsInStack(false);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to remove product from stack'));
-      throw err;
-    } finally {
-      setIsUpdating(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, product?.product_id, isInStack]);
-
-  const toggleInStack = useCallback(async () => {
-    if (isInStack) {
-      await removeFromStack();
-    } else {
-      await addToStack();
-    }
-  }, [isInStack, addToStack, removeFromStack]);
+  }, [user, isInStack]);
 
   return {
     isInStack,
@@ -207,9 +162,5 @@ export function useProductInStack(product: Product | null): UseProductInStackRes
     isUpdating,
     error,
     addToStack,
-    removeFromStack,
-    toggleInStack,
   };
 }
-
-export default useProductInStack;

@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/app/supabase';
 import { findCatalogProductById } from '@/lib/catalog/supplement-catalog';
-import { mapEmbeddedIngredient } from '@/lib/catalog/product-ingredient-embed';
+import {
+  mapEmbeddedIngredient,
+  type EmbeddedIngredientRow,
+} from '@/lib/catalog/product-ingredient-embed';
 import type { Product } from '@/types';
 
 const PRODUCT_SELECT = `
@@ -15,6 +18,9 @@ const PRODUCT_SELECT = `
     supplements(supplement_id, supplement_name)
   )
 `;
+
+/** Row shape of PRODUCT_SELECT; the embed is absent on the fallback select. */
+type ProductRow = Product & { product_ingredients?: EmbeddedIngredientRow[] };
 
 // Composition-free fallback: used when the `product_ingredients` embed fails
 // (e.g. the composition migration hasn't been applied to this environment yet).
@@ -73,8 +79,8 @@ export function useProduct(productId: string) {
         console.error('Error fetching product:', error);
         setProduct(null);
       } else {
-        const { product_ingredients: embeddedIngredients, ...productRow } = (data ?? {}) as any;
-        const ingredients = ((embeddedIngredients ?? []) as any[]).map(mapEmbeddedIngredient);
+        const { product_ingredients: embeddedIngredients, ...productRow } = (data ?? {}) as ProductRow;
+        const ingredients = (embeddedIngredients ?? []).map(mapEmbeddedIngredient);
         setProduct({
           ...(productRow as Product),
           ...(ingredients.length > 0 ? { ingredients } : {}),

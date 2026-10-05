@@ -27,7 +27,7 @@ export interface SavedProduct {
   saved_at: string;
 }
 
-interface SavedProductsContextValue {
+export interface SavedProductsContextValue {
   savedProducts: SavedProduct[];
   isSaved: (productId: string) => boolean;
   toggleSaved: (product: Product) => boolean;
@@ -109,7 +109,7 @@ export function SavedProductsProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useSavedProducts(): SavedProductsContextValue {
+export function useSavedProductsContext(): SavedProductsContextValue {
   const context = useContext(SavedProductsContext);
   if (!context) {
     throw new Error('useSavedProducts must be used within a SavedProductsProvider');

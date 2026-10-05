@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchShopifyProductJson } from '@/lib/catalog/shopify-catalog-verifier';
+import { fetchShopifyProductJson } from '@/lib/catalog/shopify-product-json';
 import { getShopifyVariantNumericId } from '@/lib/commerce/shopify-ucp';
 import { isAllowedMerchantHost } from '@/lib/catalog/supplement-catalog';
 

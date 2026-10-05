@@ -2,23 +2,22 @@
 
 import { useCallback, useMemo } from 'react';
 import { FiZap } from 'react-icons/fi';
-import { useSupplementLogs } from '@/hooks/useSupplementLogs';
 import { computeLogStreak, getLocalDateKey } from '@/lib/utils';
-import { isScheduledOn, useRegimen } from '@/hooks/useRegimen';
-import { EmptyState, Spinner, Stack, useToast } from '@/components/ui';
+import { EmptyState, Spinner, VStack, useToast } from '@/components/ui';
 import {
   DailyLogCard,
   RestockReminders,
   WeeklyCalendar,
 } from '@/components/composite/Tracking';
 import { PremiumGate } from '@/components/composite/Billing';
-import { MyStackSection } from '@/components/composite/Stack/MyStackSection';
+import { MyStackSection } from '@/components/composite/Stack';
 import {
   OverlapList,
   StackIngredientBreakdown,
   StackIntakeSummary,
 } from '@/components/composite/Ingredients';
-import { useStackIngredientsContext } from '@/app/context/StackIngredientsContext';
+import { isScheduledOn, isoWeekday, useMyStack, useSupplementLogs, useStackIngredients } from '@/hooks';
+import type { UserSupplementSettingsInput } from '@/types';
 
 /**
  * The stack screen: check off today's supplements, see the week, and manage
@@ -26,12 +25,20 @@ import { useStackIngredientsContext } from '@/app/context/StackIngredientsContex
  */
 export default function StackPage() {
   const toast = useToast();
-  const { regimen, activeRegimen, todayRegimen, isLoading: isRegimenLoading } = useRegimen();
+  const {
+    stack,
+    activeItems,
+    todayItems,
+    isLoading: isStackLoading,
+    saveItemSettings,
+    removeItem,
+  } = useMyStack();
   const {
     intake,
     isLoading: isIntakeLoading,
     error: intakeError,
-  } = useStackIngredientsContext();
+    refetch: refetchIntake,
+  } = useStackIngredients();
 
   const {
     logs,
@@ -50,8 +57,7 @@ export default function StackPage() {
         toast.error('Could not save that log. Try again.');
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [logSupplement]
+    [logSupplement, toast]
   );
 
   const handleUnlog = useCallback(
@@ -63,8 +69,36 @@ export default function StackPage() {
         toast.error('Could not remove that log. Try again.');
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [unlogSupplement]
+    [unlogSupplement, toast]
+  );
+
+  // Settings and removals change the intake rollup (active status, servings)
+  // and the app-wide "in your stack" markers, so refresh the shared context too.
+  const handleSaveSettings = useCallback(
+    async (input: UserSupplementSettingsInput) => {
+      try {
+        await saveItemSettings(input);
+      } catch (error) {
+        toast.error('Could not save those settings. Try again.');
+        throw error;
+      }
+      void refetchIntake();
+    },
+    [saveItemSettings, refetchIntake, toast]
+  );
+
+  const handleRemove = useCallback(
+    async (productId: string) => {
+      try {
+        await removeItem(productId);
+      } catch (error) {
+        console.error('Failed to remove product from stack:', error);
+        toast.error('Could not remove that product. Try again.');
+        return;
+      }
+      void refetchIntake();
+    },
+    [removeItem, refetchIntake, toast]
   );
 
   const todayLabel = new Date().toLocaleDateString(undefined, {
@@ -77,12 +111,17 @@ export default function StackPage() {
     () =>
       computeLogStreak(
         logs.map((log) => log.log_date),
-        getLocalDateKey()
+        getLocalDateKey(),
+        (date) => activeItems.some((item) => isScheduledOn(item, isoWeekday(date)))
       ),
-    [logs]
+    [logs, activeItems]
   );
 
-  if (isRegimenLoading && regimen.length === 0) {
+  const restockKey = stack
+    .map((item) => `${item.product_id}:${item.settings.status}:${item.settings.servings_per_day}`)
+    .join(',');
+
+  if (isStackLoading && stack.length === 0) {
     return (
       <div className="flex min-h-[60dvh] items-center justify-center">
         <Spinner size="lg" color="secondary" />
@@ -106,11 +145,11 @@ export default function StackPage() {
         )}
       </header>
 
-      <Stack gap={8}>
-        {todayRegimen.length > 0 ? (
+      <VStack gap={8}>
+        {todayItems.length > 0 ? (
           <>
             <DailyLogCard
-              regimen={todayRegimen}
+              items={todayItems}
               todayLogs={todayLogs}
               onLog={handleLog}
               onUnlog={handleUnlog}
@@ -119,33 +158,38 @@ export default function StackPage() {
             <WeeklyCalendar
               logs={logs}
               plannedCount={(weekday) =>
-                activeRegimen.filter((item) => isScheduledOn(item, weekday)).length
+                activeItems.filter((item) => isScheduledOn(item, weekday)).length
               }
             />
           </>
-        ) : activeRegimen.length > 0 ? (
+        ) : activeItems.length > 0 ? (
           <EmptyState
             title="Nothing scheduled today"
             description="Your active supplements are scheduled for other days this week."
             variant="card"
           />
-        ) : regimen.length > 0 ? (
+        ) : stack.length > 0 ? (
           <EmptyState
             title="No active supplements today"
             description="Paused products stay in your stack, but they don't count toward today's completion."
             variant="card"
           />
         ) : null}
-        {regimen.length > 0 && (
+        {stack.length > 0 && (
           <PremiumGate feature="restock">
-            <RestockReminders />
+            {/* Keyed on the stack so it refetches after settings or removals. */}
+            <RestockReminders key={restockKey} />
           </PremiumGate>
         )}
-        <MyStackSection regimen={regimen} />
+        <MyStackSection
+          items={stack}
+          onSaveSettings={handleSaveSettings}
+          onRemove={handleRemove}
+        />
 
-        {/* Ingredient intake rollup — only when the user has an active stack,
-            mirroring how the tracking cards gate on the regimen. */}
-        {regimen.length > 0 && (
+        {/* Ingredient intake rollup — only when the user has a stack,
+            mirroring how the tracking cards gate on it. */}
+        {stack.length > 0 && (
           <>
             {isIntakeLoading ? (
               <div className="flex justify-center py-8">
@@ -171,7 +215,7 @@ export default function StackPage() {
             )}
           </>
         )}
-      </Stack>
+      </VStack>
     </main>
   );
 }

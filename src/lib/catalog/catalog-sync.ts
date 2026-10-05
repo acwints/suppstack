@@ -112,7 +112,7 @@ export async function findDatabaseProductId(product: Product): Promise<number | 
 /**
  * Finds the database row for a curated catalog product, creating it on first
  * authenticated use through a server route. Catalog products live in static
- * code with string IDs (`real-*`), but user tracking (`users_products`)
+ * code with string IDs (`real-*` / `catalog-*`), but user tracking (`users_products`)
  * references integer rows in `products`. The server route validates the static
  * catalog ID and performs all catalog writes with the service role.
  */

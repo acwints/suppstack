@@ -106,5 +106,3 @@ export function OverlapList({ intake, className }: OverlapListProps) {
     </section>
   );
 }
-
-export default OverlapList;

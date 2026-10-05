@@ -2,13 +2,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FiArrowLeft } from 'react-icons/fi';
-import ProductCard from '@/app/components/ProductCard';
+import { ProductTile } from '@/components/composite/Product';
 import {
   HEALTH_GOAL_DEFINITIONS,
   findHealthGoalDirectoryItem,
 } from '@/lib/catalog/health-goal-directory';
 import { isRemoteImageSrc } from '@/lib/catalog/product-image';
-import { formatPrice } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 
 export function generateStaticParams() {
   return HEALTH_GOAL_DEFINITIONS.map((goal) => ({ id: goal.id }));
@@ -82,7 +82,7 @@ export default async function HealthGoalPage(props: { params: Promise<{ id: stri
                     <span className="mt-1 block text-xs leading-5 text-gray-500">
                       {supplement.product_count ?? 0} products
                       {typeof supplement.lowest_price === 'number' &&
-                        ` from $${formatPrice(supplement.lowest_price)}`}
+                        ` from ${formatCurrency(supplement.lowest_price)}`}
                     </span>
                   </span>
                 </Link>
@@ -105,7 +105,7 @@ export default async function HealthGoalPage(props: { params: Promise<{ id: stri
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               {featuredProducts.slice(0, 12).map((product) => (
-                <ProductCard key={product.product_id} product={product} />
+                <ProductTile key={product.product_id} product={product} />
               ))}
             </div>
           </section>

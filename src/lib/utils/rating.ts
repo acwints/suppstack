@@ -1,27 +1,6 @@
 import type { ProductRatingStats } from '@/types';
 
 /**
- * Generate a deterministic "fake" rating based on product name
- * This is a placeholder until real reviews are implemented
- * @deprecated Use real ratings from product_rating_stats table
- */
-export function generateFakeRating(productName: string): number {
-  const hash = productName.split('').reduce((a, b) => {
-    a = ((a << 5) - a) + b.charCodeAt(0);
-    return a & a;
-  }, 0);
-  return 4.0 + (Math.abs(hash) % 10) / 10; // Rating between 4.0-4.9
-}
-
-/**
- * Generate a fake review count based on rating
- * @deprecated Use real review counts from product_rating_stats table
- */
-export function generateFakeReviewCount(rating: number): number {
-  return Math.floor(Math.abs(rating * 100)) + 50;
-}
-
-/**
  * Calculate rating distribution percentages
  */
 export function calculateRatingDistribution(stats: ProductRatingStats): Array<{
@@ -52,75 +31,6 @@ export function getRatingLabel(rating: number): string {
   if (rating >= 3.0) return 'Average';
   if (rating >= 2.0) return 'Below Average';
   return 'Poor';
-}
-
-/**
- * Get rating color class based on numeric value
- */
-export function getRatingColor(rating: number): string {
-  // Ratings read in ink — the number carries the meaning. No traffic-light
-  // scales (see .claude/rules/coding-standards.md).
-  return rating > 0 ? 'text-gray-900' : 'text-gray-400';
-}
-
-/**
- * Get recommendation text based on percentage
- */
-export function getRecommendationText(percentage: number): string {
-  if (percentage >= 90) return 'Highly Recommended';
-  if (percentage >= 75) return 'Recommended';
-  if (percentage >= 50) return 'Mixed Reviews';
-  return 'Not Recommended';
-}
-
-/**
- * Calculate weighted average from multiple rating dimensions
- */
-export function calculateWeightedRating(
-  ratings: {
-    overall: number;
-    effectiveness?: number;
-    value?: number;
-    quality?: number;
-  },
-  weights: {
-    overall: number;
-    effectiveness: number;
-    value: number;
-    quality: number;
-  } = { overall: 0.4, effectiveness: 0.25, value: 0.2, quality: 0.15 }
-): number {
-  let totalWeight = weights.overall;
-  let weightedSum = ratings.overall * weights.overall;
-
-  if (ratings.effectiveness !== undefined) {
-    weightedSum += ratings.effectiveness * weights.effectiveness;
-    totalWeight += weights.effectiveness;
-  }
-  if (ratings.value !== undefined) {
-    weightedSum += ratings.value * weights.value;
-    totalWeight += weights.value;
-  }
-  if (ratings.quality !== undefined) {
-    weightedSum += ratings.quality * weights.quality;
-    totalWeight += weights.quality;
-  }
-
-  return weightedSum / totalWeight;
-}
-
-/**
- * Format rating for display
- */
-export function formatRating(rating: number, precision: number = 1): string {
-  return rating.toFixed(precision);
-}
-
-/**
- * Check if a rating is considered "good" (4+ stars)
- */
-export function isGoodRating(rating: number): boolean {
-  return rating >= 4.0;
 }
 
 /**

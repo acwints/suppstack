@@ -1,10 +1,13 @@
 # SuppStack - Claude Code Project Memory
 
 ## Tech Stack
-- **Framework**: Next.js 14.2.35 with App Router
-- **Language**: TypeScript 5 (strict mode)
+- **Framework**: Next.js 16 with App Router, React 19
+- **Language**: TypeScript 5 (strict mode, no `any`)
 - **Styling**: Tailwind CSS 3.4 with custom design system
-- **Backend**: Supabase (PostgreSQL, Auth, Storage)
+- **Backend**: Self-hosted Supabase-compatible stack on Railway — GoTrue
+  (auth) + PostgREST + Postgres 18 behind a Caddy gateway
+  (`infra/railway-api/`). The app talks to it with `@supabase/supabase-js`.
+- **Native**: Capacitor iOS shell loading the production site
 
 ## Key Commands
 ```bash
@@ -17,32 +20,48 @@ npm run verify:shopify-catalog # Verify Shopify catalog variants
 ## Directory Structure
 ```
 src/
-├── app/                    # Next.js App Router pages
-│   ├── api/               # API routes (setup, seeding)
-│   ├── context/           # AuthContext provider
-│   ├── components/        # Page-specific components
-│   └── supabase.ts        # Supabase client initialization
+├── app/                   # Next.js App Router pages + API routes (app/api/*)
+│   ├── components/        # App chrome: Header, Footer, BottomTabBar, AuthGate, Layout
+│   ├── context/           # Providers: Auth, Premium, SavedProducts, StackIngredients
+│   ├── providers.tsx      # Provider tree mounted by layout.tsx
+│   └── supabase.ts        # Browser Supabase client
 ├── components/
-│   ├── ui/                # Atomic UI components (Button, Card, Input, etc.)
-│   │   └── layout/        # Layout primitives (Container, Grid, Stack)
-│   └── composite/         # Business logic components
-│       ├── Supplement/    # Supplement display components
-│       ├── Stack/         # Stack cards and views
-│       └── Tracking/      # Daily logging, wellness tracking
-├── hooks/                 # Custom React hooks
-│   ├── useSupplements.ts        # Supplement fetching
-│   ├── useRegimen.ts            # The user's current stack
-│   ├── useSupplementLogs.ts     # Daily tracking logs
-│   └── useSupplementSettings.ts # User supplement settings
-├── lib/
+│   ├── ui/                # Atomic UI (Button, Card, Input, Modal, Toast, …)
+│   │   └── layout/        # Layout primitives (VStack, Inline, Grid)
+│   └── composite/         # Feature components, one barrel per folder: Billing,
+│                          # Brand, Commerce, Filter, Health, Ingredients, Product,
+│                          # Rating, Review, Scan, Search, Stack, Supplement, Tracking
+├── hooks/                 # Data + shared-state hooks — always import from '@/hooks'
+│   ├── useMyStack.ts            # The user's current stack (+ schedule helpers)
+│   ├── useSupplementLogs.ts     # Daily check-offs (one per product per day)
+│   └── usePremium / useSavedProducts / useStackIngredients  # read app/context providers
+├── lib/                   # kebab-case modules, grouped by domain
+│   ├── account/  billing/  catalog/  commerce/  native/  navigation/
+│   ├── ingredients/       # Pure stack-intake math (barrel: '@/lib/ingredients')
+│   ├── server/            # 'server-only' helpers for API routes (auth, http, quotas)
 │   ├── design-system/     # cn() class-merging utility
-│   └── utils/             # Formatting/price/rating helpers (single source)
-├── types/
-│   └── index.ts           # Core domain types (60+ interfaces)
-└── scripts/               # Data seeding scripts
+│   └── utils/             # Formatting/price/rating/streak helpers (single source)
+├── types/index.ts         # Core domain types
+└── scripts/               # Catalog/data maintenance + CI check scripts
 ```
 
 ## Coding Conventions
+
+### Modules
+- **Named exports only.** Route files (`page.tsx`, `layout.tsx`, `error.tsx`,
+  `route.ts`) are the only default exports.
+- Import through folder barrels: `@/hooks`, `@/components/ui`,
+  `@/components/composite/<Folder>`, `@/lib/utils`, `@/lib/design-system`,
+  `@/lib/ingredients`. Inside a folder, import siblings directly
+  (`./ProductTile`), never through the folder's own barrel.
+- Shared app state is read through hooks from `@/hooks` (`usePremium`,
+  `useSavedProducts`, `useStackIngredients`), which wrap the providers in
+  `src/app/context`. (`useAuth` is imported from `@/app/context/AuthContext`.)
+  Context modules never import `@/hooks` (cycle).
+- File names: components `PascalCase.tsx`, hooks `useX.ts`, lib modules
+  `kebab-case.ts`.
+- No circular imports (`npx madge --circular --extensions ts,tsx --ts-config tsconfig.json src`).
+- No dead code: `npx knip` should report no unused files or functions.
 
 ### Components
 - **UI components**: Atomic, reusable, in `components/ui/`
@@ -73,13 +92,16 @@ Design tokens are defined once in `tailwind.config.ts` (colors, typography,
 radii, shadows, animations) and consumed as Tailwind classes. Compose classes
 with `cn()` from `@/lib/design-system`. Formatting helpers (prices, dates,
 compact numbers, initials) live in `@/lib/utils` — never reimplement them
-inline.
+inline. Money is always `formatCurrency(x)` ("$12.99"); never hand-build `$`
+strings.
 
 ### Type Definitions
 All domain types are in `src/types/index.ts`:
 - `Supplement`, `Product`, `Brand`, `Stack`
 - `UserProfile`, `Review`, `SupplementLog`
-- API wrapper: `ApiResponse<T>` for consistent error handling
+
+API routes return errors via `jsonError(error, status, code?)` from
+`@/lib/server/http`; pin the code union with `jsonError<MyError['code']>`.
 
 ### Supabase Client
 Import from: `import { supabase } from '@/app/supabase'`
@@ -87,13 +109,23 @@ Import from: `import { supabase } from '@/app/supabase'`
 - Uses Supabase Auth for Google OAuth
 
 ## Database Schema (Key Tables)
-- `supplements` - Supplement catalog
-- `products` - Individual products linked to supplements
-- `stacks` - User-created supplement combinations
-- `supplement_logs` - Daily intake tracking
-- `user_supplement_settings` - Personalized dosage settings
-- `reviews` - Product reviews
-- `profiles` - User profiles
+- `supplements`, `products`, `product_ingredients`, `brands` - Catalog (read-only to clients)
+- `users_products` - The user's stack (which products they take)
+- `user_supplement_settings` - Per-product dose, `schedule_days` (ISO 1=Mon..7=Sun), status
+- `supplement_logs` - Check-offs; unique per (user, product, local `log_date`)
+- `stacks`, `stack_supplements`, `stack_likes`, `user_follows` - Shared stacks / social
+- `product_reviews`, `review_votes`, `product_rating_stats` - Reviews
+- `user_profiles` (public identity) + `user_private_profiles` (owner-only details)
+- `user_entitlements` - Premium, written only by the RevenueCat webhook
+- `commerce_checkout_events` - Server-written checkout analytics
+
+Every user-owned row cascades from `auth.users` so account deletion is
+complete. Derived values (streaks, completion) are computed from
+`supplement_logs` in the app — don't store copies.
+
+Migrations live in `supabase/migrations/` and are applied by hand on Railway:
+`railway ssh -s Postgres -- psql -U postgres -d railway`, then
+`NOTIFY pgrst, 'reload schema'`.
 
 ## Product Principles (owner-set, do not regress)
 1. **Mobile app first.** The iOS app (Capacitor shell loading the production
@@ -117,5 +149,4 @@ Import from: `import { supabase } from '@/app/supabase'`
 1. Never hardcode colors/spacing - use the Tailwind theme (tailwind.config.ts)
 2. Always handle loading/error states in data components
 3. Use existing hooks when available (check src/hooks/ first)
-4. Follow the ApiResponse<T> pattern for API returns
-5. Use ToastContext for user notifications
+4. Use ToastContext for user notifications

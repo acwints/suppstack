@@ -46,7 +46,7 @@ function preferredHeroProduct(current: Product, candidate: Product) {
   return compareProductsByCommerceSource(candidate, current) < 0 ? candidate : current;
 }
 
-export function buildBrandDiscovery(
+function buildBrandDiscovery(
   supplements: Supplement[],
   { includeCatalogFallback = false }: BrandDiscoveryOptions = {}
 ): BrandDiscoveryItem[] {

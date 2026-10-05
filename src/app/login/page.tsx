@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FaApple } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
-import { needsOnboarding, useAuth } from '../context/AuthContext';
+import { needsOnboarding, useAuth } from '@/app/context/AuthContext';
 import { Spinner, useToast } from '@/components/ui';
 import { isNativeApp } from '@/lib/native/capacitor';
 import { isNativeAppleSignInCancellation } from '@/lib/native/apple-sign-in';
@@ -40,7 +40,7 @@ function BrandMark() {
   );
 }
 
-export default function Login() {
+export default function LoginPage() {
   const {
     user,
     loading,

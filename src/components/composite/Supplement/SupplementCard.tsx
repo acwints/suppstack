@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { SupplementBrowseGroup } from '@/lib/catalog/supplement-families';
-import { formatPrice } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { isRemoteImageSrc } from '@/lib/catalog/product-image';
 
 export interface SupplementCardProps {
@@ -72,7 +72,7 @@ export function SupplementCard({ group, index }: SupplementCardProps) {
                     {(group.productCount ?? 0) > 1 && (
                       <span className="text-xs font-normal text-gray-500">From </span>
                     )}
-                    ${formatPrice(group.priceFrom)}
+                    {formatCurrency(group.priceFrom)}
                   </span>
                 )}
                 {metaText && <p className="text-xs text-gray-500">{metaText}</p>}
@@ -84,5 +84,3 @@ export function SupplementCard({ group, index }: SupplementCardProps) {
     </Link>
   );
 }
-
-export default SupplementCard;

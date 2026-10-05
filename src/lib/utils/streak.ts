@@ -1,12 +1,19 @@
+/** Longest look-back, so a stack with nothing ever scheduled still terminates. */
+const MAX_STREAK_DAYS = 366;
+
 /**
  * Consecutive-day logging streak, counted backwards from today.
  *
- * A day counts toward the streak when at least one supplement was logged on
- * it. Today only extends the streak once something is logged, but an empty
- * today does not break a streak that ran through yesterday — the user still
- * has the rest of the day to log.
+ * A day extends the streak when at least one supplement was logged on it.
+ * Rest days (nothing scheduled, nothing logged) are skipped rather than
+ * breaking the streak. An empty today never breaks a streak that ran through
+ * yesterday — the user still has the rest of the day to log.
  */
-export function computeLogStreak(logDates: Iterable<string>, today: string): number {
+export function computeLogStreak(
+  logDates: Iterable<string>,
+  today: string,
+  isScheduled: (date: Date) => boolean = () => true
+): number {
   const loggedDays = new Set(logDates);
   if (loggedDays.size === 0) return 0;
 
@@ -16,8 +23,12 @@ export function computeLogStreak(logDates: Iterable<string>, today: string): num
   }
 
   let streak = 0;
-  while (loggedDays.has(toDateKey(cursor))) {
-    streak += 1;
+  for (let i = 0; i < MAX_STREAK_DAYS; i++) {
+    if (loggedDays.has(toDateKey(cursor))) {
+      streak += 1;
+    } else if (isScheduled(cursor)) {
+      break;
+    }
     cursor.setDate(cursor.getDate() - 1);
   }
   return streak;

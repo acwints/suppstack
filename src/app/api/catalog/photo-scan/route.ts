@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import {
   buildCounterScanCatalogContext,
   buildRecognitionsFromText,
@@ -10,17 +9,19 @@ import type {
   CounterScanApiResponse,
   CounterScanRecognizedInput,
 } from '@/lib/catalog/counter-scan-types';
+import { jsonError } from '@/lib/server/http';
 import { getScanAllowance, recordFreeScan } from '@/lib/server/scan-quota';
+import { getAuthenticatedUserFromRequest } from '@/lib/server/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
+type ScanErrorCode = CounterScanApiError['code'];
+
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const DEFAULT_MODEL = 'gpt-5.6';
 const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
-
-let authClient: SupabaseClient | null = null;
 
 interface OpenAITextContent {
   type?: string;
@@ -34,49 +35,6 @@ interface OpenAIOutputItem {
 interface OpenAIResponsePayload {
   output_text?: string;
   output?: OpenAIOutputItem[];
-}
-
-function jsonError(
-  code: CounterScanApiError['code'],
-  error: string,
-  status: number
-) {
-  return NextResponse.json<CounterScanApiError>(
-    { code, error },
-    {
-      status,
-      headers: { 'Cache-Control': 'no-store' },
-    }
-  );
-}
-
-function getSupabaseAuthClient() {
-  if (authClient) return authClient;
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
-  if (!supabaseUrl || !supabaseAnonKey) return null;
-
-  authClient = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
-  return authClient;
-}
-
-async function getAuthenticatedUser(request: Request) {
-  const authHeader = request.headers.get('authorization') ?? '';
-  const token = authHeader.match(/^Bearer\s+(.+)$/i)?.[1];
-  if (!token) return null;
-
-  const supabase = getSupabaseAuthClient();
-  if (!supabase) return null;
-
-  const { data, error } = await supabase.auth.getUser(token);
-  if (error) return null;
-  return data.user ?? null;
 }
 
 function isValidImageFile(value: FormDataEntryValue | null): value is File {
@@ -209,24 +167,24 @@ async function recognizeCounterImage(imageDataUrl: string) {
 
 export async function POST(request: Request) {
   if (request.headers.get('x-suppstack-client') !== 'native') {
-    return jsonError(
-      'NATIVE_APP_REQUIRED',
+    return jsonError<ScanErrorCode>(
       'Scan Your Stack is available in the mobile app.',
-      403
+      403,
+      'NATIVE_APP_REQUIRED'
     );
   }
 
-  const user = await getAuthenticatedUser(request);
+  const user = await getAuthenticatedUserFromRequest(request);
   if (!user) {
-    return jsonError('AUTH_REQUIRED', 'Sign in to scan supplement photos.', 401);
+    return jsonError<ScanErrorCode>('Sign in to scan supplement photos.', 401, 'AUTH_REQUIRED');
   }
 
   const allowance = await getScanAllowance(user);
   if (!allowance.allowed) {
-    return jsonError(
-      'PREMIUM_REQUIRED',
+    return jsonError<ScanErrorCode>(
       'You\u2019ve used your free scans. Premium unlocks unlimited scans.',
-      402
+      402,
+      'PREMIUM_REQUIRED'
     );
   }
 
@@ -235,15 +193,15 @@ export async function POST(request: Request) {
   const hint = String(formData.get('hint') ?? '').trim();
 
   if (!isValidImageFile(image)) {
-    return jsonError('INVALID_IMAGE', 'Upload a supplement photo to scan.', 400);
+    return jsonError<ScanErrorCode>('Upload a supplement photo to scan.', 400, 'INVALID_IMAGE');
   }
 
   if (!image.type.startsWith('image/')) {
-    return jsonError('INVALID_IMAGE', 'Upload a valid image file.', 400);
+    return jsonError<ScanErrorCode>('Upload a valid image file.', 400, 'INVALID_IMAGE');
   }
 
   if (image.size > MAX_IMAGE_BYTES) {
-    return jsonError('IMAGE_TOO_LARGE', 'Image is too large. Try a smaller photo.', 413);
+    return jsonError<ScanErrorCode>('Image is too large. Try a smaller photo.', 413, 'IMAGE_TOO_LARGE');
   }
 
   try {
@@ -253,10 +211,10 @@ export async function POST(request: Request) {
     const recognitions = aiRecognitions ?? buildRecognitionsFromText(hint);
 
     if (!aiRecognitions && recognitions.length === 0) {
-      return jsonError(
-        'AI_NOT_CONFIGURED',
+      return jsonError<ScanErrorCode>(
         'Scan Your Stack is not configured in this environment.',
-        503
+        503,
+        'AI_NOT_CONFIGURED'
       );
     }
 
@@ -277,6 +235,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Counter scan failed:', error);
-    return jsonError('SCAN_FAILED', 'Unable to scan this photo. Please try again.', 502);
+    return jsonError<ScanErrorCode>('Unable to scan this photo. Please try again.', 502, 'SCAN_FAILED');
   }
 }

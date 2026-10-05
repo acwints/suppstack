@@ -126,7 +126,8 @@ export interface UserProfile {
   follower_count: number;
 }
 
-export interface RegimenItem {
+/** One product in the user's personal stack, merged with its per-product settings. */
+export interface MyStackItem {
   product_id: string;
   products: {
     product_name: string;
@@ -137,9 +138,9 @@ export interface RegimenItem {
     brands: { brand_name: string };
     supplements: { supplement_name: string };
   };
-  settings?: {
+  settings: {
     servings_per_day: number;
-    schedule_days?: number[];
+    schedule_days: number[];
     status: SupplementStatus;
     custom_dosage?: string;
   };
@@ -149,7 +150,14 @@ export interface RegimenItem {
 // Supplement Logging & Tracking Types
 // ============================================================================
 
-export type SupplementStatus = 'active' | 'paused' | 'stopped';
+/** Paused products stay in the stack; removing a product deletes it. */
+export type SupplementStatus = 'active' | 'paused';
+
+/**
+ * Status as stored in `user_supplement_settings.status` (an unconstrained
+ * VARCHAR). 'stopped' is retired: rows still holding it count as removed.
+ */
+export type StoredSupplementStatus = SupplementStatus | 'stopped';
 
 export interface SupplementLog {
   log_id: string;
@@ -168,49 +176,12 @@ export interface SupplementLogInput {
   servings_taken?: number;
 }
 
-export interface UserSupplementSettings {
-  setting_id: string;
-  user_id: string;
-  product_id: string;
-  custom_dosage?: string;
-  servings_per_day: number;
-  schedule_days?: number[];
-  status: SupplementStatus;
-  start_date: string;
-  end_date?: string;
-  created_at: string;
-  updated_at: string;
-  // Relations
-  products?: Product;
-}
-
 export interface UserSupplementSettingsInput {
   product_id: string;
   custom_dosage?: string;
   servings_per_day?: number;
   schedule_days?: number[];
   status?: SupplementStatus;
-}
-
-export interface DailyTrackingSummary {
-  summary_id: string;
-  user_id: string;
-  summary_date: string;
-  supplements_planned: number;
-  supplements_taken: number;
-  completion_percentage: number;
-  current_streak: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface TrackingStats {
-  currentStreak: number;
-  longestStreak: number;
-  totalLogsThisWeek: number;
-  totalLogsThisMonth: number;
-  averageCompletion: number;
-  perfectDays: number;
 }
 
 // ============================================================================
@@ -244,20 +215,6 @@ export interface StackSupplement {
   notes?: string;
   is_core: boolean;
   order_index: number;
-}
-
-export interface StackLike {
-  like_id: string;
-  stack_id: string;
-  profile_id: string;
-  created_at: string;
-}
-
-export interface UserFollow {
-  follow_id: string;
-  follower_id: string;
-  following_id: string;
-  created_at: string;
 }
 
 // ============================================================================
@@ -298,13 +255,6 @@ export interface ReviewImage {
   image_order: number;
 }
 
-export interface ReviewVote {
-  vote_id: string;
-  review_id: string;
-  user_id: string;
-  is_helpful: boolean;
-}
-
 export interface ProductRatingStats {
   product_id: string;
   average_rating: number;
@@ -335,15 +285,6 @@ export interface ReviewInput {
   would_recommend: boolean;
 }
 
-export interface ProfileInput {
-  date_of_birth?: string;
-  gender?: string;
-  height?: number;
-  weight?: number;
-  display_name?: string;
-  bio?: string;
-}
-
 export interface StackInput {
   stack_name: string;
   stack_description: string;
@@ -366,39 +307,6 @@ export interface StackSupplementInput {
 }
 
 // ============================================================================
-// UI Component Types
-// ============================================================================
-
-export type ButtonVariant = 'primary' | 'secondary' | 'accent' | 'outline' | 'ghost';
-export type ButtonSize = 'sm' | 'md' | 'lg';
-
-export type BadgeVariant = 'primary' | 'secondary' | 'success' | 'warning' | 'error';
-export type BadgeSize = 'sm' | 'md';
-
-export type CardVariant = 'default' | 'modern' | 'feature';
-export type CardHover = 'none' | 'lift' | 'airbnb';
-
-export type InputVariant = 'default' | 'search';
-export type InputSize = 'sm' | 'md' | 'lg';
-
-// ============================================================================
-// API Response Types
-// ============================================================================
-
-export interface ApiResponse<T> {
-  data: T | null;
-  error: Error | null;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-}
-
-// ============================================================================
 // Filter & Sort Types
 // ============================================================================
 
@@ -413,7 +321,7 @@ export interface ProductFilters {
 
 export type ProductSortBy = 'name' | 'price_asc' | 'price_desc' | 'rating' | 'newest' | 'popular';
 
-export interface SupplementCategory {
+interface SupplementCategory {
   id: string;
   name: string;
   icon: string;
@@ -453,13 +361,11 @@ export const USAGE_DURATION_OPTIONS = [
   { value: 'over_year', label: 'Over a year' },
 ] as const;
 
-export const DEFAULT_PAGE_SIZE = 20;
 export const DAYS_PER_MONTH = 30.437; // Average days per month
 
 export const SUPPLEMENT_STATUS_OPTIONS = [
-  { value: 'active', label: 'Currently Taking', color: 'green' },
-  { value: 'paused', label: 'Paused', color: 'yellow' },
-  { value: 'stopped', label: 'Stopped', color: 'gray' },
+  { value: 'active', label: 'Currently Taking' },
+  { value: 'paused', label: 'Paused' },
 ] as const;
 
 export const DAYS_OF_WEEK = [
@@ -471,3 +377,6 @@ export const DAYS_OF_WEEK = [
   { value: 6, label: 'Saturday', short: 'Sat' },
   { value: 7, label: 'Sunday', short: 'Sun' },
 ] as const;
+
+/** Every day (ISO 1 = Mon … 7 = Sun): the schedule for a newly added product. */
+export const DEFAULT_SCHEDULE_DAYS: number[] = DAYS_OF_WEEK.map((day) => day.value);

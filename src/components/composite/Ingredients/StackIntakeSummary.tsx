@@ -98,5 +98,3 @@ export function StackIntakeSummary({
     </Card>
   );
 }
-
-export default StackIntakeSummary;

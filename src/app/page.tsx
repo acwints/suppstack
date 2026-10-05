@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FiArrowRight, FiCamera } from 'react-icons/fi';
 import { useSupplements } from '@/hooks';
 import { brandSlug, buildCatalogBrandDiscovery } from '@/lib/catalog/brand-discovery';
-import { SkeletonGrid, SkeletonCard, EmptyState, Inline, Stack } from '@/components/ui';
+import { SkeletonGrid, SkeletonCard, EmptyState, Inline, VStack } from '@/components/ui';
 import { EnhancedSearchBar } from '@/components/composite/Search';
 import { CategoryFilter, SortFilter, type SortFilterValue } from '@/components/composite/Filter';
 import {
@@ -17,7 +17,7 @@ import {
 import { BrandLogo } from '@/components/composite/Brand';
 import { isNativeApp } from '@/lib/native/capacitor';
 
-export default function Home() {
+export default function HomePage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -89,7 +89,7 @@ export default function Home() {
         {isLoading ? (
           <SkeletonGrid count={15} CardComponent={SkeletonCard} />
         ) : (
-          <Stack gap={10}>
+          <VStack gap={10}>
             <section>
               <Inline justify="between" align="end" className="section-header">
                 <h2>Shop by Goal</h2>
@@ -189,7 +189,7 @@ export default function Home() {
                 <PeptideReferenceShelf supplements={peptideSupplements} />
               </section>
             )}
-          </Stack>
+          </VStack>
         )}
       </div>
 

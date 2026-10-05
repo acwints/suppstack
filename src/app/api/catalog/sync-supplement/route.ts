@@ -1,23 +1,14 @@
 import { NextResponse } from 'next/server';
 import { findCatalogSupplementById } from '@/lib/catalog/supplement-catalog';
-import { resolveDatabaseSupplementIdWithClient } from '@/lib/catalog/catalog-db-sync';
+import { resolveDatabaseSupplementIdWithClient } from '@/lib/catalog/catalog-sync-server';
 import {
   getAuthenticatedUserFromRequest,
   getSupabaseServiceClient,
 } from '@/lib/server/supabase';
+import { jsonError } from '@/lib/server/http';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-
-function jsonError(error: string, status: number) {
-  return NextResponse.json(
-    { error },
-    {
-      status,
-      headers: { 'Cache-Control': 'no-store' },
-    }
-  );
-}
 
 export async function POST(request: Request) {
   const user = await getAuthenticatedUserFromRequest(request);

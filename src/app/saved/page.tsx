@@ -3,10 +3,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { FiTrash2 } from 'react-icons/fi';
-import { useSavedProducts } from '@/app/context/SavedProductsContext';
 import { EmptyState } from '@/components/ui';
-import { formatPrice } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { isRemoteImageSrc } from '@/lib/catalog/product-image';
+import { useSavedProducts } from '@/hooks';
 
 export default function SavedPage() {
   const { savedProducts, removeSaved } = useSavedProducts();
@@ -63,7 +63,7 @@ export default function SavedPage() {
                     {item.product_name}
                   </span>
                   <span className="block text-sm font-semibold text-gray-900">
-                    ${formatPrice(item.product_price)}
+                    {formatCurrency(item.product_price)}
                   </span>
                 </span>
               </Link>

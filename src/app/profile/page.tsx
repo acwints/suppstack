@@ -13,12 +13,18 @@ import {
   FiTrash2,
   FiEye,
   FiLock,
-  FiActivity,
+  FiChevronRight,
 } from 'react-icons/fi';
 import { useAuth } from '@/app/context/AuthContext';
 import { feetInchesToCm, cmToFeetInches, lbsToKg, kgToLbs } from '@/lib/utils';
 import { useStacks } from '@/hooks';
-import { getOrCreateUserProfile, updateUserProfile, type AccountProfile } from '@/lib/account/profile';
+import {
+  getOrCreateUserProfile,
+  getUserAvatarUrl,
+  getUserDisplayName,
+  updateUserProfile,
+  type AccountProfile,
+} from '@/lib/account/profile';
 import Link from 'next/link';
 import {
   Button,
@@ -28,32 +34,29 @@ import {
   Avatar,
   Tabs,
   EmptyState,
-  Stack,
+  VStack,
   Inline,
   Grid,
   useToast,
   ConfirmDialog,
 } from '@/components/ui';
-import { RestockReminders } from '@/components/composite/Tracking';
-import { PremiumGate, PremiumStatusRow } from '@/components/composite/Billing';
+import { PremiumStatusRow } from '@/components/composite/Billing';
 
-// The current stack lives on the Stack tab; Profile is identity, analytics,
-// history, shared stacks, and account settings.
-type TabType = 'insights' | 'stacks' | 'profile';
+// The You tab: identity, account settings (with the Apple Health link), and
+// shared stacks. The personal stack itself lives on the Stack tab.
+type TabType = 'settings' | 'stacks';
 
-const tabItems: { id: TabType; label: string; icon?: React.ReactNode }[] = [
-  { id: 'insights', label: 'Insights', icon: <FiActivity size={16} /> },
-  { id: 'stacks', label: 'My Stacks', icon: <FiLayers size={16} /> },
-  { id: 'profile', label: 'Settings', icon: <FiUser size={16} /> },
+const tabItems: { id: TabType; label: string; icon: React.ReactNode }[] = [
+  { id: 'settings', label: 'Settings', icon: <FiUser size={16} /> },
+  { id: 'stacks', label: 'Shared stacks', icon: <FiLayers size={16} /> },
 ];
 
-export default function Profile() {
-  const { user, session, logout, loading: authLoading } = useAuth() || {};
+export default function ProfilePage() {
+  const { user, session, logout, loading: authLoading } = useAuth();
   const router = useRouter();
   const toast = useToast();
 
-  // Active tab
-  const [activeTab, setActiveTab] = useState<TabType>('insights');
+  const [activeTab, setActiveTab] = useState<TabType>('settings');
 
   // Profile form state
   const [dateOfBirth, setDateOfBirth] = useState('');
@@ -117,18 +120,13 @@ export default function Profile() {
     }
   }, [user]);
 
+  // AuthGate redirects signed-out visitors to /login before this renders.
   useEffect(() => {
-    // Wait for auth to finish loading before checking user
-    if (authLoading) return;
-
-    if (!user) {
-      router.push('/login');
-      return;
-    }
+    if (authLoading || !user) return;
 
     setIsLoading(true);
     fetchUserProfile().finally(() => setIsLoading(false));
-  }, [user, authLoading, router, fetchUserProfile]);
+  }, [user, authLoading, fetchUserProfile]);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,7 +208,7 @@ export default function Profile() {
         throw new Error(payload?.error || 'Unable to delete account');
       }
 
-      await logout?.();
+      await logout();
       toast.success('Account deleted');
       router.replace('/login');
     } catch (error) {
@@ -223,15 +221,7 @@ export default function Profile() {
     }
   };
 
-  if (authLoading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
-  if (isLoading) {
+  if (authLoading || !user || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Spinner size="lg" />
@@ -247,8 +237,8 @@ export default function Profile() {
           <Inline justify="between" align="start">
             <div className="flex items-start gap-6">
               <Avatar
-                src={user.user_metadata?.avatar_url}
-                alt={user.user_metadata?.full_name || 'User'}
+                src={getUserAvatarUrl(user)}
+                alt={getUserDisplayName(user) ?? 'User'}
                 size="xl"
               />
               <div>
@@ -262,7 +252,7 @@ export default function Profile() {
             <Button
               variant="outline"
               onClick={async () => {
-                await logout?.();
+                await logout();
                 router.replace('/login');
               }}
             >
@@ -288,34 +278,11 @@ export default function Profile() {
         </Tabs.List>
 
         {/* Tab Content */}
-        {activeTab === 'insights' && (
-          <section>
-            <div className="mb-8">
-              <h2 className="text-2xl font-serif text-gray-900">Stack Insights</h2>
-              <p className="mt-1 text-gray-500">
-                Supplement adherence, restock planning, and connected health context.
-              </p>
-            </div>
-
-            <Link
-              href="/health/tracker"
-              className="mb-6 flex items-center justify-between rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm transition-colors hover:border-gray-300 hover:bg-gray-100"
-            >
-              <span className="font-medium text-gray-900">Apple Health</span>
-              <span className="shrink-0 font-medium text-gray-900">Open →</span>
-            </Link>
-
-            <PremiumGate feature="restock">
-              <RestockReminders />
-            </PremiumGate>
-          </section>
-        )}
-
         {activeTab === 'stacks' && (
           <section>
             <div className="flex justify-between items-center mb-8">
               <div>
-                <h2 className="text-2xl font-serif text-gray-900">My Stacks</h2>
+                <h2 className="text-2xl font-serif text-gray-900">Shared stacks</h2>
                 <p className="text-gray-500 mt-1">Supplement combinations you&apos;ve created</p>
               </div>
               <Link href="/stacks/create">
@@ -404,13 +371,13 @@ export default function Profile() {
           </section>
         )}
 
-        {activeTab === 'profile' && (
+        {activeTab === 'settings' && (
           <section>
             <div className="max-w-2xl">
               <h2 className="text-2xl font-serif text-gray-900 mb-8">Profile Settings</h2>
 
               <form onSubmit={handleProfileUpdate}>
-                <Stack gap={8}>
+                <VStack gap={8}>
                   {/* Basic Info */}
                   <div className="space-y-6">
                     <h3 className="text-sm font-medium uppercase tracking-wider text-gray-500 pb-2 border-b border-gray-200">
@@ -556,8 +523,21 @@ export default function Profile() {
                       Save Changes
                     </Button>
                   </div>
-                </Stack>
+                </VStack>
               </form>
+
+              <div className="mt-12 border-t border-gray-200 pt-8">
+                <h3 className="text-sm font-medium uppercase tracking-wider text-gray-500">
+                  Connections
+                </h3>
+                <Link
+                  href="/profile/apple-health"
+                  className="mt-4 flex min-h-11 items-center justify-between rounded border border-gray-200 px-4 py-3 text-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
+                >
+                  <span className="font-medium text-gray-900">Apple Health</span>
+                  <FiChevronRight className="shrink-0 text-gray-400" aria-hidden="true" />
+                </Link>
+              </div>
 
               <div className="mt-12 border-t border-error-100 pt-8">
                 <h3 className="text-sm font-medium uppercase tracking-wider text-error-700">

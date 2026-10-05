@@ -1,8 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { Supplement } from '@/types';
-import { SUPPLEMENT_CATEGORIES } from '@/types';
+import { SUPPLEMENT_CATEGORIES, type Supplement } from '@/types';
 import { supplementCatalog } from '@/lib/catalog/supplement-catalog';
 import {
   groupSupplementsForBrowse,
@@ -144,5 +143,3 @@ export function useSupplements({
     browseGroups,
   };
 }
-
-export default useSupplements;

@@ -129,20 +129,19 @@ SELECT ok(
 );
 
 SELECT ok(
-  EXISTS (
+  NOT EXISTS (
     SELECT 1
-    FROM pg_trigger
-    WHERE tgrelid = 'public.user_profiles'::regclass
-      AND tgname = 'trigger_sync_user_profile_private_legacy'
-      AND NOT tgisinternal
-      AND tgenabled <> 'D'
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'user_profiles'
+      AND column_name IN ('date_of_birth', 'gender', 'height', 'weight')
   ),
-  'legacy profile edits are mirrored during the rollout window'
+  'public profiles carry no private account columns'
 );
 
 SELECT ok(
-  (SELECT prosecdef FROM pg_proc WHERE oid = 'public.sync_user_profile_private_legacy()'::regprocedure),
-  'legacy compatibility trigger is security definer'
+  to_regprocedure('public.sync_user_profile_private_legacy()') IS NULL,
+  'the legacy profile mirroring trigger is removed'
 );
 
 SELECT ok(

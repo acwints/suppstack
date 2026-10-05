@@ -4,7 +4,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
 import { getUserProfileId } from '@/lib/account/profile';
-import type { Stack } from '@/types';
+import type { Stack, StackSupplement } from '@/types';
+
+/** A liked `stacks.*` row with its `profile` and `stack_supplements` embeds. */
+interface LikedStackRow extends Omit<Stack, 'supplements'> {
+  stack_supplements:
+    | (Pick<StackSupplement, 'supplement_id' | 'dosage' | 'is_core' | 'order_index'> & {
+        supplements: { supplement_name: string } | null;
+      })[]
+    | null;
+}
 
 export interface UseStackLikesResult {
   isLiked: boolean;
@@ -147,7 +156,8 @@ export function useStackLikes(stackId?: string): UseStackLikesResult {
               display_name,
               profile_image,
               is_verified,
-              is_influencer
+              is_influencer,
+              follower_count
             ),
             stack_supplements(
               supplement_id,
@@ -159,16 +169,18 @@ export function useStackLikes(stackId?: string): UseStackLikesResult {
           )
         `)
         .eq('profile_id', profileId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        // The client is untyped and infers embeds as arrays; `stack` is to-one.
+        .overrideTypes<{ stack: LikedStackRow | null }[], { merge: false }>();
 
       if (error) throw error;
 
       const stacks = (data || [])
-        .map((item: any) => item.stack)
-        .filter(Boolean)
-        .map((stack: any) => ({
+        .map((item) => item.stack)
+        .filter((stack): stack is LikedStackRow => Boolean(stack))
+        .map((stack) => ({
           ...stack,
-          supplements: (stack.stack_supplements || []).map((ss: any) => ({
+          supplements: (stack.stack_supplements || []).map((ss) => ({
             supplement_id: ss.supplement_id,
             supplement_name: ss.supplements?.supplement_name || '',
             dosage: ss.dosage,
@@ -194,5 +206,3 @@ export function useStackLikes(stackId?: string): UseStackLikesResult {
     fetchLikedStacks,
   };
 }
-
-export default useStackLikes;

@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { FiShoppingCart, FiExternalLink, FiChevronDown, FiChevronUp, FiCheck } from 'react-icons/fi';
 import { supabase } from '@/app/supabase';
 import { Card, Button, Spinner, Badge } from '@/components/ui';
-import { cn } from '@/lib/design-system/utils';
-import { formatPrice } from '@/lib/utils';
+import { cn } from '@/lib/design-system';
+import { calculatePrices, formatCurrency } from '@/lib/utils';
 import type { StackSupplement, Product } from '@/types';
 import {
   buildShopifyCartGroups,
@@ -139,8 +139,9 @@ export function BuyStackPanel({
   const totalMonthlyCost = checkedProducts.reduce((sum, item) => {
     const p = item.selectedProduct;
     if (!p) return sum;
-    const perServing = p.servings_per_container > 0 ? p.product_price / p.servings_per_container : 0;
-    return sum + perServing * (p.servings_per_day || 1) * 30.437;
+    return (
+      sum + calculatePrices(p.product_price, p.servings_per_container, p.servings_per_day || 1).monthlyCost
+    );
   }, 0);
 
   const purchasableProducts = checkedProducts.filter(
@@ -196,7 +197,7 @@ export function BuyStackPanel({
               {checkedProducts.length} product{checkedProducts.length !== 1 ? 's' : ''} selected
               {totalPrice > 0 && (
                 <span className="ml-2 font-medium text-gray-700">
-                  ${formatPrice(totalPrice)} total
+                  {formatCurrency(totalPrice)} total
                 </span>
               )}
             </p>
@@ -274,7 +275,7 @@ export function BuyStackPanel({
                       >
                         {item.products.map((p) => (
                           <option key={p.product_id} value={p.product_id}>
-                            {p.product_name} - ${formatPrice(p.product_price)}
+                            {p.product_name} - {formatCurrency(p.product_price)}
                             {p.brands?.brand_name ? ` (${p.brands.brand_name})` : ''}
                           </option>
                         ))}
@@ -284,7 +285,7 @@ export function BuyStackPanel({
 
                   {item.selectedProduct && checkedItems.has(index) && (
                     <span className="text-sm font-medium text-gray-900 shrink-0">
-                      ${formatPrice(item.selectedProduct.product_price)}
+                      {formatCurrency(item.selectedProduct.product_price)}
                     </span>
                   )}
                 </div>
@@ -297,13 +298,13 @@ export function BuyStackPanel({
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-gray-600">Total one-time cost</span>
               <span className="text-lg font-serif font-medium text-gray-900">
-                ${formatPrice(totalPrice)}
+                {formatCurrency(totalPrice)}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Estimated monthly cost</span>
               <span className="text-sm font-medium text-gray-700">
-                ~${formatPrice(totalMonthlyCost)}/mo
+                ~{formatCurrency(totalMonthlyCost)}/mo
               </span>
             </div>
           </div>
@@ -392,5 +393,3 @@ export function BuyStackPanel({
     </Card>
   );
 }
-
-export default BuyStackPanel;

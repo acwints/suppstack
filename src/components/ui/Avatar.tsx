@@ -134,5 +134,3 @@ function InfluencerIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
-export default Avatar;

@@ -1,8 +1,7 @@
 'use client';
 
 import { Select } from '@/components/ui';
-import type { Supplement } from '@/types';
-import { SUPPLEMENT_CATEGORIES } from '@/types';
+import { SUPPLEMENT_CATEGORIES, type Supplement } from '@/types';
 import { groupSupplementsForBrowse } from '@/lib/catalog/supplement-families';
 
 export interface CategoryFilterProps {
@@ -55,5 +54,3 @@ export function CategoryFilter({ supplements, value, onChange }: CategoryFilterP
     />
   );
 }
-
-export default CategoryFilter;

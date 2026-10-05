@@ -3,9 +3,22 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/supabase';
 import { useAuth } from '@/app/context/AuthContext';
-import type { Stack, StackInput, StackSupplementInput } from '@/types';
+import type { Stack, StackInput, StackSupplement, StackSupplementInput } from '@/types';
 import { getOrCreateUserProfile } from '@/lib/account/profile';
-import { resolveDatabaseSupplementId } from '@/lib/catalog/supplement-sync';
+import { resolveDatabaseSupplementId } from '@/lib/catalog/catalog-sync';
+
+/** The `stack_supplements` columns the stack queries read. */
+type StackSupplementColumns = Omit<StackSupplement, 'supplement_name'>;
+
+/** A `stack_supplements` embed row with its `supplements(supplement_name)` embed. */
+interface StackSupplementRow extends StackSupplementColumns {
+  supplements: { supplement_name: string } | null;
+}
+
+/** A `stacks.*` row with its `profile` and `stack_supplements` embeds. */
+interface StackRow extends Omit<Stack, 'supplements'> {
+  stack_supplements: StackSupplementRow[] | null;
+}
 
 /**
  * Stack inputs may reference static catalog supplements (IDs 9000+), which
@@ -98,7 +111,8 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
             display_name,
             profile_image,
             is_verified,
-            is_influencer
+            is_influencer,
+            follower_count
           ),
           stack_supplements(
             supplement_id,
@@ -158,9 +172,9 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
       if (queryError) throw queryError;
 
       // Transform data to match Stack type
-      const transformedStacks = (data || []).map((stack: any) => ({
+      const transformedStacks = (data || []).map((stack: StackRow) => ({
         ...stack,
-        supplements: (stack.stack_supplements || []).map((ss: any) => ({
+        supplements: (stack.stack_supplements || []).map((ss: StackSupplementRow) => ({
           supplement_id: ss.supplement_id,
           supplement_name: ss.supplements?.supplement_name || '',
           dosage: ss.dosage,
@@ -249,7 +263,7 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
     if (!user) throw new Error('Must be logged in to update a stack');
 
     // Update stack details
-    const updateData: any = {};
+    const updateData: Partial<Omit<StackInput, 'supplements'>> = {};
     if (input.stack_name !== undefined) updateData.stack_name = input.stack_name;
     if (input.stack_description !== undefined) updateData.stack_description = input.stack_description;
     if (input.stack_image !== undefined) updateData.stack_image = input.stack_image;
@@ -345,7 +359,7 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
 
     // Copy supplements
     if (original.stack_supplements?.length > 0) {
-      const supplementsData = original.stack_supplements.map((supp: any) => ({
+      const supplementsData = original.stack_supplements.map((supp: StackSupplementColumns) => ({
         stack_id: newStack.stack_id,
         supplement_id: supp.supplement_id,
         dosage: supp.dosage,
@@ -410,7 +424,7 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
     // Transform data
     return {
       ...data,
-      supplements: (data.stack_supplements || []).map((ss: any) => ({
+      supplements: (data.stack_supplements || []).map((ss: StackSupplementRow) => ({
         supplement_id: ss.supplement_id,
         supplement_name: ss.supplements?.supplement_name || '',
         dosage: ss.dosage,
@@ -434,7 +448,8 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
           display_name,
           profile_image,
           is_verified,
-          is_influencer
+          is_influencer,
+          follower_count
         ),
         stack_supplements(
           supplement_id,
@@ -455,9 +470,9 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
       return [];
     }
 
-    return (data || []).map((stack: any) => ({
+    return (data || []).map((stack: StackRow) => ({
       ...stack,
-      supplements: (stack.stack_supplements || []).map((ss: any) => ({
+      supplements: (stack.stack_supplements || []).map((ss: StackSupplementRow) => ({
         supplement_id: ss.supplement_id,
         supplement_name: ss.supplements?.supplement_name || '',
         dosage: ss.dosage,
@@ -488,5 +503,3 @@ export function useStacks(options: UseStacksOptions = {}): UseStacksResult {
     getUserStacks,
   };
 }
-
-export default useStacks;

@@ -1,17 +1,23 @@
 import type { ReactElement } from 'react';
 import { FaYoutube, FaMicrophone, FaNewspaper, FaGlobe } from 'react-icons/fa';
+import type { Stack } from '@/types';
+
+export interface StackSourceIconProps {
+  sourceType?: Stack['source_type'] | null;
+  size?: number;
+}
 
 /**
  * Icon for a stack's source type (where the stack was referenced from).
- * Shared so the stack card and stack detail page stay in sync — they
- * previously each maintained their own copy of this map.
+ * Shared so the stack card and stack detail page stay in sync. Monochrome ink
+ * with the accent reserved for interviews — no semantic colors here.
  */
-export function getStackSourceIcon(sourceType?: string | null, size?: number): ReactElement {
+export function StackSourceIcon({ sourceType, size }: StackSourceIconProps): ReactElement {
   switch (sourceType) {
     case 'youtube':
-      return <FaYoutube className="text-error-500" size={size} />;
+      return <FaYoutube className="text-gray-700" size={size} />;
     case 'podcast':
-      return <FaMicrophone className="text-purple-500" size={size} />;
+      return <FaMicrophone className="text-gray-700" size={size} />;
     case 'article':
       return <FaNewspaper className="text-gray-600" size={size} />;
     case 'interview':

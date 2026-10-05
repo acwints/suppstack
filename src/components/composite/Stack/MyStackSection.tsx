@@ -3,36 +3,44 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { FiPackage, FiSettings } from 'react-icons/fi';
-import { Button, EmptyState } from '@/components/ui';
-import { SupplementSettingsModal } from '@/components/composite/Tracking';
-import { useRegimenCost, useSupplementSettings } from '@/hooks';
-import { formatCurrency } from '@/lib/utils';
-import type { RegimenItem, UserSupplementSettingsInput } from '@/types';
+import { ConfirmDialog, EmptyState } from '@/components/ui';
+import { calculatePrices, formatCurrency } from '@/lib/utils';
+import type { MyStackItem, UserSupplementSettingsInput } from '@/types';
+import { SupplementSettingsModal } from './SupplementSettingsModal';
 
 export interface MyStackSectionProps {
-  regimen: RegimenItem[];
+  items: MyStackItem[];
+  onSaveSettings: (input: UserSupplementSettingsInput) => Promise<void>;
+  onRemove: (productId: string) => Promise<void>;
+}
+
+function monthlyCostOf(item: MyStackItem): number {
+  const { product_price, servings_per_container, servings_per_day } = item.products;
+  return calculatePrices(product_price, servings_per_container, servings_per_day).monthlyCost;
 }
 
 /**
  * The user's current stack: what they take, what it costs, per-product
- * settings. Lives on the Log tab — the stack is the thing you log.
+ * settings, and removal.
  */
-export function MyStackSection({ regimen }: MyStackSectionProps) {
-  const { getSettings, createSettings } = useSupplementSettings();
-  const [selectedProduct, setSelectedProduct] = useState<{ id: string; name: string } | null>(null);
+export function MyStackSection({ items, onSaveSettings, onRemove }: MyStackSectionProps) {
+  const [editingItem, setEditingItem] = useState<MyStackItem | null>(null);
+  const [removingItem, setRemovingItem] = useState<MyStackItem | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
 
-  const { totalMonthlyCost } = useRegimenCost(
-    regimen
-      .filter((item) => (item.settings?.status ?? 'active') === 'active')
-      .map((item) => ({
-        product_price: item.products.product_price,
-        servings_per_container: item.products.servings_per_container,
-        servings_per_day: item.products.servings_per_day,
-      }))
-  );
+  const totalMonthlyCost = items
+    .filter((item) => item.settings.status === 'active')
+    .reduce((sum, item) => sum + monthlyCostOf(item), 0);
 
-  const handleSaveSettings = async (settingsInput: UserSupplementSettingsInput) => {
-    await createSettings(settingsInput);
+  const handleConfirmRemove = async () => {
+    if (!removingItem) return;
+    setIsRemoving(true);
+    try {
+      await onRemove(removingItem.product_id);
+      setRemovingItem(null);
+    } finally {
+      setIsRemoving(false);
+    }
   };
 
   return (
@@ -44,7 +52,7 @@ export function MyStackSection({ regimen }: MyStackSectionProps) {
         </Link>
       </div>
 
-      {regimen.length === 0 ? (
+      {items.length === 0 ? (
         <EmptyState
           icon={<FiPackage size={32} className="text-gray-400" />}
           title="No supplements yet"
@@ -61,13 +69,8 @@ export function MyStackSection({ regimen }: MyStackSectionProps) {
         />
       ) : (
         <div>
-          {regimen.map((item) => {
-            const pricePerServing =
-              item.products.servings_per_container > 0
-                ? item.products.product_price / item.products.servings_per_container
-                : 0;
-            const costPerMonth = pricePerServing * item.products.servings_per_day * 30.437;
-            const productSettings = item.settings ?? getSettings(item.product_id);
+          {items.map((item) => {
+            const monthlyCost = monthlyCostOf(item);
 
             return (
               <div
@@ -83,20 +86,18 @@ export function MyStackSection({ regimen }: MyStackSectionProps) {
                     {item.products.brands.brand_name}
                   </p>
                   <div className="mt-1.5 flex items-center gap-3 text-sm text-gray-600">
-                    {costPerMonth > 0 && <span>{formatCurrency(costPerMonth)}/mo</span>}
-                    {productSettings?.custom_dosage && <span>{productSettings.custom_dosage}</span>}
+                    {monthlyCost > 0 && <span>{formatCurrency(monthlyCost)}/mo</span>}
+                    {item.settings.custom_dosage && <span>{item.settings.custom_dosage}</span>}
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  {productSettings?.status === 'paused' && (
+                  {item.settings.status === 'paused' && (
                     <span className="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
                       Paused
                     </span>
                   )}
                   <button
-                    onClick={() =>
-                      setSelectedProduct({ id: item.product_id, name: item.products.product_name })
-                    }
+                    onClick={() => setEditingItem(item)}
                     aria-label={`Settings for ${item.products.product_name}`}
                     className="flex min-h-11 min-w-11 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 active:bg-gray-100"
                   >
@@ -116,16 +117,34 @@ export function MyStackSection({ regimen }: MyStackSectionProps) {
         </div>
       )}
 
-      {selectedProduct && (
+      {editingItem && (
         <SupplementSettingsModal
-          isOpen
-          onClose={() => setSelectedProduct(null)}
-          productId={selectedProduct.id}
-          productName={selectedProduct.name}
-          existingSettings={getSettings(selectedProduct.id)}
-          onSave={handleSaveSettings}
+          productId={editingItem.product_id}
+          productName={editingItem.products.product_name}
+          settings={editingItem.settings}
+          onClose={() => setEditingItem(null)}
+          onSave={onSaveSettings}
+          onRemove={() => {
+            setRemovingItem(editingItem);
+            setEditingItem(null);
+          }}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={removingItem !== null}
+        onClose={() => setRemovingItem(null)}
+        onConfirm={handleConfirmRemove}
+        title="Remove from your stack?"
+        description={
+          removingItem
+            ? `${removingItem.products.product_name} will leave your stack and daily checklist. Your past logs stay.`
+            : undefined
+        }
+        confirmText="Remove"
+        isLoading={isRemoving}
+        danger
+      />
     </section>
   );
 }

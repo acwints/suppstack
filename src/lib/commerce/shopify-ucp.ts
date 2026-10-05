@@ -1,27 +1,16 @@
 import type { Product } from '@/types';
-import type { PurchaseSessionMode } from './purchase-session';
 
-export const SHOPIFY_UCP_PROFILE = {
-  protocol: 'ucp',
-  version: '2026-01',
-  capabilities: ['catalog', 'cart', 'checkout', 'orders'],
-  agentName: 'SuppStack',
-};
+export type PurchaseSessionMode =
+  | 'shopify_checkout'
+  | 'shopify_ucp_candidate'
+  | 'shopify_cart_permalink'
+  | 'shopify_discovery'
+  | 'amazon'
+  | 'official'
+  | 'marketplace'
+  | 'unavailable';
 
-export function getShopifyDiscoveryUrl(product: Product) {
-  if (!product.shopify_store_domain) return null;
-
-  try {
-    const origin = product.shopify_store_domain.startsWith('http')
-      ? product.shopify_store_domain
-      : `https://${product.shopify_store_domain}`;
-    return new URL('/.well-known/ucp', origin).toString();
-  } catch {
-    return null;
-  }
-}
-
-export function getShopifySearchUrl(product: Product) {
+function getShopifySearchUrl(product: Product) {
   const supplementName = product.supplements?.supplement_name ?? '';
   const query = [supplementName, product.product_name, product.brands?.brand_name]
     .filter(Boolean)
@@ -30,7 +19,7 @@ export function getShopifySearchUrl(product: Product) {
   return `https://www.shopify.com/search?q=${encodeURIComponent(query)}`;
 }
 
-function normalizeShopifyStoreOrigin(storeDomain?: string | null) {
+export function normalizeShopifyStoreOrigin(storeDomain?: string | null) {
   if (!storeDomain) return null;
 
   try {
@@ -128,20 +117,7 @@ export function getPreferredPurchaseUrl(product: Product, quantity = 1) {
   if (product.product_url && !isShopifySearchUrl(product.product_url)) return product.product_url;
   if (product.amazon_url) return product.amazon_url;
   if (product.product_url) return product.product_url;
-  if (product.ucp_enabled || product.commerce_channel === 'shopify') return getShopifySearchUrl(product);
   return getShopifySearchUrl(product);
-}
-
-export function getPurchaseChannel(product: Product) {
-  if (hasDirectShopifyCheckout(product) || getShopifyCartPermalink(product)) {
-    return 'shopify';
-  }
-
-  if (product.amazon_url) return 'amazon';
-  if (product.product_url && !isShopifySearchUrl(product.product_url)) return 'official';
-  if (product.ucp_enabled || product.commerce_channel === 'shopify') return 'shopify';
-  if (product.product_url) return 'shopify';
-  return 'marketplace';
 }
 
 export function getPurchaseDestination(
@@ -226,20 +202,6 @@ export function getPurchaseDestination(
 
 export function getPurchaseLabel(product: Product) {
   return getPurchaseDestination(product).label;
-}
-
-export function getInventoryLabel(product: Product) {
-  switch (product.inventory_status) {
-    case 'low_stock':
-      return 'Low stock';
-    case 'out_of_stock':
-      return 'Out of stock';
-    case 'preorder':
-      return 'Preorder';
-    case 'in_stock':
-    default:
-      return 'In stock';
-  }
 }
 
 export function canPurchase(product: Product) {

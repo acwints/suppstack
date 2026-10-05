@@ -11,12 +11,10 @@ export interface ProductDirectoryProduct extends Product {
 export interface ProductDirectoryGoalFilter {
   id: HealthGoalId;
   title: string;
-  signalLabel: string;
   productCount: number;
 }
 
 export interface ProductDirectoryShelf extends ProductDirectoryGoalFilter {
-  shortTitle: string;
   directCheckoutCount: number;
   brandCount: number;
   priceFrom: number | null;
@@ -195,8 +193,6 @@ export function buildProductDirectory(): ProductDirectoryData {
     return {
       id: goal.id,
       title: goal.title,
-      shortTitle: goal.shortTitle,
-      signalLabel: goal.signalLabel,
       productCount: shelfProducts.length,
       directCheckoutCount: shelfProducts.filter((product) => product.ucp_enabled).length,
       brandCount: shelfBrands.size,
@@ -209,7 +205,6 @@ export function buildProductDirectory(): ProductDirectoryData {
     healthGoals: goals.map((goal) => ({
       id: goal.id,
       title: goal.title,
-      signalLabel: goal.signalLabel,
       productCount: goal.productCount,
     })),
     commerceShelves,

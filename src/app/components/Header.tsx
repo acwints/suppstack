@@ -15,6 +15,9 @@ import {
   FiUser,
 } from 'react-icons/fi';
 import { cn } from '@/lib/design-system';
+import { getUserAvatarUrl, getUserDisplayName } from '@/lib/account/profile';
+import { loginHref } from '@/lib/navigation/login';
+import { getInitials } from '@/lib/utils';
 
 /**
  * The same destinations as the mobile tab bar — one IA everywhere.
@@ -57,31 +60,30 @@ function isNavActive(href: string, pathname: string): boolean {
 
 function getMobileAppBarConfig(pathname: string): MobileAppBarConfig {
   if (pathname === '/') return { title: 'SuppStack AI', brandTitle: true, showSaved: true };
-  if (pathname === '/stack') return { title: 'My Stack' };
+  if (pathname === '/stack') return { title: 'Stack' };
   if (pathname === '/profile') return { title: 'You' };
+  if (pathname === '/profile/apple-health') return { title: 'Apple Health', backHref: '/profile' };
   if (pathname === '/saved') return { title: 'Saved', backHref: '/', showSaved: false };
   if (pathname === '/products') return { title: 'All Products', backHref: '/', showSaved: false };
   if (pathname === '/brands') return { title: 'Brands', backHref: '/', showSaved: false };
   if (pathname.startsWith('/brands/')) return { title: 'Brand', backHref: '/brands' };
   if (pathname === '/scan') return { title: 'Scan Your Stack', backHref: '/', showSaved: false };
   if (pathname === '/peptides') return { title: 'Peptides', backHref: '/', showSaved: false };
-  if (pathname.startsWith('/peptides/')) return { title: 'Peptide', backHref: '/peptides' };
   if (pathname === '/health') return { title: 'Shop by Goal', backHref: '/' };
-  if (pathname === '/health/tracker') return { title: 'Apple Health', backHref: '/profile' };
   if (pathname.startsWith('/health/')) return { title: 'Health Goal', backHref: '/health' };
   if (pathname === '/search') return { title: 'Search', backHref: '/' };
   if (pathname.startsWith('/supplement/')) return { title: 'Supplement', backHref: '/' };
   if (pathname.startsWith('/product/')) return { title: 'Product', backHref: '/' };
   if (pathname === '/premium') return { title: 'Premium', backHref: '/profile' };
   if (pathname === '/stacks/create') return { title: 'Create Stack', backHref: '/profile' };
-  if (pathname.startsWith('/stacks/')) return { title: 'Stack', backHref: '/profile' };
+  if (pathname.startsWith('/stacks/')) return { title: 'Shared Stack', backHref: '/profile' };
   if (pathname === '/privacy') return { title: 'Privacy', backHref: '/' };
   if (pathname === '/terms') return { title: 'Terms', backHref: '/' };
 
   return { title: 'SuppStack AI', brandTitle: true, showSaved: true };
 }
 
-export default function Header() {
+export function Header() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -92,20 +94,10 @@ export default function Header() {
   const [hasInAppBackTarget, setHasInAppBackTarget] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
 
-  const displayName = String(
-    user?.user_metadata?.full_name ||
-    user?.user_metadata?.name ||
-    user?.email?.split('@')[0] ||
-    'Account'
-  );
+  const displayName = (user && getUserDisplayName(user)) || 'Account';
   const firstName = displayName.split(' ')[0] || 'Account';
-  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
-  const initials = displayName
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('') || 'A';
+  const avatarUrl = user ? getUserAvatarUrl(user) : null;
+  const initials = getInitials(displayName) || 'A';
 
   useEffect(() => {
     if (!isAccountMenuOpen) return;
@@ -150,7 +142,7 @@ export default function Header() {
   }, [isLoginPage, pathname]);
 
   const handleSignIn = () => {
-    router.push('/login');
+    router.push(loginHref(pathname));
   };
 
   const handleSignOut = async () => {
@@ -255,14 +247,14 @@ export default function Header() {
 
   const authControl = loading ? null : user ? (
     accountMenu
-  ) : !isLoginPage ? (
+  ) : (
     <button
       onClick={handleSignIn}
       className="min-h-11 rounded bg-gray-900 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-gray-800 active:bg-gray-950 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 sm:px-5"
     >
       Sign in
     </button>
-  ) : null;
+  );
 
   const savedProductsLink = (
     <Link

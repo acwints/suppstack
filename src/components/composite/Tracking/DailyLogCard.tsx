@@ -1,13 +1,14 @@
 'use client';
 
-import { FiCheck, FiPackage } from 'react-icons/fi';
+import { FiCheck } from 'react-icons/fi';
 import { Card, Inline, ProgressRing } from '@/components/ui';
-import { cn } from '@/lib/design-system/utils';
+import { cn } from '@/lib/design-system';
 import { LogButton } from './LogButton';
-import type { RegimenItem, SupplementLog } from '@/types';
+import type { MyStackItem, SupplementLog } from '@/types';
 
 export interface DailyLogCardProps {
-  regimen: RegimenItem[];
+  /** Today's scheduled stack items (non-empty). */
+  items: MyStackItem[];
   todayLogs: SupplementLog[];
   onLog: (productId: string) => Promise<void>;
   onUnlog: (logId: string) => Promise<void>;
@@ -15,53 +16,23 @@ export interface DailyLogCardProps {
 }
 
 export function DailyLogCard({
-  regimen,
+  items,
   todayLogs,
   onLog,
   onUnlog,
   isLoading = false,
 }: DailyLogCardProps) {
-  const regimenProductIds = new Set(regimen.map((item) => item.product_id));
-  const loggedProductIds = new Set(todayLogs.map((log) => log.product_id));
-  const loggedRegimenProductIds = new Set(
-    todayLogs
-      .filter((log) => regimenProductIds.has(log.product_id))
-      .map((log) => log.product_id)
-  );
-  const takenCount = loggedRegimenProductIds.size;
-  const logsComplete =
-    regimen.length > 0 && regimen.every((item) => loggedProductIds.has(item.product_id));
-  const progress = regimen.length > 0 ? (takenCount / regimen.length) * 100 : 0;
-  const remaining = regimen.length - takenCount;
+  const logsByProductId = new Map(todayLogs.map((log) => [log.product_id, log]));
+  const takenCount = items.filter((item) => logsByProductId.has(item.product_id)).length;
+  const logsComplete = items.length > 0 && takenCount === items.length;
+  const progress = items.length > 0 ? (takenCount / items.length) * 100 : 0;
+  const remaining = items.length - takenCount;
 
   const subtitle = logsComplete
     ? 'All done — see you tomorrow.'
     : takenCount === 0
       ? 'Check off each supplement as you take it.'
       : `${remaining} left to take`;
-
-  const getLogForProduct = (productId: string): SupplementLog | undefined => {
-    return todayLogs.find((log) => log.product_id === productId);
-  };
-
-  const handleUnlog = async (productId: string): Promise<void> => {
-    const log = getLogForProduct(productId);
-    if (log) {
-      await onUnlog(log.log_id);
-    }
-  };
-
-  if (regimen.length === 0) {
-    return (
-      <Card variant="modern" className="p-6">
-        <div className="py-8 text-center">
-          <FiPackage size={32} className="mx-auto mb-4 text-gray-400" aria-hidden="true" />
-          <h3 className="mb-2 text-lg font-semibold text-gray-900">No supplements yet</h3>
-          <p className="text-gray-600">Add supplements to your stack to start tracking</p>
-        </div>
-      </Card>
-    );
-  }
 
   return (
     <Card variant="modern" className="overflow-hidden">
@@ -85,7 +56,7 @@ export function DailyLogCard({
               <FiCheck size={20} strokeWidth={2.5} className="text-accent-600" aria-hidden="true" />
             ) : (
               <span className="text-xs font-semibold tabular-nums text-gray-900">
-                {takenCount}/{regimen.length}
+                {takenCount}/{items.length}
               </span>
             )}
           </ProgressRing>
@@ -94,8 +65,9 @@ export function DailyLogCard({
 
       {/* Supplement checklist — one row per product, circular check toggle */}
       <div className="divide-y divide-gray-100">
-        {regimen.map((item) => {
-          const isLogged = loggedProductIds.has(item.product_id);
+        {items.map((item) => {
+          const log = logsByProductId.get(item.product_id);
+          const isLogged = log !== undefined;
 
           return (
             <div
@@ -125,12 +97,13 @@ export function DailyLogCard({
               </div>
 
               <LogButton
-                productId={item.product_id}
                 productName={item.products.product_name}
                 isLogged={isLogged}
                 isLoading={isLoading}
-                onLog={onLog}
-                onUnlog={handleUnlog}
+                onLog={() => onLog(item.product_id)}
+                onUnlog={async () => {
+                  if (log) await onUnlog(log.log_id);
+                }}
                 size="lg"
               />
             </div>
@@ -140,5 +113,3 @@ export function DailyLogCard({
     </Card>
   );
 }
-
-export default DailyLogCard;

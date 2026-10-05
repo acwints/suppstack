@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { FiAlertCircle, FiExternalLink, FiLock, FiMinus, FiPlus, FiShoppingBag } from 'react-icons/fi';
 import type { Product } from '@/types';
-import { Badge, Button, Inline, Modal, Spinner, Stack } from '@/components/ui';
-import { formatPrice } from '@/lib/utils';
+import { Badge, Button, Inline, Modal, Spinner, VStack } from '@/components/ui';
+import { formatCurrency } from '@/lib/utils';
 import { useCommerceCheckout } from '@/hooks';
 import { isNativeApp, openInNativeBrowser } from '@/lib/native/capacitor';
 import { BrandLogo } from '@/components/composite/Brand';
@@ -157,7 +157,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
       description={hasVerifiedVariant ? 'Verified merchant product' : destination.label}
       size="md"
     >
-      <Stack gap={6}>
+      <VStack gap={6}>
         {/* Order summary */}
         <div className="flex gap-4">
           <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded border border-gray-200 bg-gray-50">
@@ -209,7 +209,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
         {live.status === 'available' && (
           <div className="flex items-center justify-between rounded border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm">
             <span className="text-gray-700">In stock at {domain}</span>
-            <span className="font-semibold text-gray-900">${formatPrice(unitPrice)} live price</span>
+            <span className="font-semibold text-gray-900">{formatCurrency(unitPrice)} live price</span>
           </div>
         )}
         {isUnavailable && (
@@ -255,12 +255,12 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="text-sm text-gray-600">Subtotal</span>
                 <span className="text-sm font-semibold text-gray-900">
-                  ${formatPrice(subtotal)}
+                  {formatCurrency(subtotal)}
                 </span>
               </div>
             </div>
 
-            <Stack gap={3}>
+            <VStack gap={3}>
               {/* Fail closed while confirming availability; fail open on
                   'unknown' so a merchant hiccup never blocks checkout. */}
               <Button
@@ -278,7 +278,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
                   ? 'Your cart is prefilled with the verified item. Payment is completed securely on the merchant checkout.'
                   : 'Payment is completed on the merchant store.'}
               </p>
-            </Stack>
+            </VStack>
           </>
         )}
 
@@ -330,9 +330,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
             </a>
           </div>
         )}
-      </Stack>
+      </VStack>
     </Modal>
   );
 }
-
-export default EmbeddedCheckout;

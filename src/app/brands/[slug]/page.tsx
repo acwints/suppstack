@@ -4,13 +4,13 @@ import { use } from 'react';
 
 import Link from 'next/link';
 import { FiArrowLeft } from 'react-icons/fi';
-import ProductCard from '@/app/components/ProductCard';
+import { ProductTile } from '@/components/composite/Product';
 import { formatCurrency } from '@/lib/utils';
 import { compareProductsByCommerceSource } from '@/lib/commerce/product-source';
 import { findCatalogBrandBySlug } from '@/lib/catalog/brand-discovery';
 import { BrandLogo } from '@/components/composite/Brand';
 
-export default function BrandDetailPage(props: { params: Promise<{ slug: string }> }) {
+export default function BrandPage(props: { params: Promise<{ slug: string }> }) {
   const params = use(props.params);
   const brand = findCatalogBrandBySlug(params.slug);
 
@@ -119,7 +119,7 @@ export default function BrandDetailPage(props: { params: Promise<{ slug: string 
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
-            <ProductCard key={product.product_id} product={product} />
+            <ProductTile key={product.product_id} product={product} />
           ))}
         </div>
       </section>

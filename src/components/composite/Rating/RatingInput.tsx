@@ -79,5 +79,3 @@ export function RatingInput({
     </div>
   );
 }
-
-export default RatingInput;

@@ -99,31 +99,6 @@ Card.displayName = 'Card';
 // Card Sub-components
 // =============================================================================
 
-export interface CardHeaderProps extends HTMLAttributes<HTMLDivElement> {
-  /** Border at bottom */
-  bordered?: boolean;
-}
-
-export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
-  ({ bordered = true, className, children, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'px-6 py-4',
-          bordered && 'border-b border-gray-100',
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    );
-  }
-);
-
-CardHeader.displayName = 'CardHeader';
-
 export interface CardBodyProps extends HTMLAttributes<HTMLDivElement> {}
 
 export const CardBody = forwardRef<HTMLDivElement, CardBodyProps>(
@@ -137,35 +112,3 @@ export const CardBody = forwardRef<HTMLDivElement, CardBodyProps>(
 );
 
 CardBody.displayName = 'CardBody';
-
-export interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
-  /** Border at top */
-  bordered?: boolean;
-}
-
-export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
-  ({ bordered = true, className, children, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'px-6 py-4',
-          bordered && 'border-t border-gray-100',
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    );
-  }
-);
-
-CardFooter.displayName = 'CardFooter';
-
-// Compound component exports
-export default Object.assign(Card, {
-  Header: CardHeader,
-  Body: CardBody,
-  Footer: CardFooter,
-});

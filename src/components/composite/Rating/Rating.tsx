@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa';
-import { getStarFill } from '@/lib/utils/rating';
+import { getStarFill } from '@/lib/utils';
 
 export interface RatingProps {
   value: number;
@@ -111,5 +111,3 @@ export function Rating({
     </div>
   );
 }
-
-export default Rating;

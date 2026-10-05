@@ -397,7 +397,3 @@ export function getSupplementKnowledge(
   }
   return null;
 }
-
-export function hasSupplementKnowledge(name?: string | null, aliases?: string[] | null): boolean {
-  return getSupplementKnowledge(name, aliases) !== null;
-}

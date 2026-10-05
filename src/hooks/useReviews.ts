@@ -328,5 +328,3 @@ export function useReviews({
     voteHelpful,
   };
 }
-
-export default useReviews;

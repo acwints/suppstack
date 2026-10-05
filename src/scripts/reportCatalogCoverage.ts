@@ -1,6 +1,6 @@
 import { buildProductDirectory } from '@/lib/catalog/product-directory';
 import { supplementCatalog } from '@/lib/catalog/supplement-catalog';
-import { formatPrice } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 
 interface CoverageRow {
   supplementId: string;
@@ -36,7 +36,7 @@ function hasFlag(name: string) {
 }
 
 function money(value: number | null) {
-  return value === null ? '--' : `$${formatPrice(value)}`;
+  return value === null ? '--' : formatCurrency(value);
 }
 
 function main() {

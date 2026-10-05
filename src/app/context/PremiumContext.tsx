@@ -23,7 +23,6 @@ import {
   isNativePurchasesSupported,
 } from '@/lib/billing/native-purchases';
 import { isNativeApp } from '@/lib/native/capacitor';
-import { PaywallSheet } from '@/components/composite/Billing/Paywall';
 
 export interface PremiumContextValue {
   /** Whether the signed-in user currently has premium access. */
@@ -41,6 +40,8 @@ export interface PremiumContextValue {
   /** Open the paywall sheet; `feature` highlights why it was opened. */
   openPaywall: (feature?: PremiumFeatureId) => void;
   closePaywall: () => void;
+  /** Paywall sheet state, rendered once by PaywallHost. */
+  paywall: { open: boolean; feature?: PremiumFeatureId };
   /** Unlock immediately after a confirmed purchase/restore. */
   markPremium: () => void;
 }
@@ -49,7 +50,7 @@ const PremiumContext = createContext<PremiumContextValue | null>(null);
 
 /**
  * Premium status for the whole app — one entitlement read shared by every
- * gate, plus the single paywall sheet.
+ * gate, plus the paywall sheet's open state.
  *
  * Access is the union of the RLS-protected `user_entitlements` mirror (kept
  * in sync by the RevenueCat webhook) and, in the iOS app, the App Store's own
@@ -138,6 +139,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
       refetch: fetchEntitlement,
       openPaywall,
       closePaywall,
+      paywall,
       markPremium,
     }),
     [
@@ -149,15 +151,13 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
       fetchEntitlement,
       openPaywall,
       closePaywall,
+      paywall,
       markPremium,
     ]
   );
 
   return (
-    <PremiumContext.Provider value={value}>
-      {children}
-      <PaywallSheet open={paywall.open} feature={paywall.feature} onClose={closePaywall} />
-    </PremiumContext.Provider>
+    <PremiumContext.Provider value={value}>{children}</PremiumContext.Provider>
   );
 }
 

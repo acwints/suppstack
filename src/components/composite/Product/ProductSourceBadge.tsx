@@ -40,5 +40,3 @@ export function ProductSourceBadge({ product, compact = false }: ProductSourceBa
     </Badge>
   );
 }
-
-export default ProductSourceBadge;

@@ -2,7 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   async redirects() {
-    return [{ source: '/log', destination: '/stack', permanent: true }];
+    return [
+      { source: '/log', destination: '/stack', permanent: true },
+      { source: '/health/tracker', destination: '/profile/apple-health', permanent: true },
+    ];
   },
   images: {
     remotePatterns: [

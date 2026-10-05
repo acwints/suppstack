@@ -6,12 +6,12 @@ import type {
   ProductIngredient,
   Supplement,
 } from '@/types';
-import {
-  hasDirectShopifyCheckout,
-  hasShopifyVariant,
-  mergeProductSources,
-} from '@/lib/commerce/product-source';
+import { hasShopifyVariant, mergeProductSources } from '@/lib/commerce/product-source';
+import { hasDirectShopifyCheckout } from '@/lib/commerce/shopify-ucp';
 import { sourcedProductSeeds } from './shopify-sourced-products';
+import type { CuratedProductSeed } from './catalog-seed';
+
+export type { CuratedProductSeed } from './catalog-seed';
 import { standardizeProductImage } from './product-image';
 
 type EvidenceRating = NonNullable<Supplement['evidence_rating']>;
@@ -318,17 +318,6 @@ function fallbackCatalogId(name: string) {
 function catalogIdForSeed(seed: CatalogSeed) {
   return stableCatalogIds[seed.name] ?? fallbackCatalogId(seed.name);
 }
-
-export type CuratedProductSeed = Omit<Product, 'supplement_id' | 'supplements' | 'ingredients'> & {
-  supplement_name: string;
-  ingredients?: {
-    supplement_name: string;
-    amount: number | null;
-    unit: IngredientUnit | null;
-    is_primary?: boolean;
-    notes?: string;
-  }[];
-};
 
 const curatedProductSeeds: CuratedProductSeed[] = [
   {
@@ -4778,7 +4767,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
   },
 ];
 
-export const allCuratedProductSeeds: CuratedProductSeed[] = [
+const allCuratedProductSeeds: CuratedProductSeed[] = [
   ...curatedProductSeeds,
   ...sourcedProductSeeds,
 ];
@@ -5042,7 +5031,7 @@ export function resolveProductsForSupplement(
   return mergeProductSources(catalogProducts, listableDatabaseProducts);
 }
 
-export function findCatalogSupplementByProductId(productId: string) {
+function findCatalogSupplementByProductId(productId: string) {
   const curatedSeed = findCuratedSeedByProductId(productId);
   if (!curatedSeed) return null;
 

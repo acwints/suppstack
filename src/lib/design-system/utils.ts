@@ -1,10 +1,8 @@
 /**
  * Design System Utilities
  *
- * Formatting helpers (formatCompactNumber, getInitials, formatRelativeTime,
- * pluralize, formatDate, ...) live in `@/lib/utils` — they were previously
- * duplicated here with subtly different behavior. Design tokens (colors,
- * spacing, typography, shadows) live in `tailwind.config.ts`.
+ * Formatting helpers live in `@/lib/utils`. Design tokens (colors, spacing,
+ * typography, shadows) live in `tailwind.config.ts`.
  */
 
 import { type ClassValue, clsx } from 'clsx';

@@ -20,22 +20,6 @@ export function formatNumber(value: number): string {
 }
 
 /**
- * Format a date to a readable string
- */
-export function formatDate(
-  date: string | Date,
-  options?: Intl.DateTimeFormatOptions
-): string {
-  const defaultOptions: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    ...options,
-  };
-  return new Date(date).toLocaleDateString('en-US', defaultOptions);
-}
-
-/**
  * Format a date to relative time (e.g., "2 days ago")
  */
 export function formatRelativeTime(date: string | Date): string {
@@ -57,14 +41,6 @@ export function formatRelativeTime(date: string | Date): string {
   if (diffWeeks < 4) return `${diffWeeks}w ago`;
   if (diffMonths < 12) return `${diffMonths}mo ago`;
   return `${diffYears}y ago`;
-}
-
-/**
- * Truncate text with ellipsis
- */
-export function truncate(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength - 3) + '...';
 }
 
 /**
@@ -99,32 +75,13 @@ export function lbsToKg(lbs: number): number {
 }
 
 /**
- * Pluralize a word based on count
- */
-export function pluralize(count: number, singular: string, plural?: string): string {
-  if (count === 1) return singular;
-  return plural || `${singular}s`;
-}
-
-/**
  * Generate initials from a name
  */
 export function getInitials(name: string): string {
   return name
     .split(' ')
+    .filter(Boolean)
     .map(part => part.charAt(0).toUpperCase())
     .slice(0, 2)
     .join('');
-}
-
-/**
- * Slugify a string for URLs
- */
-export function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
 }

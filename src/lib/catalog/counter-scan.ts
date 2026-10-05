@@ -185,7 +185,7 @@ function toStableId(item: CounterScanRecognizedInput, index: number) {
   return `${index + 1}-${seed || 'unknown'}`;
 }
 
-export function sanitizeCounterScanRecognitions(
+function sanitizeCounterScanRecognitions(
   items: CounterScanRecognizedInput[]
 ): CounterScanRecognizedInput[] {
   return items

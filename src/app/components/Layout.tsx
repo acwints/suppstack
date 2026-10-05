@@ -1,15 +1,16 @@
-import Header from './Header';
-import Footer from './Footer';
-import AuthGate from './AuthGate';
-import BottomTabBar from './BottomTabBar';
+import { Header } from './Header';
+import { Footer } from './Footer';
+import { AuthGate } from './AuthGate';
+import { BottomTabBar } from './BottomTabBar';
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell flex flex-col bg-gray-50">
       <Header />
-      <main className="app-main flex-grow">
+      {/* Pages render their own <main>. */}
+      <div className="app-main flex-grow">
         <AuthGate>{children}</AuthGate>
-      </main>
+      </div>
       <Footer />
       <BottomTabBar />
     </div>

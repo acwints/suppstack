@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { Product } from '@/types';
-import { createFallbackPurchaseSession } from '@/lib/commerce/purchase-session';
+import { createFallbackPurchaseSession, type PurchaseSession } from '@/lib/commerce/purchase-session';
 import { resolveShopifyPurchaseSession } from '@/lib/commerce/shopify-ucp-server';
 import { isAllowedMerchantHost } from '@/lib/catalog/supplement-catalog';
 
@@ -34,7 +34,7 @@ function supabaseServer() {
   });
 }
 
-async function recordCheckoutEvent(product: Product, session: any, quantity: number) {
+async function recordCheckoutEvent(product: Product, session: PurchaseSession, quantity: number) {
   const client = supabaseServer();
   if (!client) return;
 

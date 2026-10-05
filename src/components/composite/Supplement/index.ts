@@ -1,9 +1,5 @@
-export { SupplementCard } from './SupplementCard';
-export type { SupplementCardProps } from './SupplementCard';
-
 export { SupplementGrid } from './SupplementGrid';
 export type { SupplementGridProps } from './SupplementGrid';
-
 
 export { HealthGoalDirectory } from './HealthGoalDirectory';
 export type { HealthGoalDirectoryProps } from './HealthGoalDirectory';

@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { FiX, FiPlus, FiCheck, FiStar, FiExternalLink } from 'react-icons/fi';
 import { supabase } from '@/app/supabase';
 import { Card, Button, Spinner, Badge } from '@/components/ui';
-import { cn } from '@/lib/design-system/utils';
-import { formatPrice, calculatePrices } from '@/lib/utils';
+import { cn } from '@/lib/design-system';
+import { formatCurrency, calculatePrices } from '@/lib/utils';
 import { isListableDatabaseProduct } from '@/lib/catalog/supplement-catalog';
 import { getProductImageSrc, isRemoteImageSrc } from '@/lib/catalog/product-image';
 import type { Product } from '@/types';
@@ -18,11 +18,18 @@ export interface CompareProductsProps {
   className?: string;
 }
 
+interface RatingStats {
+  average_rating: number;
+  total_reviews: number;
+}
+
 interface CompareProduct extends Product {
-  rating_stats?: {
-    average_rating: number;
-    total_reviews: number;
-  };
+  rating_stats?: RatingStats | null;
+}
+
+/** A `products.*` row with its `product_rating_stats` embed. */
+interface CompareProductRow extends Product {
+  product_rating_stats?: RatingStats | null;
 }
 
 const MAX_COMPARE = 3;
@@ -57,10 +64,10 @@ export function CompareProducts({
 
       if (!error && data) {
         const mapped = data
-          .filter((p: any) => isListableDatabaseProduct(p))
-          .map((p: any) => ({
+          .filter((p: CompareProductRow) => isListableDatabaseProduct(p))
+          .map((p: CompareProductRow) => ({
             ...p,
-            rating_stats: p.product_rating_stats?.[0] || null,
+            rating_stats: p.product_rating_stats ?? null,
           }));
         setAllProducts(mapped);
       }
@@ -216,7 +223,7 @@ export function CompareProducts({
                         <span className="text-gray-900">{p.product_name}</span>
                         <span className="text-gray-400 ml-2">{p.brands?.brand_name}</span>
                       </div>
-                      <span className="text-gray-500">${formatPrice(p.product_price)}</span>
+                      <span className="text-gray-500">{formatCurrency(p.product_price)}</span>
                     </button>
                   ))
                 )}
@@ -258,7 +265,7 @@ export function CompareProducts({
                             p.product_price === lowestPrice ? 'text-accent-700 font-semibold' : 'text-gray-900'
                           )}
                         >
-                          ${formatPrice(p.product_price)}
+                          {formatCurrency(p.product_price)}
                           {p.product_price === lowestPrice && (
                             <Badge variant="success" size="sm" className="ml-1">Best</Badge>
                           )}
@@ -280,7 +287,7 @@ export function CompareProducts({
                             thisCost > 0 && thisCost === lowest ? 'text-accent-700 font-semibold' : 'text-gray-900'
                           )}
                         >
-                          {thisCost > 0 ? `$${formatPrice(thisCost)}` : '—'}
+                          {thisCost > 0 ? formatCurrency(thisCost) : '—'}
                           {thisCost > 0 && thisCost === lowest && (
                             <Badge variant="success" size="sm" className="ml-1">Best</Badge>
                           )}
@@ -302,7 +309,7 @@ export function CompareProducts({
                             thisCost > 0 && thisCost === lowest ? 'text-accent-700 font-semibold' : 'text-gray-900'
                           )}
                         >
-                          {thisCost > 0 ? `$${formatPrice(thisCost)}` : '—'}
+                          {thisCost > 0 ? formatCurrency(thisCost) : '—'}
                         </td>
                       );
                     })}
@@ -371,5 +378,3 @@ export function CompareProducts({
     </Card>
   );
 }
-
-export default CompareProducts;

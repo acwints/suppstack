@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback } from 'react';
 import { FaTimes } from 'react-icons/fa';
-import { cn } from '@/lib/design-system/utils';
+import { cn } from '@/lib/design-system';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -124,5 +124,3 @@ export function Modal({
     </div>
   );
 }
-
-export default Modal;

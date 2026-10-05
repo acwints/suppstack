@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useCallback, useState, type ReactNode } from 'react';
+import { createContext, useContext, useCallback, useMemo, useState, type ReactNode } from 'react';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -47,11 +47,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts([]);
   }, []);
 
+  const value = useMemo(
+    () => ({ toasts, addToast, removeToast, clearToasts }),
+    [toasts, addToast, removeToast, clearToasts]
+  );
+
   return (
-    <ToastContext.Provider value={{ toasts, addToast, removeToast, clearToasts }}>
+    <ToastContext.Provider value={value}>
       {children}
     </ToastContext.Provider>
   );
+}
+
+/** The live toast list, for the container that renders it. */
+export function useToastList(): Toast[] {
+  const context = useContext(ToastContext);
+  if (!context) {
+    throw new Error('useToastList must be used within a ToastProvider');
+  }
+  return context.toasts;
 }
 
 export function useToast() {
@@ -60,18 +74,24 @@ export function useToast() {
     throw new Error('useToast must be used within a ToastProvider');
   }
 
-  const { addToast } = context;
+  const { addToast, removeToast, clearToasts } = context;
 
-  return {
-    ...context,
-    // Convenience methods
-    success: (title: string, description?: string) =>
-      addToast({ type: 'success', title, description }),
-    error: (title: string, description?: string) =>
-      addToast({ type: 'error', title, description }),
-    warning: (title: string, description?: string) =>
-      addToast({ type: 'warning', title, description }),
-    info: (title: string, description?: string) =>
-      addToast({ type: 'info', title, description }),
-  };
+  // Stable across renders (it doesn't change when toasts do), so callers can
+  // list it in hook dependencies.
+  return useMemo(
+    () => ({
+      addToast,
+      removeToast,
+      clearToasts,
+      success: (title: string, description?: string) =>
+        addToast({ type: 'success', title, description }),
+      error: (title: string, description?: string) =>
+        addToast({ type: 'error', title, description }),
+      warning: (title: string, description?: string) =>
+        addToast({ type: 'warning', title, description }),
+      info: (title: string, description?: string) =>
+        addToast({ type: 'info', title, description }),
+    }),
+    [addToast, removeToast, clearToasts]
+  );
 }

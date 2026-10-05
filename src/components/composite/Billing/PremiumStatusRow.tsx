@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { FiChevronRight } from 'react-icons/fi';
-import { usePremium } from '@/hooks/usePremium';
+import { usePremium } from '@/hooks';
 
 /**
  * The account screen's Premium entry: members get a quiet status link to
@@ -40,5 +40,3 @@ export function PremiumStatusRow() {
     </button>
   );
 }
-
-export default PremiumStatusRow;
