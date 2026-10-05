@@ -8,7 +8,8 @@
 			"www.suppstack.app",
 			"suppstack.app",
 			"suppstack.vercel.app",
-			"*.supabase.co"
+			"api.suppstack.app",
+			"*.up.railway.app"
 		],
 		"errorPath": "index.html"
 	},

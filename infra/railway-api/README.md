@@ -1,4 +1,4 @@
-# Railway API (migration in progress)
+# Railway API (production since 2026-10-05)
 
 The web app remains on Vercel. This gateway exposes Supabase-compatible Auth
 and PostgREST services on Railway. It does not require moving the website's DNS.
@@ -32,7 +32,20 @@ Email uses Resend SMTP over STARTTLS on port 587 with a domain-scoped sending
 key. SMTP authentication has been verified; delivery has not yet been tested.
 An existing verified sender domain is being reused to avoid DNS changes.
 
-## Required before production cutover
+## Cutover (2026-10-05)
+
+The Supabase source project was paused and could not be restored (unpaid
+invoices), so production cut over to Railway without a final sync — data
+reflects the September 7 copy. Vercel production now uses the gateway URL with
+newly minted anon/service JWTs signed by Railway's shared JWT secret (stored
+outside the repo). `api.suppstack.app` resolves to the gateway but its TLS
+certificate is not issued yet, so clients use the `up.railway.app` URL.
+
+Still open: Google sign-in needs the real OAuth client secret (the variable
+holds an exported hash); Apple's web client secret JWT expires and must be
+rotated; email delivery is untested.
+
+## Original pre-cutover checklist
 
 - Supply the replacement Google client secret. Supabase's exported provider
   secret fields are hashes, not usable credentials.

@@ -20,7 +20,7 @@ const config: CapacitorConfig & { packageClassList?: string[] } = {
     // (merchant checkout, shop.app, Google OAuth) are opened via the Browser
     // plugin (SFSafariViewController) instead — Google blocks OAuth inside
     // webviews, so accounts.google.com must NOT be allowed here.
-    allowNavigation: ['www.suppstack.app', 'suppstack.app', 'suppstack.vercel.app', '*.supabase.co'],
+    allowNavigation: ['www.suppstack.app', 'suppstack.app', 'suppstack.vercel.app', 'api.suppstack.app', '*.up.railway.app'],
     // Local page shown when the remote app cannot be loaded (offline).
     errorPath: 'index.html',
   },
