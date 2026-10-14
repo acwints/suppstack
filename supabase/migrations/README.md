@@ -31,6 +31,7 @@ schema. Each file is an ordered, idempotent migration.
 | 0024 | `20260722000024_add_hiya_health_catalog.sql` | Adds Hiya Health official kids products, the `Immune Support Formula` bucket, and matching product ingredient composition rows. |
 | 0025 | `20260722000025_repair_hiya_health_catalog_support.sql` | Adds missing `Prebiotic Fiber` and `MCT Oil` supplement support rows so Hiya Fiber+ and ingredient composition materialize in DB-backed flows. |
 | 0026 | `20260831000026_expand_private_account_profiles.sql` | Expand phase for profile privacy: enforces one profile per authenticated user, adds the owner-only `user_private_profiles` table and safe backfill/mirroring, centralizes profile ownership for RLS, hardens follower counters, and adds authenticated atomic account-profile commands. Apply before the matching web client; the legacy columns/grants remain temporarily for rollout compatibility. |
+| 0032 | `20261014000032_fix_app_review_premium_product.sql` | Points `appreview@suppstack.app`'s placeholder `premium_monthly_ios` entitlement at `app.suppstack.premium.monthly`. Other accounts and other columns are unchanged. |
 
 ## Applying
 

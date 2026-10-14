@@ -94,15 +94,20 @@ Key properties:
    and `/premium` shows a native Subscribe button (with Apple's localized
    price) and the App-Review-required Restore Purchases action. To activate:
 
-   1. App Store Connect → the SuppStack AI app → Subscriptions: create a
-      subscription group and an auto-renewable subscription (e.g. product id
-      `premium_monthly_ios`, $4.99/mo). Fill in localization + review notes.
+   1. App Store Connect → the SuppStack AI app → Subscriptions: the
+      `SuppStack Premium` group already has `app.suppstack.premium.annual`
+      ($39.99/yr, 1-week trial) and `app.suppstack.premium.monthly`
+      ($5.99/mo). Both need a localization, a review screenshot, and
+      **Ready to Submit** status. Do not create a separate
+      `premium_monthly_ios` product.
    2. RevenueCat → project → add an **Apple App Store** app for bundle id
       `app.suppstack`, upload the App Store Connect API key (or shared
-      secret), and import the product.
-   3. Attach the product to the `premium` entitlement and add it as the
-      first package of the **default offering** (the app buys
-      `offerings.current.availablePackages[0]`).
+      secret), and import both products.
+   3. Attach both products to the `premium` entitlement and add them to the
+      **default offering** as the `$rc_annual` and `$rc_monthly` packages.
+      The iOS paywall sells only those two product ids. Leave Web Billing
+      purchase links off this offering so the native app never presents an
+      external checkout.
    4. Set `NEXT_PUBLIC_REVENUECAT_APPLE_API_KEY` (the RevenueCat *public*
       Apple SDK key, `appl_...`) in Vercel Production and redeploy. Until it
       is set the iOS paywall shows "not available in this version" and

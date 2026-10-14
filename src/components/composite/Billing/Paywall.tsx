@@ -21,6 +21,13 @@ import {
   restorePremium,
   type PremiumOffer,
 } from '@/lib/billing/native-purchases';
+import {
+  OFFERINGS_EMPTY_ERROR,
+  OFFERINGS_LOAD_ERROR,
+  OFFERINGS_LOAD_TIMEOUT_MS,
+  premiumPurchaseHref,
+  resolvePaywallAction,
+} from '@/lib/billing/premium-offers';
 import { Spinner, useToast } from '@/components/ui';
 import { cn } from '@/lib/design-system';
 import { loginHref } from '@/lib/navigation/login';
@@ -79,28 +86,53 @@ export function Paywall({ feature, onClose, closeLabel, className }: PaywallProp
   const { isPremium, entitlement, isNative, purchasable, markPremium, loading } = usePremium();
   const toast = useToast();
   const [offers, setOffers] = useState<PremiumOffer[] | null>(null);
+  const [offersError, setOffersError] = useState<string | null>(null);
+  const [offerAttempt, setOfferAttempt] = useState(0);
   const [selected, setSelected] = useState<PremiumOffer['period']>('annual');
   const [busy, setBusy] = useState<'purchase' | 'restore' | null>(null);
 
   useEffect(() => {
     if (!isNative || !purchasable || !user) return;
     let cancelled = false;
+    let finished = false;
+    setOffers(null);
+    setOffersError(null);
+
+    const timer = window.setTimeout(() => {
+      if (cancelled || finished) return;
+      setOffers([]);
+      setOffersError(OFFERINGS_LOAD_ERROR);
+    }, OFFERINGS_LOAD_TIMEOUT_MS);
+
     getPremiumOffers()
       .then((result) => {
         if (cancelled) return;
+        finished = true;
+        window.clearTimeout(timer);
+        if (!result.length) {
+          setOffers([]);
+          setOffersError(OFFERINGS_EMPTY_ERROR);
+          return;
+        }
+        setOffersError(null);
         setOffers(result);
-        if (result.length && !result.some((offer) => offer.period === 'annual')) {
+        if (!result.some((offer) => offer.period === 'annual')) {
           setSelected(result[0].period);
         }
       })
       .catch((error) => {
         console.error('Failed to load App Store offering:', error);
-        if (!cancelled) setOffers([]);
+        if (cancelled) return;
+        finished = true;
+        window.clearTimeout(timer);
+        setOffers([]);
+        setOffersError(OFFERINGS_LOAD_ERROR);
       });
     return () => {
       cancelled = true;
+      window.clearTimeout(timer);
     };
-  }, [isNative, purchasable, user]);
+  }, [isNative, purchasable, user, offerAttempt]);
 
   const offer = offers?.find((item) => item.period === selected) ?? offers?.[0] ?? null;
   const savings = offers ? annualSavings(offers) : null;
@@ -146,7 +178,20 @@ export function Paywall({ feature, onClose, closeLabel, className }: PaywallProp
     }
   };
 
-  const checkoutUrl = user && !isNative ? premiumCheckoutUrl(user.id) : null;
+  const checkoutUrl = premiumPurchaseHref({
+    native: isNative,
+    checkoutUrl: user ? premiumCheckoutUrl(user.id) : null,
+  });
+  const offersStatus = offersError ? 'error' : offers === null ? 'loading' : offers.length ? 'ready' : 'error';
+  const action = resolvePaywallAction({
+    loading,
+    isPremium,
+    hasUser: Boolean(user),
+    isNative,
+    purchasable,
+    offersStatus,
+    hasWebCheckout: Boolean(checkoutUrl),
+  });
   const trialDays = offer?.trialDays ?? null;
 
   return (
@@ -195,42 +240,46 @@ export function Paywall({ feature, onClose, closeLabel, className }: PaywallProp
       </ul>
 
       <div className="mt-8">
-        {loading ? (
+        {action === 'loading' || action === 'native-loading' ? (
           <div className="flex justify-center py-6">
             <Spinner size="md" color="secondary" />
           </div>
-        ) : isPremium ? (
+        ) : action === 'member' ? (
           <MemberState
             isNative={isNative}
             store={entitlement?.store}
             periodEnd={entitlement?.current_period_end ?? null}
             willRenew={entitlement?.will_renew ?? true}
           />
-        ) : !user ? (
+        ) : action === 'sign-in' ? (
           <Link href={loginHref('/premium')} className={PRIMARY_CTA}>
             Sign in to continue
           </Link>
-        ) : isNative ? (
-          !purchasable ? (
-            <p className="rounded-lg bg-gray-50 px-4 py-4 text-center text-sm text-gray-600">
-              Premium isn&apos;t available in this version of the app yet.
+        ) : action === 'native-unavailable' ? (
+          <p className="rounded-lg bg-gray-50 px-4 py-4 text-center text-sm text-gray-600">
+            Premium isn&apos;t available in this version of the app yet.
+          </p>
+        ) : action === 'native-error' ? (
+          <div role="alert" className="rounded-lg bg-gray-50 px-4 py-4 text-center">
+            <p className="text-sm leading-5 text-gray-700">
+              {offersError ?? OFFERINGS_LOAD_ERROR}
             </p>
-          ) : offers === null ? (
-            <div className="flex justify-center py-6">
-              <Spinner size="md" color="secondary" />
-            </div>
-          ) : !offer ? (
-            <p className="rounded-lg bg-gray-50 px-4 py-4 text-center text-sm text-gray-600">
-              Couldn&apos;t reach the App Store. Check your connection and try again.
-            </p>
-          ) : (
+            <button
+              type="button"
+              onClick={() => setOfferAttempt((attempt) => attempt + 1)}
+              className={cn(PRIMARY_CTA, 'mt-4')}
+            >
+              Try again
+            </button>
+          </div>
+        ) : action === 'native-products' && offer ? (
             <>
               <div role="radiogroup" aria-label="Choose a plan" className="space-y-2.5">
-                {offers.map((item) => {
+                {(offers ?? []).map((item) => {
                   const active = item.period === offer.period;
                   return (
                     <button
-                      key={item.period}
+                      key={item.pkg.product.identifier}
                       type="button"
                       role="radio"
                       aria-checked={active}
@@ -311,8 +360,7 @@ export function Paywall({ feature, onClose, closeLabel, className }: PaywallProp
                 {trialDays ? 'No charge today. ' : ''}Cancel anytime in Settings.
               </p>
             </>
-          )
-        ) : checkoutUrl ? (
+        ) : action === 'web-checkout' && checkoutUrl ? (
           <>
             <a href={checkoutUrl} className={PRIMARY_CTA}>
               Upgrade — {PREMIUM_PRICE_LABEL}
@@ -321,6 +369,17 @@ export function Paywall({ feature, onClose, closeLabel, className }: PaywallProp
               Or {PREMIUM_ANNUAL_PRICE_LABEL} in the iOS app. Cancel anytime.
             </p>
           </>
+        ) : isNative ? (
+          <div role="alert" className="rounded-lg bg-gray-50 px-4 py-4 text-center">
+            <p className="text-sm leading-5 text-gray-700">{offersError ?? OFFERINGS_LOAD_ERROR}</p>
+            <button
+              type="button"
+              onClick={() => setOfferAttempt((attempt) => attempt + 1)}
+              className={cn(PRIMARY_CTA, 'mt-4')}
+            >
+              Try again
+            </button>
+          </div>
         ) : (
           <p className="rounded-lg bg-gray-50 px-4 py-4 text-center text-sm text-gray-600">
             Premium is available in the SuppStack iPhone app.

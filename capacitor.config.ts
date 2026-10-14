@@ -39,11 +39,16 @@ const config: CapacitorConfig & { packageClassList?: string[] } = {
       style: 'LIGHT',
     },
   },
+  // `npx cap sync` rewrites ios/App/App/capacitor.config.json from plugins it
+  // discovers and drops classes that exist only in that generated file.
+  // `npm run ios:sync` merges this list back afterward. PurchasesPlugin has
+  // to live here so a sync cannot unregister Apple IAP.
   packageClassList: [
     'AppPlugin',
     'CAPBrowserPlugin',
     'SplashScreenPlugin',
     'StatusBarPlugin',
+    'PurchasesPlugin',
     'SuppStackHealthPlugin',
     'SuppStackAppleSignInPlugin',
   ],

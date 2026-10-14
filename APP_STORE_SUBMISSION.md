@@ -102,8 +102,12 @@ sign-in control before updating the rejected submission.
 1. Provision a dedicated Supabase Auth user with a confirmed email and no
    personal customer data.
 2. Insert a `user_entitlements` row for `premium` with `status = 'expired'`,
-   `store = 'app_store'`, `product_id = 'premium_monthly_ios'`,
-   `will_renew = false`, and a `current_period_end` in the past.
+   `store = 'app_store'`, `product_id = 'app.suppstack.premium.monthly'`,
+   `will_renew = false`, and a `current_period_end` in the past. The product
+   id has to be a real App Store product (`app.suppstack.premium.monthly` or
+   `app.suppstack.premium.annual`). Migration
+   `20261014000032_fix_app_review_premium_product.sql` rewrites an existing
+   `premium_monthly_ios` row for `appreview@suppstack.app`.
 3. Deploy the web app and verify in the native shell: Sign in with email → open
    Premium → expired membership does not grant access → Apple purchase and
    Restore Purchases actions are available.

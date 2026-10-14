@@ -14,6 +14,16 @@
 
 import { isNativeApp } from '@/lib/native/capacitor';
 import { PREMIUM_ENTITLEMENT } from '@/lib/billing/entitlements';
+import {
+  isAppStorePremiumProduct,
+  toPremiumOffers,
+  type PremiumOffer,
+  type PremiumPlanPeriod,
+  type RcOffering,
+  type RcPackage,
+} from '@/lib/billing/premium-offers';
+
+export type { PremiumOffer, PremiumPlanPeriod };
 
 interface RcEntitlementInfo {
   isActive: boolean;
@@ -24,38 +34,6 @@ interface RcCustomerInfo {
     active: Record<string, RcEntitlementInfo>;
   };
 }
-
-interface RcIntroPrice {
-  price: number;
-  priceString: string;
-  periodUnit: string;
-  periodNumberOfUnits: number;
-}
-
-interface RcStoreProduct {
-  identifier: string;
-  price: number;
-  priceString: string;
-  currencyCode: string;
-  pricePerMonthString?: string | null;
-  subscriptionPeriod?: string | null;
-  introPrice?: RcIntroPrice | null;
-}
-
-interface RcPackage {
-  identifier: string;
-  packageType: string;
-  product: RcStoreProduct;
-}
-
-interface RcOffering {
-  availablePackages: RcPackage[];
-  annual?: RcPackage | null;
-  monthly?: RcPackage | null;
-}
-
-/** RevenueCat INTRO_ELIGIBILITY_STATUS_ELIGIBLE. */
-const INTRO_ELIGIBLE = 2;
 
 interface PurchasesPlugin {
   configure: (options: { apiKey: string; appUserID?: string | null }) => Promise<void>;
@@ -113,40 +91,19 @@ export async function resetNativePurchases(): Promise<void> {
   await plugin.logOut().catch(() => undefined);
 }
 
-export type PremiumPlanPeriod = 'annual' | 'monthly';
-
-export interface PremiumOffer {
-  pkg: RcPackage;
-  period: PremiumPlanPeriod;
-  priceString: string;
-  /** Localized per-month equivalent ("$3.33"), for the annual plan. */
-  pricePerMonthString: string | null;
-  price: number;
-  /** Free-trial length in days when this Apple ID is eligible, else null. */
-  trialDays: number | null;
-}
-
-function periodOf(pkg: RcPackage): PremiumPlanPeriod {
-  if (pkg.packageType === 'ANNUAL' || pkg.product.subscriptionPeriod === 'P1Y') return 'annual';
-  return 'monthly';
-}
-
-function trialDaysOf(intro: RcIntroPrice | null | undefined): number | null {
-  if (!intro || intro.price > 0) return null;
-  const perUnit: Record<string, number> = { DAY: 1, WEEK: 7, MONTH: 30, YEAR: 365 };
-  return (perUnit[intro.periodUnit] ?? 0) * intro.periodNumberOfUnits || null;
-}
-
 /**
  * The premium plans in the current offering (annual first), with free-trial
  * lengths only where Apple says this Apple ID is still eligible.
+ * Web Billing packages are omitted so the native paywall cannot offer them.
  */
 export async function getPremiumOffers(): Promise<PremiumOffer[]> {
   const plugin = getPurchasesPlugin();
   if (!plugin) return [];
 
   const { current } = await plugin.getOfferings();
-  const packages = current?.availablePackages ?? [];
+  const packages = (current?.availablePackages ?? []).filter((pkg) =>
+    isAppStorePremiumProduct(pkg.product?.identifier)
+  );
   if (!packages.length) return [];
 
   const withIntro = packages.filter((pkg) => pkg.product.introPrice);
@@ -158,19 +115,7 @@ export async function getPremiumOffers(): Promise<PremiumOffer[]> {
         .catch(() => ({}) as Record<string, { status: number }>)
     : {};
 
-  return packages
-    .map((pkg) => ({
-      pkg,
-      period: periodOf(pkg),
-      priceString: pkg.product.priceString,
-      pricePerMonthString: pkg.product.pricePerMonthString ?? null,
-      price: pkg.product.price,
-      trialDays:
-        eligibility[pkg.product.identifier]?.status === INTRO_ELIGIBLE
-          ? trialDaysOf(pkg.product.introPrice)
-          : null,
-    }))
-    .sort((a, b) => (a.period === b.period ? 0 : a.period === 'annual' ? -1 : 1));
+  return toPremiumOffers(packages, eligibility);
 }
 
 /**
