@@ -4,6 +4,11 @@ import { spawn } from 'node:child_process';
 import { readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  REQUIRED_IOS_PLUGIN_CLASSES,
+  mergePackageClassList,
+  packageClassListFromSource,
+} from './iosPackageClassList.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(scriptDir, '../..');
@@ -69,13 +74,20 @@ async function restorePinnedCapacitorPackage() {
 
 async function restoreCustomNativePlugins() {
   const config = JSON.parse(await readFile(nativeConfigFile, 'utf8'));
-  const classList = Array.isArray(config.packageClassList) ? config.packageClassList : [];
-  for (const pluginClass of ['SuppStackHealthPlugin', 'SuppStackAppleSignInPlugin']) {
-    if (!classList.includes(pluginClass)) {
-      classList.push(pluginClass);
-    }
-  }
-  config.packageClassList = classList;
+  const rootSource = await readFile(path.join(projectRoot, 'capacitor.config.ts'), 'utf8');
+  const required = [
+    ...REQUIRED_IOS_PLUGIN_CLASSES,
+    ...packageClassListFromSource(rootSource),
+  ];
+  config.packageClassList = mergePackageClassList(config.packageClassList, required);
 
   await writeFile(nativeConfigFile, `${JSON.stringify(config, null, '\t')}\n`);
+
+  const written = JSON.parse(await readFile(nativeConfigFile, 'utf8'));
+  const writtenClasses = Array.isArray(written.packageClassList) ? written.packageClassList : [];
+  for (const pluginClass of REQUIRED_IOS_PLUGIN_CLASSES) {
+    if (!writtenClasses.includes(pluginClass)) {
+      throw new Error(`iOS sync dropped required plugin class ${pluginClass}`);
+    }
+  }
 }
