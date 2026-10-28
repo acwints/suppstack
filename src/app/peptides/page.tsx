@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { FiArrowLeft } from 'react-icons/fi';
-import { PeptideReferenceShelf } from '@/components/composite/Supplement';
+import { PeptideExplorer } from '@/components/composite/Supplement/PeptideExplorer';
 import { supplementCatalog } from '@/lib/catalog/supplement-catalog';
 
 export default function PeptidesPage() {
@@ -20,10 +20,7 @@ export default function PeptidesPage() {
       </Link>
 
       <section className="border-b border-gray-200 pb-6">
-        <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-          Research Reference
-        </p>
-        <h1 className="mt-3 font-serif text-4xl leading-tight text-gray-900 sm:text-5xl">
+        <h1 className="font-serif text-4xl leading-tight text-gray-900 sm:text-5xl">
           Peptides
         </h1>
         <p className="mt-4 max-w-3xl text-base leading-7 text-gray-600">
@@ -34,7 +31,7 @@ export default function PeptidesPage() {
       </section>
 
       <section className="pt-6">
-        <PeptideReferenceShelf supplements={peptideSupplements} layout="grid" />
+        <PeptideExplorer supplements={peptideSupplements} />
       </section>
     </main>
   );

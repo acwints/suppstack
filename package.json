@@ -22,7 +22,8 @@
     "ios:assets": "capacitor-assets generate --ios",
     "postinstall": "patch-package",
     "ios:run": "cap run ios --no-sync --target $(xcrun simctl list devices booted | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)",
-    "ios:logs": "xcrun simctl spawn booted log stream --level=debug --style=compact --predicate 'process == \"App\"'"
+    "ios:logs": "xcrun simctl spawn booted log stream --level=debug --style=compact --predicate 'process == \"App\"'",
+    "check:peptides": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\",\"esModuleInterop\":true}' ts-node -r tsconfig-paths/register src/scripts/checkPeptideReferences.ts"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.0",
@@ -33,7 +34,7 @@
     "@revenuecat/purchases-capacitor": "^13.4.0",
     "@supabase/supabase-js": "^2.111.0",
     "clsx": "^2.1.1",
-    "next": "16.2.12",
+    "next": "16.4.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-icons": "^5.7.0",
@@ -50,10 +51,10 @@
     "@types/react-dom": "19.2.3",
     "autoprefixer": "^10.5.4",
     "eslint": "^9.39.5",
-    "eslint-config-next": "16.2.12",
+    "eslint-config-next": "16.4.3",
     "patch-package": "^8.0.1",
     "postcss": "^8.5.25",
-    "sharp": "^0.35.3",
+    "sharp": "0.35.5",
     "tailwindcss": "^3.4.19",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",

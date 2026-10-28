@@ -96,6 +96,10 @@ SuppStack helps a person answer three questions with minimal work:
 - duplicating merchant order/payment systems;
 - a broad analytics taxonomy that records every tap.
 
+### Peptide reference invariant
+
+Regulatory approval and human evidence are independent fields. Every peptide research summary names its use/population and distinguishes formulation or route where it changes the conclusion. Topical GHK-Cu data cannot substantiate injectable benefits; full-length thymosin beta-4 cannot be resolved as TB-500; short hormone-level changes do not establish recovery benefits. Source-check dates describe editorial verification, not clinician review. No peptide reference creates a purchase path.
+
 ## 4. Domain vocabulary
 
 | Term | Canonical meaning | Source of truth |
@@ -223,9 +227,9 @@ The customer can also branch from Evaluate into Save, Review, or Published Stack
 
 ### 7.3 Browse, goal discovery, brand discovery, and search
 
-- **Customer experience:** Customers browse a broad catalog by goal, product, supplement family, or brand and can search across all of them.
-- **Logic and data:** The primary directory and search index are built in the client from the curated catalog; database data fills canonical/persisted identities when needed.
-- **Metadata/events today:** Raw search terms remain in the URL but are not sent to an analytics service. Recently viewed is local-only.
+- **Customer experience:** Customers browse a broad catalog by goal, product, supplement family, or brand and can search across all of them. The peptide reference directory supports name/alias search and combined area-of-study, regulatory-status, human-evidence, and route filters, with result counts and clear/reset recovery.
+- **Logic and data:** The primary directory and search index are built in the client from the curated catalog; database data fills canonical/persisted identities when needed. Eight peptide profiles use authored research summaries informed by the supplied Superpower sheet ([source sheet](https://docs.google.com/spreadsheets/d/1hek3JB_tCDdId-DLvkw3uXeWWCJvYEmP2ixleLiSLK4/edit), dated October 5, 2026), with linked papers/regulators and source-check dates. Regulatory status is separate from human evidence; scope, formulation/route limits, and unknowns appear on detail pages. These are educational references without checkout or personal dosing protocols.
+- **Metadata/events today:** General search terms remain in the URL but are not sent to an analytics service. Peptide filters/search stay in component state and emit no events. Recently viewed is local-only.
 - **Performance commentary:** The home route renders a large catalog and downloads oversized remote imagery. Lighthouse estimates roughly 989 KiB of image-delivery savings and about 69 KiB of unused JavaScript.
 - **UX/accessibility commentary:** Information architecture is coherent. Current production audit still finds select elements without associated labels; some filter chips are below the recommended 44-point default control size.
 - **Status:** **Partial**. Preserve the simple IA; paginate/progressively reveal results, optimize images, and fix accessible naming.
@@ -610,6 +614,8 @@ These are structural candidates, not permission to add product scope.
 
 | Date | Area | Change/evidence | Result | Next |
 | --- | --- | --- | --- | --- |
+| 2026-10-27 | Web release dependencies | Updated Next.js and matching ESLint config to 16.4.3, sharp to 0.35.5, and compatible lockfile dependencies after the release audit. | Production npm audit: zero vulnerabilities; lint, production build, peptide/catalog and ingredient checks pass. Development-only native asset tooling advisories remain outside this web release. | Publish the verified web release; track native tooling separately. |
+| 2026-10-27 | Peptide research references | Upgraded the eight existing profiles with use-specific human findings, limitations, separate regulatory/evidence metadata, references, and source-check provenance. Added combined search and four filters to `/peptides`; corrected TB-500 fragment and CJC-1295 alias conflation. | Lint, TypeScript, production build, catalog integrity and peptide checks pass; browser checks cover all eight profiles, combined filters, alias search, reset/empty state and desktop/mobile layout | Deploy through the normal release process; source checks are not clinical review. |
 | 2026-08-13 | App Review | Version 1.1 build 55 rejected under Guideline 2.1(a): Apple login loaded indefinitely on iPad Air 11-inch (M3). | Rejected | Replace browser/deep-link Apple auth with native flow. |
 | 2026-08-27 | Authentication | Native `AuthenticationServices` plugin, cryptographic nonce, direct Supabase ID-token exchange, cancellation/error recovery, and 20-second session timeout committed in `3e097f3`. | Implemented | Maintain clean-install iPhone/iPad test evidence. |
 | 2026-08-27 | Build reproducibility | Swift package resolution pinned in `c7de5de`; Xcode Cloud can resolve RevenueCat packages with automatic resolution disabled. | Implemented | Keep `Package.resolved` updated with plugin upgrades. |

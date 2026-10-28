@@ -212,7 +212,7 @@ export default function SupplementPage(props: { params: Promise<{ id: string }> 
               {supplement.category}
             </span>
           )}
-          {supplement.evidence_rating && (
+          {!knowledge?.peptide && supplement.evidence_rating && (
             <span className="rounded border border-gray-200 px-2 py-1 text-xs font-medium text-gray-600">
               {supplement.evidence_rating.charAt(0).toUpperCase() + supplement.evidence_rating.slice(1)} evidence
             </span>
@@ -232,7 +232,7 @@ export default function SupplementPage(props: { params: Promise<{ id: string }> 
           {supplement.supplement_description}
         </p>
         {supplement.common_dosage && (
-          <p className="text-sm text-gray-500">Typical dose: {supplement.common_dosage}</p>
+          <p className="text-sm text-gray-500">{knowledge?.peptide ? 'Use context' : 'Typical dose'}: {supplement.common_dosage}</p>
         )}
         {family && (
           <div className="flex flex-wrap items-center gap-2 pt-1">

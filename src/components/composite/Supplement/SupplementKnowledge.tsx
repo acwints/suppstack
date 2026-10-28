@@ -16,6 +16,7 @@ export interface SupplementKnowledgeProps {
  * forms, and dosage so every page has useful information.
  */
 export function SupplementKnowledge({ supplement, knowledge }: SupplementKnowledgeProps) {
+  const research = knowledge?.peptide;
   const hasQuickFacts =
     (supplement.primary_goals?.length ?? 0) > 0 ||
     (supplement.typical_forms?.length ?? 0) > 0 ||
@@ -42,22 +43,37 @@ export function SupplementKnowledge({ supplement, knowledge }: SupplementKnowled
 
         {hasQuickFacts && (
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {supplement.evidence_rating && (
+            {research && (
+              <>
+                <QuickFact term="Regulatory status" value={research.regulatoryStatus} />
+                <QuickFact term="Human evidence" value={research.humanEvidence} />
+                <QuickFact term="Evidence applies to" value={research.scope} />
+                <QuickFact term="Routes described" value={research.routes.join(', ')} />
+              </>
+            )}
+            {!research && supplement.evidence_rating && (
               <QuickFact
                 term="Evidence"
                 value={`${capitalize(supplement.evidence_rating)} evidence`}
               />
             )}
             {supplement.common_dosage && (
-              <QuickFact term="Typical dose" value={supplement.common_dosage} />
+              <QuickFact term={research ? "Use context" : "Typical dose"} value={supplement.common_dosage} />
             )}
             {(supplement.primary_goals?.length ?? 0) > 0 && (
-              <QuickFact term="Common uses" value={supplement.primary_goals!.join(', ')} />
+              <QuickFact term={research ? "Areas of study" : "Common uses"} value={(research?.areas ?? supplement.primary_goals!).join(', ')} />
             )}
             {(supplement.typical_forms?.length ?? 0) > 0 && (
               <QuickFact term="Forms" value={supplement.typical_forms!.join(', ')} />
             )}
           </dl>
+        )}
+
+        {research && knowledge?.research && (
+          <>
+            <KnowledgeBlock title="What human studies show" body={knowledge.research} />
+            <KnowledgeBlock title="What remains unknown" body={research.limitations} />
+          </>
         )}
 
         {knowledge?.howItWorks && (
@@ -75,12 +91,12 @@ export function SupplementKnowledge({ supplement, knowledge }: SupplementKnowled
           </div>
         )}
 
-        {knowledge?.dosing && <KnowledgeBlock title="Dosing & usage" body={knowledge.dosing} />}
+        {knowledge?.dosing && <KnowledgeBlock title={research ? "Use context" : "Dosing & usage"} body={knowledge.dosing} />}
         {knowledge?.safety && <KnowledgeBlock title="Safety & side effects" body={knowledge.safety} />}
         {knowledge?.legalStatus && (
           <KnowledgeBlock title="Regulatory status" body={knowledge.legalStatus} />
         )}
-        {knowledge?.research && (
+        {!research && knowledge?.research && (
           <KnowledgeBlock title="State of the research" body={knowledge.research} />
         )}
 
@@ -103,6 +119,15 @@ export function SupplementKnowledge({ supplement, knowledge }: SupplementKnowled
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
               References
             </h3>
+            {research && (
+              <p className="mb-3 text-xs leading-5 text-gray-600">
+                Sources checked <time dateTime={research.sourcesCheckedOn}>{research.sourcesCheckedOn}</time>.
+                {' '}Original summaries informed by the{' '}
+                <a className="underline underline-offset-2" href={research.sourceUrl} target="_blank" rel="noopener noreferrer">Superpower research guide</a>
+                {' '}(source updated <time dateTime={research.sourceUpdatedOn}>{research.sourceUpdatedOn}</time>).
+                {' '}Source checks are not a clinical review.
+              </p>
+            )}
             <ul className="space-y-1.5">
               {knowledge!.citations!.map((citation) => (
                 <li key={citation.url}>

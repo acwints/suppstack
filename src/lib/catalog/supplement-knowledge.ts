@@ -1,3 +1,5 @@
+import { PEPTIDE_KNOWLEDGE } from './peptide-knowledge';
+
 /**
  * Supplement knowledge base — the "wiki" half of the marketplace + wiki
  * experience. Every catalog entry can carry structured, plain-language
@@ -20,7 +22,20 @@ export interface KnowledgeCitation {
   url: string;
 }
 
+export interface PeptideResearch {
+  areas: string[];
+  regulatoryStatus: 'FDA-approved prescription' | 'In clinical trials' | 'Not FDA-approved' | 'Topical cosmetic / unapproved systemic';
+  humanEvidence: 'Controlled human trials' | 'Limited human evidence' | 'Preclinical only';
+  routes: string[];
+  scope: string;
+  limitations: string;
+  sourcesCheckedOn: string;
+  sourceUpdatedOn: string;
+  sourceUrl: string;
+}
+
 export interface SupplementKnowledge {
+  peptide?: PeptideResearch;
   /** One-paragraph plain-language summary. */
   overview: string;
   /** Mechanism / how it is thought to work. */
@@ -46,197 +61,7 @@ const PUBMED = 'https://pubmed.ncbi.nlm.nih.gov/';
  * catalog's aliases via {@link getSupplementKnowledge}.
  */
 const KNOWLEDGE: Record<string, SupplementKnowledge> = {
-  // ── Research peptides ──────────────────────────────────────────────
-  'bpc-157': {
-    overview:
-      'BPC-157 (Body Protection Compound-157) is a synthetic peptide made of 15 amino acids, derived from a partial sequence of a protective protein found in human gastric juice. It is widely discussed in fitness and recovery circles, but it is a research chemical — not an approved medicine or dietary supplement — and essentially all supportive data comes from animal and cell studies.',
-    howItWorks:
-      'In animal models, BPC-157 appears to promote angiogenesis (the growth of new blood vessels) and to modulate growth-factor and nitric-oxide pathways involved in tissue healing. These mechanisms are proposed to underlie the tendon, ligament, muscle, and gastrointestinal healing effects reported in rodents.',
-    benefits: [
-      'Studied in rats for accelerated tendon, ligament, and muscle healing',
-      'Investigated for protective effects on the gut lining and gastric ulcers in animals',
-      'Explored for angiogenesis and blood-vessel repair in preclinical models',
-    ],
-    dosing:
-      'There is no established, evidence-based human dose. BPC-157 has not completed human clinical trials for any indication, so any dosing figures circulated online are extrapolated from animal studies and are not validated for safety.',
-    safety:
-      'Human safety has not been established in controlled trials. Product purity is a major concern: peptides sold "for research use only" are not manufactured to pharmaceutical standards and may be contaminated or mislabeled. Do not use without the guidance of a qualified medical professional.',
-    legalStatus:
-      'BPC-157 is not approved by the FDA for any use and is not a lawful dietary supplement ingredient — in 2023 the FDA flagged it as a substance that does not qualify for inclusion in compounded drugs. It is banned in sport by the World Anti-Doping Agency (WADA). This page is educational only; SuppStack does not sell BPC-157.',
-    research:
-      'The evidence base is almost entirely preclinical (rodent and in-vitro). Promising animal results have not been confirmed by rigorous human trials, so real-world efficacy and safety in people remain unknown.',
-    faqs: [
-      {
-        question: 'Is BPC-157 a dietary supplement?',
-        answer:
-          'No. It is an unapproved synthetic peptide. The FDA has stated it does not meet the criteria for a dietary ingredient, and it is not legally marketable as a supplement in the U.S.',
-      },
-      {
-        question: 'Is there human evidence it works?',
-        answer:
-          'Not from controlled clinical trials. The healing effects reported for BPC-157 come from animal and laboratory studies, which do not reliably predict outcomes in humans.',
-      },
-    ],
-    citations: [
-      { label: 'FDA — Bulk drug substances nominated for compounding (BPC-157 review)', url: 'https://www.fda.gov/drugs/human-drug-compounding/list-bulk-drug-substances-which-there-clinical-need-under-section-503b-fdc-act' },
-      { label: 'PubMed — BPC-157 research literature', url: `${PUBMED}?term=BPC+157` },
-    ],
-  },
-  'tb-500': {
-    overview:
-      'TB-500 is a synthetic version of a fragment of thymosin beta-4, a naturally occurring protein involved in cell building and repair. Like BPC-157, it is a research compound popular in recovery communities, but it is not an approved drug or dietary supplement and lacks human clinical validation.',
-    howItWorks:
-      'Thymosin beta-4 regulates actin, a protein central to cell structure and movement. In laboratory and animal studies this is proposed to support cell migration, blood-vessel formation, and tissue regeneration after injury.',
-    benefits: [
-      'Studied in animals for wound healing and tissue repair',
-      'Investigated for cardiac and corneal repair in preclinical models',
-      'Explored for reducing inflammation and scar formation in animal studies',
-    ],
-    dosing:
-      'No validated human dose exists. TB-500 has not been through human efficacy and safety trials, so circulated protocols are unverified.',
-    safety:
-      'Human safety data are lacking. Research-grade material carries purity and contamination risks. Use only under qualified medical supervision.',
-    legalStatus:
-      'TB-500 is not FDA-approved and is not a lawful dietary supplement. It is prohibited in sport by WADA. SuppStack does not sell TB-500; this entry is for reference only.',
-    research:
-      'Evidence is preclinical. Human clinical outcomes are unknown.',
-    citations: [
-      { label: 'WADA — Prohibited List (peptide hormones & growth factors)', url: 'https://www.wada-ama.org/en/prohibited-list' },
-      { label: 'PubMed — Thymosin beta-4 research literature', url: `${PUBMED}?term=thymosin+beta+4+repair` },
-    ],
-  },
-  retatrutide: {
-    overview:
-      'Retatrutide (development code LY3437943) is an investigational "triple agonist" that activates the GIP, GLP-1, and glucagon receptors. It is being studied in clinical trials for obesity and type 2 diabetes and has shown large weight reductions in early trials, but it is not FDA-approved and is not available as a supplement.',
-    howItWorks:
-      'By activating three incretin/metabolic receptors at once, retatrutide is designed to reduce appetite, slow gastric emptying, improve blood-sugar control, and increase energy expenditure — combining the mechanisms of GLP-1 drugs with additional glucagon-driven metabolic effects.',
-    benefits: [
-      'Substantial weight loss in phase 2 obesity trials',
-      'Improvements in blood glucose in type 2 diabetes studies',
-      'Under investigation for metabolic dysfunction–associated steatotic liver disease (MASLD)',
-    ],
-    dosing:
-      'Investigational only. Doses have been evaluated exclusively within clinical trial protocols under medical supervision; there is no approved consumer dose.',
-    safety:
-      'Reported trial side effects are mainly gastrointestinal (nausea, diarrhea, vomiting), consistent with the incretin drug class. Because it is investigational, its full long-term safety profile is not yet established. Compounded or "research" retatrutide sold online is unregulated and potentially unsafe.',
-    legalStatus:
-      'Retatrutide is an investigational drug, not approved by the FDA and not a dietary supplement. It should only ever be used within a supervised clinical trial. SuppStack does not sell it; this page is educational.',
-    research:
-      'Phase 2 results (published in the New England Journal of Medicine, 2023) were notable for the degree of weight loss. Phase 3 trials are ongoing to confirm efficacy and safety.',
-    faqs: [
-      {
-        question: 'Can I buy retatrutide?',
-        answer:
-          'Not legally as a consumer product. It is an investigational drug available only through clinical trials. Products sold online as "research" retatrutide are unregulated and their contents cannot be verified.',
-      },
-    ],
-    citations: [
-      { label: 'NEJM — Triple–Hormone-Receptor Agonist Retatrutide for Obesity (2023)', url: 'https://www.nejm.org/doi/full/10.1056/NEJMoa2301972' },
-      { label: 'ClinicalTrials.gov — Retatrutide studies', url: 'https://clinicaltrials.gov/search?term=retatrutide' },
-    ],
-  },
-  tirzepatide: {
-    overview:
-      'Tirzepatide is a dual GIP and GLP-1 receptor agonist prescription medication, sold under the brand names Mounjaro (type 2 diabetes) and Zepbound (chronic weight management). It is a prescription drug administered by injection — not a dietary supplement — and is included here for reference and safety context.',
-    howItWorks:
-      'Tirzepatide activates both the GIP and GLP-1 incretin receptors, which increases insulin secretion in response to meals, reduces appetite, and slows gastric emptying, leading to improved blood-sugar control and weight loss.',
-    benefits: [
-      'FDA-approved to improve blood sugar in type 2 diabetes (Mounjaro)',
-      'FDA-approved for chronic weight management (Zepbound)',
-      'Significant average weight reduction in the SURMOUNT trials',
-    ],
-    dosing:
-      'Prescription-only. A licensed clinician titrates the dose (typically a weekly subcutaneous injection). Never self-dose from non-pharmacy sources.',
-    safety:
-      'Common side effects are gastrointestinal (nausea, diarrhea, constipation). It carries a boxed warning for thyroid C-cell tumors seen in rodents and should be discussed thoroughly with a prescriber. Compounded or counterfeit versions have prompted FDA warnings.',
-    legalStatus:
-      'Tirzepatide is an FDA-approved prescription medication, not a supplement. It requires a prescription and clinical oversight. SuppStack does not sell it.',
-    citations: [
-      { label: 'FDA — Zepbound (tirzepatide) approval', url: 'https://www.fda.gov/news-events/press-announcements/fda-approves-new-medication-chronic-weight-management' },
-      { label: 'NEJM — SURMOUNT-1 tirzepatide trial (2022)', url: 'https://www.nejm.org/doi/full/10.1056/NEJMoa2206038' },
-    ],
-  },
-  semaglutide: {
-    overview:
-      'Semaglutide is a GLP-1 receptor agonist prescription medication marketed as Ozempic and Rybelsus (type 2 diabetes) and Wegovy (weight management). It is a prescription drug, not a supplement, and is documented here for reference and to warn against unregulated "research" or compounded versions.',
-    howItWorks:
-      'Semaglutide mimics the incretin hormone GLP-1, enhancing meal-triggered insulin release, suppressing glucagon, slowing gastric emptying, and reducing appetite via the brain\'s satiety centers.',
-    benefits: [
-      'FDA-approved for type 2 diabetes blood-sugar control (Ozempic, Rybelsus)',
-      'FDA-approved for chronic weight management (Wegovy)',
-      'Shown to reduce major cardiovascular events in high-risk patients (SELECT trial)',
-    ],
-    dosing:
-      'Prescription-only, titrated by a clinician (weekly injection, or a daily tablet for Rybelsus). Do not use products from non-pharmacy or "research" sources.',
-    safety:
-      'Common side effects are gastrointestinal. It carries a boxed warning for thyroid C-cell tumors observed in rodents. The FDA has repeatedly warned about counterfeit and illegally compounded semaglutide.',
-    legalStatus:
-      'Semaglutide is an FDA-approved prescription medication, not a dietary supplement. SuppStack does not sell it; this entry is educational.',
-    citations: [
-      { label: 'FDA — Medications containing semaglutide / counterfeit warnings', url: 'https://www.fda.gov/drugs/postmarket-drug-safety-information-patients-and-providers/medications-containing-semaglutide-marketed-type-2-diabetes-or-weight-loss' },
-      { label: 'NEJM — SELECT cardiovascular outcomes trial (2023)', url: 'https://www.nejm.org/doi/full/10.1056/NEJMoa2307563' },
-    ],
-  },
-  ipamorelin: {
-    overview:
-      'Ipamorelin is a synthetic pentapeptide and selective growth-hormone secretagogue (a ghrelin-receptor agonist) that has been studied for stimulating the body\'s own growth-hormone release. It is a research compound — not an approved drug or dietary supplement.',
-    howItWorks:
-      'Ipamorelin binds the ghrelin/growth-hormone-secretagogue receptor in the pituitary, prompting a pulse of growth hormone release with relatively little effect on cortisol or prolactin compared with older secretagogues.',
-    benefits: [
-      'Studied for stimulating endogenous growth hormone secretion',
-      'Explored in research settings for recovery and body-composition endpoints',
-    ],
-    dosing:
-      'No validated human dose exists outside of limited research contexts; it is not approved for general use.',
-    safety:
-      'Human safety in unsupervised use is not established. Research-grade material carries purity and contamination risks. Growth-hormone manipulation can have metabolic and endocrine consequences and should never be attempted without medical supervision.',
-    legalStatus:
-      'Ipamorelin is not FDA-approved and is not a lawful dietary supplement. It is prohibited in sport by WADA. SuppStack does not sell it.',
-    citations: [
-      { label: 'WADA — Prohibited List (peptide hormones & secretagogues)', url: 'https://www.wada-ama.org/en/prohibited-list' },
-      { label: 'PubMed — Ipamorelin research literature', url: `${PUBMED}?term=ipamorelin` },
-    ],
-  },
-  'cjc-1295': {
-    overview:
-      'CJC-1295 is a synthetic analog of growth-hormone-releasing hormone (GHRH) studied for extending growth-hormone release. It is frequently discussed alongside ipamorelin, but like other peptides in this category it is a research compound rather than an approved medicine or supplement.',
-    howItWorks:
-      'CJC-1295 stimulates the pituitary\'s GHRH receptor to increase growth-hormone and IGF-1 output. Some versions include a "DAC" (drug affinity complex) modification designed to prolong its half-life.',
-    benefits: [
-      'Studied for increasing growth-hormone and IGF-1 levels',
-      'Explored in research contexts for recovery and body composition',
-    ],
-    dosing:
-      'No validated human dose for general use. It has not completed the clinical trials needed to establish safe, effective consumer dosing.',
-    safety:
-      'Unsupervised use carries unknown risks; endocrine manipulation can have significant metabolic effects. Purity of research-grade material is not guaranteed.',
-    legalStatus:
-      'CJC-1295 is not FDA-approved and is not a lawful dietary supplement. It is banned in sport by WADA. SuppStack does not sell it.',
-    citations: [
-      { label: 'WADA — Prohibited List', url: 'https://www.wada-ama.org/en/prohibited-list' },
-      { label: 'PubMed — CJC-1295 / GHRH analog literature', url: `${PUBMED}?term=CJC-1295` },
-    ],
-  },
-  'ghk-cu': {
-    overview:
-      'GHK-Cu is a naturally occurring copper-binding tripeptide (glycyl-L-histidyl-L-lysine plus copper) present in human plasma that declines with age. It is best known from topical skincare research for collagen synthesis and wound healing, and is included here as a reference entry — it is not sold as an ingestible supplement on SuppStack.',
-    howItWorks:
-      'GHK-Cu delivers copper to cells and is thought to modulate genes involved in tissue remodeling, stimulate collagen and elastin production, and support wound repair and antioxidant activity, primarily when applied topically.',
-    benefits: [
-      'Studied in topical formulations for skin firmness and collagen synthesis',
-      'Investigated for wound healing and anti-inflammatory effects',
-      'Explored for hair and scalp applications in cosmetic research',
-    ],
-    dosing:
-      'Used mainly in topical cosmetic formulations. There is no established oral dose, and ingesting copper peptides is not a validated use.',
-    safety:
-      'Topical use in cosmetic concentrations is generally well tolerated, but excess copper intake is harmful, so oral or injectable use is not advised without medical guidance.',
-    legalStatus:
-      'GHK-Cu appears in cosmetic skincare products (topical), which are regulated differently from ingestible supplements. It is not an approved oral supplement or drug. SuppStack does not sell GHK-Cu.',
-    citations: [
-      { label: 'PubMed — GHK-Cu skin and wound-healing research', url: `${PUBMED}?term=GHK-Cu+skin` },
-    ],
-  },
+  ...PEPTIDE_KNOWLEDGE,
 
   // ── Flagship marketplace supplements ───────────────────────────────
   'creatine monohydrate': {
