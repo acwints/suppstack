@@ -19,6 +19,8 @@ import {
   authorizeWithNativeApple,
   hasNativeAppleSignInBridge,
 } from '@/lib/native/apple-sign-in';
+import { growthEnabled } from '@/lib/flags';
+import { clearRef, peekRef } from '@/lib/growth/referral';
 
 /**
  * New accounts get first-run onboarding once. Existing accounts (created
@@ -99,6 +101,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         getOrCreateUserProfile(session.user).catch((error) => {
           console.error('Failed to prepare user profile:', error);
         });
+        // Attribution only. Does not change where sign-in sends the user, and
+        // never runs in the native shell or while the flag is off.
+        if (growthEnabled('referrals')) {
+          const ref = peekRef();
+          if (ref) {
+            void supabase.rpc('claim_referral', { p_code: ref }).then(({ error }) => {
+              if (error) {
+                console.error('claim_referral failed', error);
+                return;
+              }
+              clearRef();
+            }, (error: unknown) => {
+              console.error('claim_referral failed', error);
+            });
+          }
+        }
         const nextPath =
           typeof window !== 'undefined'
             ? window.sessionStorage.getItem('suppstack_post_login_path')

@@ -117,6 +117,7 @@ Regulatory approval and human evidence are independent fields. Every peptide res
 | **Checkout event** | A service-role audit record that a purchase route was resolved. It is not proof of a completed merchant order. | `commerce_checkout_events` |
 | **Entitlement** | A server mirror of RevenueCat subscription state. RevenueCat remains the billing system of record. | `user_entitlements` |
 | **Health snapshot** | A transient in-memory result read directly from HealthKit. It is not persisted by SuppStack. | native `SuppStackHealth` Adapter |
+| **Referral code** | An 8-character code that attributes a new account to the inviter. It is not a coupon or reward. | `referral_codes` plus `claim_referral` |
 
 ## 5. Architecture map
 
@@ -133,6 +134,7 @@ Regulatory approval and human evidence are independent fields. Every peptide res
 | Commerce | Resolve allowed merchant checkout and open externally | commerce API, Shopify/UCP Adapter, Capacitor Browser Adapter | Merchant allowlist is a useful SSRF Seam; audit event is not an order record. |
 | Billing | Offer, purchase, restore, entitlement read | RevenueCat native Adapter, webhook, `user_entitlements` | Good system-of-record separation; webhook ordering/idempotency needs depth. |
 | Health | Availability, permission, transient metrics | HealthKit native Adapter and `AppleHealthCard` | Excellent privacy Locality: HealthKit values do not cross the native/web Seam into storage. |
+| Growth | Signup count, referral code, claim | `src/lib/flags.ts`, `src/lib/growth/referral.ts`, migration 0033 | Off by default. The native shell never renders it. The count is aggregate-only. Attribution has no reward. |
 | Photo scan | Image capture, AI recognition, catalog match | native file input, `/api/catalog/photo-scan`, OpenAI Responses API, deterministic matcher | Image leaves the device for processing; consent, rate limiting, and operational telemetry are missing. |
 | Presentation | Routes, providers, components, native shell | Next.js App Router, React client providers, Capacitor remote URL | Many client Components and a remote shell increase startup/network sensitivity. |
 
@@ -162,6 +164,8 @@ The native bundle contains a minimal offline fallback, but the actual product is
 | Billing | entitlement status, product, period end | RevenueCat and Supabase mirror | RevenueCat is authoritative; clients read but cannot grant access. |
 | HealthKit | sleep, weight, body fat, activity, heart metrics | device memory only | Never persist, transmit, advertise against, or include in telemetry. |
 | Photo scan | customer-selected supplement photo | request memory and OpenAI request | No storage by SuppStack; disclose third-party AI processing before upload; never use for model training or analytics. |
+| Public aggregate | signup count | `signup_count()` | A count of non-deleted auth accounts. No account row is readable. No seed offset. Flag off by default. |
+| Referral attribution | invite code, who invited whom | `referral_codes`, `referrals` | Owner-read under RLS. Writes only through security-definer RPCs. No reward. Hidden in the native shell. Flag off by default. |
 | Optional analytics | coarse journey outcomes and performance | not implemented | Consent-controlled, minimized, pseudonymous, and health-free. |
 
 ### Required invariants
@@ -183,6 +187,7 @@ The following statements define correctness. A change that breaks one is a regre
 13. Billing events cannot move entitlement state backward because of duplicates or out-of-order delivery.
 14. Account deletion removes or irreversibly anonymizes every user-linked row and can be safely retried.
 15. Every critical mutation has a stable operation ID, an explicit success/failure outcome, and a recovery path.
+16. The public signup count is an aggregate of non-deleted auth accounts and is never inflated. A referral row is written only by `claim_referral`, once, for an account younger than 24 hours, and it carries no reward. Growth UI stays hidden unless its flag is on and the page is outside the native shell.
 
 ### Current invariant violations or gaps
 
@@ -219,7 +224,7 @@ The customer can also branch from Evaluate into Save, Review, or Published Stack
 ### 7.2 Authentication and profile creation
 
 - **Customer experience:** Apple is first and native. Google opens a visible in-app browser. An existing-account email/password option supports users and App Review accounts that cannot use a reviewer-owned Apple or Google identity. Successful login returns to the requested route; cancellations and timeouts restore usable buttons.
-- **Logic and data:** Apple identity token + raw nonce → Supabase `signInWithIdToken`; Google OAuth code → deep link → Supabase PKCE exchange; email/password → Supabase `signInWithPassword`. A profile is lazily created after sign-in.
+- **Logic and data:** Apple identity token + raw nonce → Supabase `signInWithIdToken`; Google OAuth code → deep link → Supabase PKCE exchange; email/password → Supabase `signInWithPassword`. A profile is lazily created after sign-in. When the referrals flag is on and the session is not the native shell, a stored invite code is claimed after sign-in without changing the destination.
 - **Metadata/events today:** Failures go to `console.error`; no structured provider/outcome/duration/error-code event exists.
 - **Performance commentary:** The session exchange has a 20-second hard timeout. There is no measured p50/p95 by provider, app version, device class, or OS.
 - **UX/accessibility commentary:** Primary controls are 52 points high, email fields have explicit labels and autocomplete semantics, and cancellation is treated as a no-op. The five-second initial-session timeout can show a signed-out state during a slow restore and later redirect when auth state catches up.
@@ -323,7 +328,15 @@ The customer can also branch from Evaluate into Save, Review, or Published Stack
 - **Metadata/events today:** Deletion has no durable operation record or customer-visible receipt. Errors return raw database/admin messages to the client.
 - **Performance commentary:** Profile loads after auth and can show a full-screen spinner without an inline recovery action.
 - **UX/privacy commentary:** In-app deletion satisfies a major App Store requirement. Public-profile RLS currently undermines the privacy of optional DOB/gender/height/weight fields. The privacy policy also says stacks are private even though published stacks default public.
-- **Status:** Deletion **Implemented/Partial**; profile privacy **Risk**.
+- **Status:** Deletion **Implemented/Partial**; profile privacy **Risk**. An invite link can appear on Profile only when the referrals flag is on and the visitor is outside the native shell. With the flag off, Profile is unchanged.
+
+### 7.14 Public guides, signup count, and referral attribution
+
+- **Customer experience:** Five public web guides describe product-level tracking, a sourced note on creatine and magnesium timing, where to look for interaction information (SuppStack is not an interaction checker), and how to choose a stack app. Web guests can read them. The native shell stays auth-first and does not treat them as public. A signup count and an invite link exist in the client but render only when their flags are on and the visitor is not in the Capacitor shell. With both flags unset, login, profile, and the guides show no growth UI. The invite link attributes a new account to the referrer and does not grant a reward.
+- **Logic and data:** `NEXT_PUBLIC_FLAG_SIGNUP_COUNTER` and `NEXT_PUBLIC_FLAG_REFERRALS` default off and are inlined at build time. `growthEnabled` also returns false in the native shell. `?ref=` is stored in localStorage only when referrals are enabled outside the shell. `claim_referral` runs after `SIGNED_IN` and does not change navigation; the stored code is cleared only after the request completes. The count is `signup_count()` over non-deleted `auth.users`, cached for five minutes, and hidden below 100. Codes and referral rows are owner-read under RLS. Writes go through security-definer RPCs. Account deletion cascades both tables.
+- **Metadata/events today:** No analytics event. The referral row is the attribution record.
+- **Privacy commentary:** `/privacy` includes a referral section only while the referrals flag is on, so the page is unchanged while the flag is off. Do not enable the flag until that section is acceptable.
+- **Status:** **Implemented** in the web client, flags default off. Migration `20261031000033` must be applied before either flag is turned on. Not enabled in production.
 
 ## 8. Event and metadata contract
 
@@ -614,6 +627,7 @@ These are structural candidates, not permission to add product scope.
 
 | Date | Area | Change/evidence | Result | Next |
 | --- | --- | --- | --- | --- |
+| 2026-10-31 | Public guides and growth flags | Added five guest-readable web guides and a flag-gated signup count plus referral attribution. Flags default off. The native shell never renders the growth UI. Migration 0033 is additive, RLS-protected, and not applied from this change. | Lint, typecheck, and production build pass in the change. Not deployed. Count and referrals stay dark while v1.1 is in review. | Apply migration 0033 on Railway before either flag is set. Enable flags in Preview first, then production web only after v1.1 is approved. Do not show either surface in a native binary until its review notes mention it. |
 | 2026-10-27 | Production web release | Released commit `6f180d2f5c4ca7cfbe50e216d70a44131cbb0b67` as Vercel deployment `dpl_4kAsDUNQnZy5DLAgcNHxuGHstWgi` (`suppstack-do961seoj-winter-advisory.vercel.app`) on the existing `fa146d5` App Review billing baseline. | READY; `www.suppstack.app/peptides` verified in browser: combined filters, Wegovy alias search, all eight research profiles and no console errors. | Rollback candidate: `dpl_28ENLFtPBJ9fBVEn2m8CGrhVLpMJ`. |
 | 2026-10-27 | Web release dependencies | Updated Next.js and matching ESLint config to 16.4.3, sharp to 0.35.5, and compatible lockfile dependencies after the release audit. | Production npm audit: zero vulnerabilities; lint, production build, peptide/catalog and ingredient checks pass. Development-only native asset tooling advisories remain outside this web release. | Deployed in the production web release recorded above; track native tooling separately. |
 | 2026-10-27 | Peptide research references | Upgraded the eight existing profiles with use-specific human findings, limitations, separate regulatory/evidence metadata, references, and source-check provenance. Added combined search and four filters to `/peptides`; corrected TB-500 fragment and CJC-1295 alias conflation. | Lint, TypeScript, production build, catalog integrity and peptide checks pass; browser checks cover all eight profiles, combined filters, alias search, reset/empty state and desktop/mobile layout | Deployed and verified in the production web release recorded above; source checks are not clinical review. |

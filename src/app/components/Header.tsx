@@ -79,6 +79,11 @@ function getMobileAppBarConfig(pathname: string): MobileAppBarConfig {
   if (pathname.startsWith('/stacks/')) return { title: 'Shared Stack', backHref: '/profile' };
   if (pathname === '/privacy') return { title: 'Privacy', backHref: '/' };
   if (pathname === '/terms') return { title: 'Terms', backHref: '/' };
+  if (pathname === '/supplement-tracker-app') return { title: 'Supplement tracker', backHref: '/' };
+  if (pathname === '/how-to-track-supplements') return { title: 'How to track', backHref: '/' };
+  if (pathname === '/creatine-and-magnesium-timing') return { title: 'Creatine and magnesium', backHref: '/' };
+  if (pathname === '/supplement-interaction-checker') return { title: 'Interactions', backHref: '/' };
+  if (pathname === '/best-supplement-stack-app') return { title: 'Choosing an app', backHref: '/' };
 
   return { title: 'SuppStack AI', brandTitle: true, showSaved: true };
 }

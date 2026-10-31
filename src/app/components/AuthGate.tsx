@@ -31,9 +31,23 @@ const WEB_PUBLIC_PATHS = [
 
 const NATIVE_PUBLIC_PATHS = ['/login', '/privacy', '/terms'];
 
+/**
+ * Guest-readable guides on the web. Exact matches only, so they do not widen
+ * `/supplement/...`. The native shell stays auth-first and does not include them.
+ */
+const WEB_SEO_PATHS = [
+  '/best-supplement-stack-app',
+  '/creatine-and-magnesium-timing',
+  '/how-to-track-supplements',
+  '/supplement-interaction-checker',
+  '/supplement-tracker-app',
+];
+
 function isPublicPath(pathname: string) {
-  const paths = isNativeApp() ? NATIVE_PUBLIC_PATHS : WEB_PUBLIC_PATHS;
+  const native = isNativeApp();
+  const paths = native ? NATIVE_PUBLIC_PATHS : WEB_PUBLIC_PATHS;
   if (pathname === '/') return paths.includes('/');
+  if (!native && WEB_SEO_PATHS.includes(pathname)) return true;
   return paths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 

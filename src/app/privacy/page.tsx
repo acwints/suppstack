@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { flags } from '@/lib/flags';
 
 export const metadata = {
   title: 'Privacy Policy - SuppStack',
@@ -13,7 +14,7 @@ export default function PrivacyPage() {
     <main className="container mx-auto max-w-3xl px-3 sm:px-6 py-8">
       <h1 className="mb-6 text-3xl font-semibold text-gray-900">Privacy Policy</h1>
       <div className="prose max-w-none text-gray-600">
-        <p>Last updated: July 5, 2026</p>
+        <p>{flags.referrals ? 'Last updated: October 31, 2026' : 'Last updated: July 5, 2026'}</p>
 
         <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">
           1. What This Policy Covers
@@ -68,6 +69,20 @@ export default function PrivacyPage() {
           opportunity rankings inside SuppStack. It is not uploaded to SuppStack, sent to
           merchants, used to target ads, or sold.
         </p>
+
+        {flags.referrals ? (
+          <>
+            <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">
+              Referral links
+            </h2>
+            <p>
+              If you share your invite link and someone creates an account with it, SuppStack
+              stores that you invited them. The link does not include a reward, discount, or other
+              benefit. We use the record only to show you how many people joined from your link.
+              We do not sell it. You can delete it by deleting your account.
+            </p>
+          </>
+        ) : null}
 
         <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">
           5. Checkout and Third Parties

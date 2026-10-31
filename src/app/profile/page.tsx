@@ -41,6 +41,7 @@ import {
   ConfirmDialog,
 } from '@/components/ui';
 import { PremiumStatusRow } from '@/components/composite/Billing';
+import { ReferralLink } from '@/components/composite/Growth';
 
 // The You tab: identity, account settings (with the Apple Health link), and
 // shared stacks. The personal stack itself lives on the Stack tab.
@@ -525,6 +526,8 @@ export default function ProfilePage() {
                   </div>
                 </VStack>
               </form>
+
+              <ReferralLink />
 
               <div className="mt-12 border-t border-gray-200 pt-8">
                 <h3 className="text-sm font-medium uppercase tracking-wider text-gray-500">
