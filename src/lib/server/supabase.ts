@@ -5,6 +5,11 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 let authClient: SupabaseClient | null = null;
 let serviceClient: SupabaseClient | null = null;
 
+/** Anon server client for public RPCs. No session persistence. */
+export function getSupabaseAnonServerClient() {
+  return getSupabaseAuthClient();
+}
+
 function getSupabaseAuthClient() {
   if (authClient) return authClient;
 

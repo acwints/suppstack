@@ -7,6 +7,7 @@ import { FaApple } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 import { needsOnboarding, useAuth } from '@/app/context/AuthContext';
 import { Spinner, useToast } from '@/components/ui';
+import { SignupCounter } from '@/components/composite/Growth/SignupCounter';
 import { isNativeApp } from '@/lib/native/capacitor';
 import { isNativeAppleSignInCancellation } from '@/lib/native/apple-sign-in';
 
@@ -235,10 +236,12 @@ export default function LoginPage() {
               disabled={pendingProvider !== null}
               className="flex min-h-11 w-full items-center justify-center rounded px-4 text-sm font-medium text-gray-600 underline underline-offset-4 transition-[color,transform] duration-150 hover:text-gray-900 active:scale-[0.96] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 motion-reduce:transform-none"
             >
-              Sign in with email
-            </button>
+            Sign in with email
+          </button>
           )}
         </div>
+
+        <SignupCounter className="mt-6 text-center" />
 
         {/* Guest escape hatch — web only; the native app is auth-first */}
         {!isNativeApp() && (
