@@ -38,9 +38,14 @@ const NATIVE_PUBLIC_PATHS = ['/login', '/privacy', '/terms'];
 const WEB_SEO_PATHS = [
   '/best-supplement-stack-app',
   '/creatine-and-magnesium-timing',
+  '/how-to-avoid-supplement-overlap',
   '/how-to-track-supplements',
+  '/magnesium-glycinate-vs-citrate',
   '/supplement-interaction-checker',
+  '/supplement-restock-reminder',
+  '/supplement-schedule-app',
   '/supplement-tracker-app',
+  '/vitamin-d-and-k2-timing',
 ];
 
 function isPublicPath(pathname: string) {

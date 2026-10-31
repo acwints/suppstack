@@ -84,6 +84,11 @@ function getMobileAppBarConfig(pathname: string): MobileAppBarConfig {
   if (pathname === '/creatine-and-magnesium-timing') return { title: 'Creatine and magnesium', backHref: '/' };
   if (pathname === '/supplement-interaction-checker') return { title: 'Interactions', backHref: '/' };
   if (pathname === '/best-supplement-stack-app') return { title: 'Choosing an app', backHref: '/' };
+  if (pathname === '/supplement-schedule-app') return { title: 'Schedule', backHref: '/' };
+  if (pathname === '/vitamin-d-and-k2-timing') return { title: 'Vitamin D and K2', backHref: '/' };
+  if (pathname === '/how-to-avoid-supplement-overlap') return { title: 'Overlap', backHref: '/' };
+  if (pathname === '/supplement-restock-reminder') return { title: 'Restock', backHref: '/' };
+  if (pathname === '/magnesium-glycinate-vs-citrate') return { title: 'Magnesium forms', backHref: '/' };
 
   return { title: 'SuppStack AI', brandTitle: true, showSaved: true };
 }
