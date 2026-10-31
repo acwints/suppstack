@@ -7,8 +7,13 @@ import type { MetadataRoute } from 'next';
 const PATHS = [
   '/',
   '/supplement-tracker-app',
+  '/supplement-schedule-app',
   '/how-to-track-supplements',
+  '/how-to-avoid-supplement-overlap',
+  '/supplement-restock-reminder',
   '/creatine-and-magnesium-timing',
+  '/vitamin-d-and-k2-timing',
+  '/magnesium-glycinate-vs-citrate',
   '/supplement-interaction-checker',
   '/best-supplement-stack-app',
 ] as const;

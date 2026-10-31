@@ -27,8 +27,13 @@ export interface SeoLandingPageProps {
 
 const GUIDES: Array<{ href: string; label: string }> = [
   { href: '/supplement-tracker-app', label: 'Supplement tracker app' },
+  { href: '/supplement-schedule-app', label: 'Supplement schedule app' },
   { href: '/how-to-track-supplements', label: 'How to track supplements' },
+  { href: '/how-to-avoid-supplement-overlap', label: 'How to notice supplement overlap' },
+  { href: '/supplement-restock-reminder', label: 'Supplement restock estimates' },
   { href: '/creatine-and-magnesium-timing', label: 'Creatine and magnesium timing' },
+  { href: '/vitamin-d-and-k2-timing', label: 'Vitamin D and K2 timing' },
+  { href: '/magnesium-glycinate-vs-citrate', label: 'Magnesium glycinate and citrate' },
   { href: '/supplement-interaction-checker', label: 'Supplement interaction checker' },
   { href: '/best-supplement-stack-app', label: 'What to look for in a stack app' },
 ];
