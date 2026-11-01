@@ -27,6 +27,7 @@ export interface SeoLandingPageProps {
 
 const GUIDES: Array<{ href: string; label: string }> = [
   { href: '/supplement-tracker-app', label: 'Supplement tracker app' },
+  { href: '/supplement-stack-tracker', label: 'Supplement stack tracker' },
   { href: '/supplement-schedule-app', label: 'Supplement schedule app' },
   { href: '/how-to-track-supplements', label: 'How to track supplements' },
   { href: '/how-to-avoid-supplement-overlap', label: 'How to notice supplement overlap' },

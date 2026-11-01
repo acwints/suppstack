@@ -44,6 +44,7 @@ const WEB_SEO_PATHS = [
   '/supplement-interaction-checker',
   '/supplement-restock-reminder',
   '/supplement-schedule-app',
+  '/supplement-stack-tracker',
   '/supplement-tracker-app',
   '/vitamin-d-and-k2-timing',
 ];
