@@ -33,6 +33,7 @@ schema. Each file is an ordered, idempotent migration.
 | 0026 | `20260831000026_expand_private_account_profiles.sql` | Expand phase for profile privacy: enforces one profile per authenticated user, adds the owner-only `user_private_profiles` table and safe backfill/mirroring, centralizes profile ownership for RLS, hardens follower counters, and adds authenticated atomic account-profile commands. Apply before the matching web client; the legacy columns/grants remain temporarily for rollout compatibility. |
 | 0032 | `20261014000032_fix_app_review_premium_product.sql` | Points `appreview@suppstack.app`'s placeholder `premium_monthly_ios` entitlement at `app.suppstack.premium.monthly`. Other accounts and other columns are unchanged. |
 | 0033 | `20261031000033_growth_signup_counter_referrals.sql` | Aggregate `signup_count()` over non-deleted `auth.users`, plus owner-read `referral_codes` and `referrals`. Writes go through `get_or_create_referral_code` and `claim_referral`. RLS on, no client writes, no rewards. Apply before turning on either growth flag, then `NOTIFY pgrst, 'reload schema'` (also at the end of the file). |
+| 0034 | `20261101000034_feedback.sql` | Service-role-only `feedback` table for the Improvements box. Optional: until it is applied, `POST /api/feedback` stores the same payload on `commerce_checkout_events` with `provider = in_app_feedback`. |
 
 ## Applying
 

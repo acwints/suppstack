@@ -15,6 +15,7 @@ import { loginHref } from '@/lib/navigation/login';
 const WEB_PUBLIC_PATHS = [
   '/',
   '/brands',
+  '/changelog',
   '/health',
   '/login',
   '/peptides',

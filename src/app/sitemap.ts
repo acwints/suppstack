@@ -6,6 +6,7 @@ import type { MetadataRoute } from 'next';
  */
 const PATHS = [
   '/',
+  '/changelog',
   '/supplement-tracker-app',
   '/supplement-stack-tracker',
   '/supplement-schedule-app',
@@ -25,7 +26,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return PATHS.map((path) => ({
     url: new URL(path, 'https://www.suppstack.app').toString(),
     lastModified:
-      path === '/supplement-stack-tracker' ? new Date('2026-11-01T00:00:00.000Z') : lastModified,
+      path === '/supplement-stack-tracker' || path === '/changelog'
+        ? new Date('2026-11-01T00:00:00.000Z')
+        : lastModified,
     changeFrequency: path === '/' ? 'weekly' : 'monthly',
     priority: path === '/' ? 1 : 0.7,
   }));
