@@ -2446,7 +2446,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     product_id: 'real-blueprint-ashwagandha-rhodiola',
     product_name: 'Blueprint Ashwagandha + Rhodiola',
     product_description:
-      'Two clinically studied adaptogens in one daily capsule for stress response, cognitive function, and mood support \u2014 30 servings per bottle.',
+      'Ashwagandha and rhodiola in one daily capsule \u2014 30 servings per bottle.',
     product_price: 24.0,
     product_url: 'https://blueprint.bryanjohnson.com/products/ashwagandha-rhodiola-120mg',
     amazon_url: '',
@@ -4412,7 +4412,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     product_id: 'real-dose-for-your-liver',
     product_name: 'Dose for your Liver',
     product_description:
-      'Dose Daily liver-support shot with a clinically positioned liquid format for daily liver, antioxidant, and detoxification-pathway routines.',
+      'Dose Daily liver-support shot in a liquid format for a daily routine.',
     product_price: 90.0,
     product_url: 'https://dosedaily.co/products/dose-for-your-liver-new',
     amazon_url: '',
@@ -4618,7 +4618,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     product_id: 'real-nutrafol-core-for-women',
     product_name: 'Nutrafol Core for Women',
     product_description:
-      'Nutrafol Core for Women hair-growth nutraceutical for shoppers comparing clinically positioned hair-support formulas.',
+      'Nutrafol Core for Women hair-growth nutraceutical for shoppers comparing hair-support formulas.',
     product_price: 79.0,
     product_url: 'https://nutrafol.com/hair/women/product/core/women/',
     amazon_url: '',

@@ -1,8 +1,9 @@
 import Link from 'next/link';
+import { WebOnly } from '@/components/WebOnly';
 
 export const metadata = {
   title: 'Support - SuppStack',
-  description: 'Get help with SuppStack accounts, stacks, Apple Health, and merchant checkout.',
+  description: 'Get help with SuppStack accounts, stacks, and Apple Health.',
   alternates: {
     canonical: '/support',
   },
@@ -47,13 +48,15 @@ export default function SupportPage() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-xl font-semibold text-gray-900">Product orders</h2>
-          <p className="mt-2">
-            Supplement purchases are completed on the independent merchant&apos;s website. Contact
-            that merchant directly for order, shipping, return, or payment help.
-          </p>
-        </section>
+        <WebOnly>
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900">Product orders</h2>
+            <p className="mt-2">
+              Supplement purchases are completed on the independent merchant&apos;s website. Contact
+              that merchant directly for order, shipping, return, or payment help.
+            </p>
+          </section>
+        </WebOnly>
 
         <section>
           <h2 className="text-xl font-semibold text-gray-900">Safety</h2>

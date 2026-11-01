@@ -360,7 +360,7 @@ export function Paywall({ feature, onClose, closeLabel, className }: PaywallProp
                 {trialDays ? 'No charge today. ' : ''}Cancel anytime in Settings.
               </p>
             </>
-        ) : action === 'web-checkout' && checkoutUrl ? (
+        ) : action === 'web-checkout' && checkoutUrl && !isNative ? (
           <>
             <a href={checkoutUrl} className={PRIMARY_CTA}>
               Upgrade — {PREMIUM_PRICE_LABEL}

@@ -10,6 +10,7 @@ import { cn } from '@/lib/design-system';
 import { fetchUserProductLinks } from '@/lib/account/user-products';
 import { formatCurrency, getLocalDateKey } from '@/lib/utils';
 import { DAYS_PER_MONTH, type Product, type SupplementStatus } from '@/types';
+import { useAllowsExternalPurchase } from '@/components/WebOnly';
 
 export interface RestockRemindersProps {
   className?: string;
@@ -81,6 +82,7 @@ function getUrgency(daysRemaining: number): 'critical' | 'soon' | 'ok' {
 
 export function RestockReminders({ className }: RestockRemindersProps) {
   const { user } = useAuth();
+  const allowsExternalPurchase = useAllowsExternalPurchase();
   const [items, setItems] = useState<RestockItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -291,7 +293,7 @@ export function RestockReminders({ className }: RestockRemindersProps) {
                 </div>
 
                 <div className="flex flex-col gap-1 shrink-0">
-                  {item.amazon_url && (
+                  {allowsExternalPurchase && item.amazon_url ? (
                     <a
                       href={item.amazon_url}
                       target="_blank"
@@ -302,7 +304,7 @@ export function RestockReminders({ className }: RestockRemindersProps) {
                         Reorder
                       </Button>
                     </a>
-                  )}
+                  ) : null}
                   <span className="text-xs text-gray-500 text-center">
                     {formatCurrency(item.product_price)}
                   </span>

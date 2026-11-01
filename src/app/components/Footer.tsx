@@ -40,7 +40,7 @@ export function Footer() {
         
         <div className="mt-4 pt-4 border-t border-gray-200 text-center">
           <p className="mx-auto max-w-[65ch] text-xs text-gray-500">
-            Compare vitamins, minerals, herbs, protein, and everyday wellness products with verified checkout.
+            Compare vitamins, minerals, herbs, protein, and everyday wellness products.
           </p>
         </div>
       </div>
