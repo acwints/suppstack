@@ -1,10 +1,13 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { SignupCounter } from '@/components/composite/Growth/SignupCounter';
 
+export type SeoInline = string | { href: string; label: string };
+
 export interface SeoSection {
   heading: string;
-  /** Paragraphs or bullet lists. Plain strings render as paragraphs. */
-  body: Array<string | { list: string[] }>;
+  /** Paragraphs, inline links, or bullet lists. */
+  body: Array<string | { list: string[] } | { parts: SeoInline[] }>;
 }
 
 export interface SeoSource {
@@ -20,6 +23,10 @@ export interface SeoLandingPageProps {
   intro: string;
   sections: SeoSection[];
   sources?: SeoSource[];
+  /** Shown above the sections, before any results. */
+  notice?: string;
+  /** Extra content, such as a calculator, placed under the notice and above the sections. */
+  beforeSections?: ReactNode;
   /** Path the user lands on after sign-in. Defaults to the Stack tab. */
   nextPath?: string;
   ctaLabel?: string;
@@ -33,6 +40,7 @@ const GUIDES: Array<{ href: string; label: string }> = [
   { href: '/how-to-avoid-supplement-overlap', label: 'How to notice supplement overlap' },
   { href: '/supplement-restock-reminder', label: 'Supplement restock estimates' },
   { href: '/creatine-and-magnesium-timing', label: 'Creatine and magnesium timing' },
+  { href: '/creatine-timing-calculator', label: 'Creatine timing calculator' },
   { href: '/vitamin-d-and-k2-timing', label: 'Vitamin D and K2 timing' },
   { href: '/magnesium-glycinate-vs-citrate', label: 'Magnesium glycinate and citrate' },
   { href: '/supplement-interaction-checker', label: 'Supplement interaction checker' },
@@ -53,6 +61,8 @@ export function SeoLandingPage({
   intro,
   sections,
   sources,
+  notice,
+  beforeSections,
   nextPath = '/stack',
   ctaLabel = 'Start your stack free',
 }: SeoLandingPageProps) {
@@ -72,6 +82,14 @@ export function SeoLandingPage({
         <SignupCounter className="mt-4" />
       </div>
 
+      {notice ? (
+        <p className="mt-8 rounded-lg border border-gray-900 bg-gray-50 p-4 text-sm font-medium text-gray-900">
+          {notice}
+        </p>
+      ) : null}
+
+      {beforeSections ? <div className="mt-8">{beforeSections}</div> : null}
+
       <div className="mt-10">
         {sections.map((section) => (
           <section key={section.heading}>
@@ -81,12 +99,30 @@ export function SeoLandingPage({
                 <p key={`${section.heading}-${index}`} className="mt-4">
                   {block}
                 </p>
-              ) : (
+              ) : 'list' in block ? (
                 <ul key={`${section.heading}-${index}`} className="mt-4 list-disc space-y-2 pl-6">
                   {block.list.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
+              ) : (
+                <p key={`${section.heading}-${index}`} className="mt-4">
+                  {block.parts.map((part, partIndex) =>
+                    typeof part === 'string' ? (
+                      <span key={partIndex}>{part}</span>
+                    ) : (
+                      <a
+                        key={part.href}
+                        href={part.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline underline-offset-2"
+                      >
+                        {part.label}
+                      </a>
+                    )
+                  )}
+                </p>
               )
             )}
           </section>

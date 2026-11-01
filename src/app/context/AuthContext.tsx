@@ -101,17 +101,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         getOrCreateUserProfile(session.user).catch((error) => {
           console.error('Failed to prepare user profile:', error);
         });
-        // Attribution only. Does not change where sign-in sends the user, and
-        // never runs in the native shell or while the flag is off.
-        if (growthEnabled('referrals')) {
-          const ref = peekRef();
-          if (ref) {
+        // Attribution only. Does not change where sign-in sends the user.
+        // The events insert does not need the referral migration. The RPC
+        // stays behind the flag for when that migration exists.
+        const ref = peekRef();
+        if (ref && session.access_token) {
+          void fetch('/api/referral', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ ref }),
+          }).then((response) => {
+            if (response.ok) clearRef();
+            else console.error('referral record failed', response.status);
+          }, (error: unknown) => {
+            console.error('referral record failed', error);
+          });
+          if (growthEnabled('referrals')) {
             void supabase.rpc('claim_referral', { p_code: ref }).then(({ error }) => {
-              if (error) {
-                console.error('claim_referral failed', error);
-                return;
-              }
-              clearRef();
+              if (error) console.error('claim_referral failed', error);
             }, (error: unknown) => {
               console.error('claim_referral failed', error);
             });

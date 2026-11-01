@@ -1,16 +1,17 @@
 import type { Metadata } from 'next';
 import { SeoLandingPage } from '@/components/composite/Seo';
 
-// SuppStack does not have a drug or supplement interaction checker. This page
-// targets the query by saying so, and describes ingredient overlap instead.
+const ZINC_SHEET = 'https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/';
+const MAGNESIUM_SHEET = 'https://ods.od.nih.gov/factsheets/Magnesium-Consumer/';
+
 export const metadata: Metadata = {
-  title: 'Supplement Interaction Checker: Where to Look and What SuppStack Shows | SuppStack',
+  title: 'Supplement Overlap Notes with Sources | SuppStack',
   description:
-    'SuppStack is not an interaction checker. Learn where reliable supplement interaction information comes from, and how SuppStack shows ingredient overlap across your products.',
+    'Two sourced notes: high-dose zinc and copper absorption, and supplemental magnesium totals. SuppStack does not rate combinations. Ask a doctor or pharmacist.',
   alternates: { canonical: '/supplement-interaction-checker' },
   openGraph: {
-    title: 'Supplement interaction checker | SuppStack',
-    description: 'Reliable sources for interactions, plus ingredient-overlap tracking for your stack.',
+    title: 'Supplement overlap notes | SuppStack',
+    description: 'Cited notes from NIH fact sheets, plus what SuppStack can flag on a label.',
     url: '/supplement-interaction-checker',
   },
 };
@@ -19,52 +20,47 @@ export default function SupplementInteractionCheckerPage() {
   return (
     <SeoLandingPage
       path="/supplement-interaction-checker"
-      eyebrow="Supplement interactions"
-      title="Looking for a supplement interaction checker?"
-      intro="To be upfront: SuppStack does not check for drug or supplement interactions. Here is where that information should come from, and the related thing SuppStack does do well."
+      eyebrow="Supplement overlaps"
+      title="Supplement overlap notes, with the source next to each one"
+      intro="SuppStack is not an interaction checker and does not rate any combination. The notes below are only what a NIH fact sheet states, with the link in the same paragraph. If a pairing is not listed, that means this page has no data on it."
+      notice="Not medical advice. Ask your doctor or pharmacist."
       sections={[
         {
-          heading: 'Why interactions matter',
-          body: [
-            'The U.S. Food and Drug Administration warns that some dietary supplements can change how medications work, and advises telling your healthcare providers about every supplement you take [1].',
-            'The National Center for Complementary and Integrative Health (NCCIH) similarly recommends discussing supplements with your providers and notes that "natural" does not always mean safe [2].',
-          ],
-        },
-        {
-          heading: 'Where to get interaction information',
+          heading: 'Zinc and copper',
           body: [
             {
-              list: [
-                'Your pharmacist, who can see your full medication list.',
-                'Your prescribing clinician.',
-                'NIH Office of Dietary Supplements fact sheets, which include interactions-with-medications sections for many nutrients [3].',
+              parts: [
+                'The NIH Office of Dietary Supplements says that if zinc is used for weeks, doses of 50 mg or more, typically from supplements, can interfere with copper absorption, which can cause low copper status. ',
+                { href: ZINC_SHEET, label: 'Zinc: Fact Sheet for Health Professionals' },
+                '. This page does not add a severity rating or say who that applies to.',
               ],
             },
           ],
         },
         {
-          heading: 'What SuppStack does: ingredient overlap',
+          heading: 'Magnesium from more than one product',
           body: [
-            'A common, quieter issue is taking the same ingredient in several products. SuppStack flags ingredients that appear in more than one product in your stack and shows a daily total for each unit, using each product’s listed composition. Milligrams and IU stay separate and are never added together. The full dose-by-dose breakdown of every ingredient is part of Premium.',
-            'Bring that list to your pharmacist: a clear record of exactly what you take makes an interaction review faster and more accurate.',
+            {
+              parts: [
+                'No data: this page has no source that describes a special interaction between two magnesium products. The NIH Office of Dietary Supplements does say that high intakes of magnesium from dietary supplements and medications can cause diarrhea, nausea, and abdominal cramping, and that the daily upper limit for adults from supplements and medications is 350 mg. That limit does not include magnesium from food. ',
+                { href: MAGNESIUM_SHEET, label: 'Magnesium: Fact Sheet for Consumers' },
+                '.',
+              ],
+            },
+          ],
+        },
+        {
+          heading: 'What SuppStack can show',
+          body: [
+            'On the Stack screen, SuppStack can flag an ingredient listed on more than one product and keep milligrams and IU in separate totals. That is a reading of the labels in your stack. It is not a check for drug interactions, and it does not judge the overlap.',
           ],
         },
       ]}
       sources={[
-        {
-          label: '[1] U.S. FDA. Mixing Medications and Dietary Supplements Can Endanger Your Health.',
-          href: 'https://www.fda.gov/consumers/consumer-updates/mixing-medications-and-dietary-supplements-can-endanger-your-health',
-        },
-        {
-          label: '[2] NCCIH. Using Dietary Supplements Wisely.',
-          href: 'https://www.nccih.nih.gov/health/using-dietary-supplements-wisely',
-        },
-        {
-          label: '[3] NIH Office of Dietary Supplements. Dietary Supplements: What You Need to Know.',
-          href: 'https://ods.od.nih.gov/factsheets/WYNTK-Consumer/',
-        },
+        { label: 'NIH ODS. Zinc: Fact Sheet for Health Professionals.', href: ZINC_SHEET },
+        { label: 'NIH ODS. Magnesium: Fact Sheet for Consumers.', href: MAGNESIUM_SHEET },
       ]}
-      ctaLabel="Build your stack list free"
+      ctaLabel="See overlaps in your stack"
     />
   );
 }
