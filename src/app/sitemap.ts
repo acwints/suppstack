@@ -14,6 +14,7 @@ const PATHS = [
   '/how-to-avoid-supplement-overlap',
   '/supplement-restock-reminder',
   '/creatine-and-magnesium-timing',
+  '/creatine-timing-calculator',
   '/vitamin-d-and-k2-timing',
   '/magnesium-glycinate-vs-citrate',
   '/supplement-interaction-checker',
@@ -26,7 +27,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return PATHS.map((path) => ({
     url: new URL(path, 'https://www.suppstack.app').toString(),
     lastModified:
-      path === '/supplement-stack-tracker' || path === '/changelog'
+      path === '/supplement-stack-tracker' ||
+      path === '/changelog' ||
+      path === '/creatine-timing-calculator'
         ? new Date('2026-11-01T00:00:00.000Z')
         : lastModified,
     changeFrequency: path === '/' ? 'weekly' : 'monthly',

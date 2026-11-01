@@ -40,6 +40,7 @@ const NATIVE_PUBLIC_PATHS = ['/login', '/privacy', '/support', '/terms'];
 const WEB_SEO_PATHS = [
   '/best-supplement-stack-app',
   '/creatine-and-magnesium-timing',
+  '/creatine-timing-calculator',
   '/how-to-avoid-supplement-overlap',
   '/how-to-track-supplements',
   '/magnesium-glycinate-vs-citrate',

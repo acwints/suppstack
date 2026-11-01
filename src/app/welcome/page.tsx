@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { FiArrowLeft, FiCamera, FiCheck, FiPlus } from 'react-icons/fi';
 import { supabase } from '@/app/supabase';
 import { Paywall } from '@/components/composite/Billing';
+import { InviteLink } from '@/components/composite/Growth';
 import { Spinner, useToast } from '@/components/ui';
 import { cn } from '@/lib/design-system';
 import { isNativeApp } from '@/lib/native/capacitor';
@@ -144,6 +145,7 @@ export default function WelcomePage() {
       </div>
 
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-8">
+        <InviteLink />
         {step === 'goals' ? (
           <>
             <h1 className="text-balance font-serif text-3xl leading-tight text-gray-900">
