@@ -8,9 +8,9 @@ import { isNativeApp } from '@/lib/native/capacitor';
 import { loginHref } from '@/lib/navigation/login';
 
 /**
- * Web keeps guest browsing (SEO, link sharing); the native app is
- * auth-first — everything except the login screen and legal pages
- * requires an account.
+ * Web keeps guest browsing (SEO, link sharing). The native app is
+ * auth-first: everything except login, legal pages, and support
+ * requires an account. Support stays free of account data.
  */
 const WEB_PUBLIC_PATHS = [
   '/',
@@ -27,10 +27,11 @@ const WEB_PUBLIC_PATHS = [
   '/scan',
   '/search',
   '/supplement',
+  '/support',
   '/terms',
 ];
 
-const NATIVE_PUBLIC_PATHS = ['/login', '/privacy', '/terms'];
+const NATIVE_PUBLIC_PATHS = ['/login', '/privacy', '/support', '/terms'];
 
 /**
  * Guest-readable guides on the web. Exact matches only, so they do not widen

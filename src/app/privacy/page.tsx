@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { flags } from '@/lib/flags';
+import { WebOnly } from '@/components/WebOnly';
 
 export const metadata = {
   title: 'Privacy Policy - SuppStack',
@@ -58,7 +59,9 @@ export default function PrivacyPage() {
           <li>We do not sell your personal information.</li>
           <li>We do not share your supplement data with merchants or advertisers.</li>
           <li>We do not use Apple Health data for advertising or merchant targeting.</li>
-          <li>We do not process payments; purchases are completed on the merchant&apos;s own site.</li>
+          <WebOnly>
+            <li>We do not process payments; purchases are completed on the merchant&apos;s own site.</li>
+          </WebOnly>
         </ul>
 
         <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">
@@ -84,15 +87,18 @@ export default function PrivacyPage() {
           </>
         ) : null}
 
-        <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">
-          5. Checkout and Third Parties
-        </h2>
-        <p>
-          When you buy a product, checkout happens directly with the merchant, for example a
-          supplement brand&apos;s own store. The merchant&apos;s privacy policy governs the
-          information you provide during checkout, such as your shipping address and payment
-          details. We never see your payment information.
-        </p>
+        <WebOnly>
+          <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">
+            5. Checkout and Third Parties
+          </h2>
+          <p>
+            When you buy a product, checkout happens directly with the merchant, for example a
+            supplement brand&apos;s own store. The merchant&apos;s privacy policy governs the
+            information you provide during checkout, such as your shipping address and payment
+            details. We never see your payment information.
+          </p>
+        </WebOnly>
+        <h2 className="mb-4 mt-6 text-2xl font-semibold text-gray-900">Service providers</h2>
         <p>
           We use Supabase to store account and app data, and Vercel to host the service. Both act
           as processors on our behalf.

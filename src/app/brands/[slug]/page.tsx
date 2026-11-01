@@ -9,10 +9,12 @@ import { formatCurrency } from '@/lib/utils';
 import { compareProductsByCommerceSource } from '@/lib/commerce/product-source';
 import { findCatalogBrandBySlug } from '@/lib/catalog/brand-discovery';
 import { BrandLogo } from '@/components/composite/Brand';
+import { useAllowsExternalPurchase } from '@/components/WebOnly';
 
 export default function BrandPage(props: { params: Promise<{ slug: string }> }) {
   const params = use(props.params);
   const brand = findCatalogBrandBySlug(params.slug);
+  const allowsExternalPurchase = useAllowsExternalPurchase();
 
   if (!brand) {
     return (
@@ -74,15 +76,17 @@ export default function BrandPage(props: { params: Promise<{ slug: string }> }) 
               </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 border-y border-gray-100 py-4 text-center lg:text-left">
+            <div className={`grid gap-3 border-y border-gray-100 py-4 text-center lg:text-left ${allowsExternalPurchase ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <div>
                 <p className="text-2xl font-serif text-gray-900">{brand.productCount}</p>
                 <p className="text-xs text-gray-500">Products</p>
               </div>
-              <div>
-                <p className="text-2xl font-serif text-gray-900">{brand.commerceReadyCount}</p>
-                <p className="text-xs text-gray-500">Buy paths</p>
-              </div>
+              {allowsExternalPurchase ? (
+                <div>
+                  <p className="text-2xl font-serif text-gray-900">{brand.commerceReadyCount}</p>
+                  <p className="text-xs text-gray-500">Buy paths</p>
+                </div>
+              ) : null}
               <div>
                 <p className="text-2xl font-serif text-gray-900">
                   {formatCurrency(brand.averagePrice)}

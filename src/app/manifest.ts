@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'SuppStack AI - Supplement Marketplace',
     short_name: 'SuppStack AI',
     description:
-      'Shop vitamins, minerals, herbs, protein, and everyday wellness supplements with verified merchant checkout.',
+      'Shop vitamins, minerals, herbs, protein, and everyday wellness supplements.',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',

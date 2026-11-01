@@ -4,6 +4,7 @@ import type { Product } from '@/types';
 import { Badge, type BadgeVariant } from '@/components/ui';
 import { getPurchaseDestination } from '@/lib/commerce/shopify-ucp';
 import { hasShopifyVariant } from '@/lib/commerce/product-source';
+import { useAllowsExternalPurchase } from '@/components/WebOnly';
 
 export interface ProductSourceBadgeProps {
   product: Product;
@@ -32,7 +33,9 @@ function sourceLabel(product: Product): { label: string; variant: BadgeVariant }
 }
 
 export function ProductSourceBadge({ product, compact = false }: ProductSourceBadgeProps) {
+  const allowsExternalPurchase = useAllowsExternalPurchase();
   const source = sourceLabel(product);
+  if (!allowsExternalPurchase && source.label === 'Direct checkout') return null;
 
   return (
     <Badge variant={source.variant} size="sm" className={compact ? 'max-w-full truncate' : undefined}>

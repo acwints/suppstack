@@ -79,6 +79,7 @@ function getMobileAppBarConfig(pathname: string): MobileAppBarConfig {
   if (pathname.startsWith('/stacks/')) return { title: 'Shared Stack', backHref: '/profile' };
   if (pathname === '/changelog') return { title: 'Changelog', backHref: '/' };
   if (pathname === '/privacy') return { title: 'Privacy', backHref: '/' };
+  if (pathname === '/support') return { title: 'Support', backHref: '/' };
   if (pathname === '/terms') return { title: 'Terms', backHref: '/' };
   if (pathname === '/supplement-tracker-app') return { title: 'Supplement tracker', backHref: '/' };
   if (pathname === '/supplement-stack-tracker') return { title: 'Stack tracker', backHref: '/' };

@@ -14,6 +14,7 @@ import { canPurchase, getPurchaseLabel } from '@/lib/commerce/shopify-ucp';
 import { hasShopifyVariant } from '@/lib/commerce/product-source';
 import { cn } from '@/lib/design-system';
 import { loginHref } from '@/lib/navigation/login';
+import { useAllowsExternalPurchase } from '@/components/WebOnly';
 
 export interface ProductActionsProps {
   product: Product;
@@ -33,6 +34,7 @@ export function ProductActions({
   const toast = useToast();
   const { isInStack, isUpdating, addToStack } = useProductInStack(product);
   const { isStartingCheckout, startCheckout } = useCommerceCheckout();
+  const allowsExternalPurchase = useAllowsExternalPurchase();
   const { isSaved, toggleSaved } = useSavedProducts();
   // Shared stack-intake context (single fetch across the app). Read via
   // context — NOT a direct `useStackIngredients` call — because this component
@@ -138,24 +140,28 @@ export function ProductActions({
           >
             {isInStack ? 'In Stack' : 'Add'}
           </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleStartCheckout}
-            disabled={!canPurchase(product)}
-            isLoading={isStartingCheckout}
-            leftIcon={<FaShoppingCart />}
-            className="min-h-11 flex-1"
-          >
-            Buy
-          </Button>
+          {allowsExternalPurchase ? (
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleStartCheckout}
+              disabled={!canPurchase(product)}
+              isLoading={isStartingCheckout}
+              leftIcon={<FaShoppingCart />}
+              className="min-h-11 flex-1"
+            >
+              Buy
+            </Button>
+          ) : null}
         </div>
 
-        <EmbeddedCheckout
-          product={product}
-          isOpen={isCheckoutOpen}
-          onClose={() => setIsCheckoutOpen(false)}
-        />
+        {allowsExternalPurchase ? (
+          <EmbeddedCheckout
+            product={product}
+            isOpen={isCheckoutOpen}
+            onClose={() => setIsCheckoutOpen(false)}
+          />
+        ) : null}
       </>
     );
   }
@@ -174,17 +180,19 @@ export function ProductActions({
         >
           {isInStack ? 'In Stack' : 'Add to Stack'}
         </Button>
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={handleStartCheckout}
-          disabled={!canPurchase(product)}
-          isLoading={isStartingCheckout}
-          leftIcon={<FaShoppingCart />}
-          className="flex-1"
-        >
-          {getPurchaseLabel(product)}
-        </Button>
+        {allowsExternalPurchase ? (
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={handleStartCheckout}
+            disabled={!canPurchase(product)}
+            isLoading={isStartingCheckout}
+            leftIcon={<FaShoppingCart />}
+            className="flex-1"
+          >
+            {getPurchaseLabel(product)}
+          </Button>
+        ) : null}
         <Button
           type="button"
           variant={saved ? 'secondary' : 'ghost'}
@@ -197,11 +205,13 @@ export function ProductActions({
         </Button>
       </div>
 
-      <EmbeddedCheckout
-        product={product}
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-      />
+      {allowsExternalPurchase ? (
+        <EmbeddedCheckout
+          product={product}
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+        />
+      ) : null}
     </>
   );
 }

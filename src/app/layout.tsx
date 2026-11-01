@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.suppstack.app"),
   title: "SuppStack AI - Supplement Marketplace",
-  description: "Shop vitamins, minerals, herbs, protein, and everyday wellness supplements with verified merchant checkout.",
+  description: "Shop vitamins, minerals, herbs, protein, and everyday wellness supplements.",
   alternates: {
     canonical: "/",
   },
