@@ -75,6 +75,12 @@ The repeatable local harness and results are in ignored build artifacts
 `build/verify-scene-launch.py` and `build/verify-scene-launch.jsonl`.
 Successful OAuth sign-in and physical-device testing remain unverified.
 
+Build 81 was uploaded, processed as VALID, selected for version 1.1, and
+resubmitted on November 2, 2026 at 11:21 AM Pacific. Submission
+`452a8850-9a60-4233-94fc-57ba1c8a560e` returned WAITING_FOR_REVIEW.
+Review notes include the fix and a simulator launch video. Apple approval
+remains pending.
+
 Before resubmitting, verify a Release build on iPadOS 27.2, including cold
 launch, background/foreground, and OAuth deep-link return. Upload a build newer
 than the latest App Store Connect build (80 at investigation time), select it
