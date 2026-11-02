@@ -54,6 +54,39 @@ project is complete.
    `app.suppstack`. The Xcode target and `App.entitlements` already declare
    the capability; automatic signing will generate a matching profile.
 
+## November 2, 2026 launch crash (build 73)
+
+Apple's incident A6128B15-94DE-4C8E-931B-C6F586EAEF4C terminates on the main
+thread in `___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke`
+with EXC_BREAKPOINT / SIGTRAP, before the web app loads. The review device was
+an iPad Air 11-inch (M3) on iPadOS 27.2 (24B119).
+
+The shell now declares a UIApplicationSceneManifest with the existing Main
+storyboard and a UIWindowSceneDelegate. The scene owns the window and forwards
+URL/universal-link callbacks into Capacitor. Cold-start callbacks wait for the
+bridge's first appearance so its plugins can receive them. Multiple scenes
+remain disabled.
+
+Local verification on November 2 used a Release simulator build on an iPad Air
+11-inch (M3), iPadOS 27.2. A copy of that artifact with the legacy manifest
+configuration exited after launch (0/1 running). The fixed artifact remained
+running after all three cold launches (3/3). The sign-in screen rendered.
+The repeatable local harness and results are in ignored build artifacts
+`build/verify-scene-launch.py` and `build/verify-scene-launch.jsonl`.
+Successful OAuth sign-in and physical-device testing remain unverified.
+
+Build 81 was uploaded, processed as VALID, selected for version 1.1, and
+resubmitted on November 2, 2026 at 11:21 AM Pacific. Submission
+`452a8850-9a60-4233-94fc-57ba1c8a560e` returned WAITING_FOR_REVIEW.
+Review notes include the fix and a simulator launch video. Apple approval
+remains pending.
+
+Before resubmitting, verify a Release build on iPadOS 27.2, including cold
+launch, background/foreground, and OAuth deep-link return. Upload a build newer
+than the latest App Store Connect build (80 at investigation time), select it
+for version 1.1, and resolve the rejected submission item. Keep existing review
+credentials and subscription testing instructions.
+
 ## Resubmitting version 1.1 after Guideline 2.1(a)
 
 Apple rejected build 55 on August 13, 2026 because Sign in with Apple left the
