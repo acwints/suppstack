@@ -46,10 +46,13 @@ const WEB_SEO_PATHS = [
   '/magnesium-glycinate-vs-citrate',
   '/supplement-interaction-checker',
   '/supplement-restock-reminder',
+  '/supplement-log-template',
   '/supplement-schedule-app',
+  '/supplement-schedule-planner',
   '/supplement-stack-tracker',
   '/supplement-tracker-app',
   '/vitamin-d-and-k2-timing',
+  '/vitamin-tracker-app',
 ];
 
 function isPublicPath(pathname: string) {

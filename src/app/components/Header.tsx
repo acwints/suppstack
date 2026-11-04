@@ -89,6 +89,9 @@ function getMobileAppBarConfig(pathname: string): MobileAppBarConfig {
   if (pathname === '/supplement-interaction-checker') return { title: 'Interactions', backHref: '/' };
   if (pathname === '/best-supplement-stack-app') return { title: 'Choosing an app', backHref: '/' };
   if (pathname === '/supplement-schedule-app') return { title: 'Schedule', backHref: '/' };
+  if (pathname === '/supplement-schedule-planner') return { title: 'Schedule planner', backHref: '/' };
+  if (pathname === '/vitamin-tracker-app') return { title: 'Vitamin tracker', backHref: '/' };
+  if (pathname === '/supplement-log-template') return { title: 'Log template', backHref: '/' };
   if (pathname === '/vitamin-d-and-k2-timing') return { title: 'Vitamin D and K2', backHref: '/' };
   if (pathname === '/how-to-avoid-supplement-overlap') return { title: 'Overlap', backHref: '/' };
   if (pathname === '/supplement-restock-reminder') return { title: 'Restock', backHref: '/' };

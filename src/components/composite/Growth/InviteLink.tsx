@@ -14,7 +14,7 @@ export function InviteLink() {
 
   return (
     <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
-      <p className="text-sm font-medium text-gray-900">Your invite link</p>
+      <p className="text-sm font-medium text-gray-900">Move up the list, share your stack</p>
       <p className="mt-1 break-all text-sm text-gray-600">{url}</p>
       <button
         type="button"
