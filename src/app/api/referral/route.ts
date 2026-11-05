@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isReferralCode } from '@/lib/growth/referral';
+import { evaluateReferralClaim } from '@/lib/growth/referral-claim';
 import { getAuthenticatedUserFromRequest, getSupabaseServiceClient } from '@/lib/server/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-function noStore(body: { ok: true; recorded: boolean } | { error: string }, status = 200) {
+function noStore(
+  body: { ok: true; recorded: boolean; reason?: string } | { error: string },
+  status = 200
+) {
   return NextResponse.json(body, {
     status,
     headers: { 'Cache-Control': 'no-store' },
@@ -18,18 +19,12 @@ export async function POST(request: NextRequest) {
   const user = await getAuthenticatedUserFromRequest(request);
   if (!user) return noStore({ error: 'Sign in required.' }, 401);
 
-  let ref = '';
+  let ref: string | null = null;
   try {
     const body = (await request.json()) as { ref?: unknown };
-    ref = typeof body.ref === 'string' ? body.ref.trim().toLowerCase() : '';
+    ref = typeof body.ref === 'string' ? body.ref : null;
   } catch {
     return noStore({ error: 'Send JSON.' }, 400);
-  }
-
-  const created = Date.parse(user.created_at);
-  const fresh = Number.isFinite(created) && Date.now() - created < DAY_MS;
-  if (!isReferralCode(ref) || ref === user.id.toLowerCase() || !fresh) {
-    return noStore({ ok: true, recorded: false });
   }
 
   const supabase = getSupabaseServiceClient();
@@ -45,9 +40,18 @@ export async function POST(request: NextRequest) {
     console.error('referral lookup failed', existing.error.code ?? 'unknown');
     return noStore({ error: 'Could not record that referral.' }, 503);
   }
-  if ((existing.data ?? []).length > 0) return noStore({ ok: true, recorded: false });
+
+  const decision = evaluateReferralClaim({
+    ref,
+    userId: user.id,
+    createdAt: user.created_at,
+    now: Date.now(),
+    alreadyRecorded: (existing.data ?? []).length > 0,
+  });
+  if (!decision.record) return noStore({ ok: true, recorded: false, reason: decision.reason });
 
   const inserted = await supabase.from('commerce_checkout_events').insert({
+    event_id: decision.eventId,
     user_id: user.id,
     product_id: 'referral',
     provider: 'referral',
@@ -55,11 +59,14 @@ export async function POST(request: NextRequest) {
     status: 'received',
     metadata: {
       kind: 'referral',
-      referrer: ref,
+      referrer: decision.ref,
       referred_user_id: user.id,
     },
   });
   if (inserted.error) {
+    if (inserted.error.code === '23505') {
+      return noStore({ ok: true, recorded: false, reason: 'duplicate' });
+    }
     console.error('referral insert failed', inserted.error.code ?? 'unknown');
     return noStore({ error: 'Could not record that referral.' }, 503);
   }

@@ -11,12 +11,30 @@ export function referralUrl(code: string): string {
   return `${REFERRAL_ORIGIN}/?ref=${encodeURIComponent(code)}`;
 }
 
+/** A `?ref=` value worth storing. Short codes stay accepted; issued links are user ids. */
+export function refFromSearch(search: string): string | null {
+  const ref = new URLSearchParams(search).get('ref');
+  if (!ref || !isReferralCode(ref)) return null;
+  return ref.trim().toLowerCase();
+}
+
+/**
+ * OAuth returns to this exact URL. The wildcard allow list already permits
+ * `/login`, and keeping `ref` on it covers a round trip that drops storage.
+ */
+export function loginRedirectWithRef(origin: string, ref: string | null): string {
+  const url = new URL('/login', origin);
+  const stored = ref ? refFromSearch(`?ref=${encodeURIComponent(ref)}`) : null;
+  if (stored) url.searchParams.set('ref', stored);
+  return url.toString();
+}
+
 /** Remember a valid `?ref=` before sign-in. localStorage survives the OAuth round trip. */
 export function captureRefFromUrl(): void {
   if (typeof window === 'undefined') return;
-  const ref = new URLSearchParams(window.location.search).get('ref');
-  if (!ref || !isReferralCode(ref)) return;
-  window.localStorage.setItem(STORAGE_KEY, ref.toLowerCase());
+  const ref = refFromSearch(window.location.search);
+  if (!ref) return;
+  window.localStorage.setItem(STORAGE_KEY, ref);
 }
 
 /** Read a stored code without removing it. Clear only after a completed claim. */
