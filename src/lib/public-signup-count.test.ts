@@ -12,18 +12,22 @@ const patterns = testAccountPatterns('qa@example.com,*@example.test');
 
 const real: ListedUser = { id: 'real-user', email: 'ada@example.com', deleted_at: null };
 
-test('default allowlist excludes @suppstack.app and appreview@', () => {
-  assert.equal(testAccountPatterns(undefined).includes('*@suppstack.app'), true);
-  assert.equal(testAccountPatterns('').includes('appreview@suppstack.app'), true);
+test('default allowlist excludes suppstack.app and mail.grokbot.com', () => {
+  const defaults = testAccountPatterns(undefined);
+  assert.equal(defaults.includes('*@suppstack.app'), true);
+  assert.equal(defaults.includes('appreview@suppstack.app'), true);
+  assert.equal(defaults.includes('*@mail.grokbot.com'), true);
   const users = [
     real,
     { id: 'review', email: 'appreview@suppstack.app' },
     { id: 'staff', email: 'hello@suppstack.app' },
+    { id: 'bot', email: 'agent@mail.grokbot.com' },
     { id: 'qa', email: 'qa@example.com' },
     { id: 'domain', email: 'bot@example.test' },
+    { id: 'other-domain', email: 'person@grokbot.com' },
   ];
-  assert.equal(publicCountFromUsers(users.length, users, patterns), 1);
-  assert.equal(publicCountFromUsers(0, users, patterns), 1);
+  assert.equal(publicCountFromUsers(users.length, users, patterns), 2);
+  assert.equal(publicCountFromUsers(0, users, patterns), 2);
 });
 
 test('a flagged test signup with a referral does not change count or referrals', () => {
@@ -34,7 +38,7 @@ test('a flagged test signup with a referral does not change count or referrals',
 
   const testSignup: ListedUser = {
     id: 'test-signup',
-    email: 'appreview@suppstack.app',
+    email: 'agent@mail.grokbot.com',
     deleted_at: null,
   };
   const flagged: ListedUser = {

@@ -9,9 +9,14 @@ export type ListedUser = {
 
 /**
  * Always excluded from the public count. `*@suppstack.app` covers
- * `appreview@suppstack.app`. `TEST_ACCOUNT_EMAILS` adds more emails or domains.
+ * `appreview@suppstack.app`. `*@mail.grokbot.com` is the same kind of test
+ * domain. `TEST_ACCOUNT_EMAILS` adds more emails or domains.
  */
-export const DEFAULT_TEST_ACCOUNT_PATTERNS = ['*@suppstack.app', 'appreview@suppstack.app'] as const;
+export const DEFAULT_TEST_ACCOUNT_PATTERNS = [
+  '*@suppstack.app',
+  'appreview@suppstack.app',
+  '*@mail.grokbot.com',
+] as const;
 
 export type ReferralCountEvent = {
   user_id?: string | null;
