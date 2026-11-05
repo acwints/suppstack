@@ -35,6 +35,8 @@ export interface SeoLandingPageProps {
 const GUIDES: Array<{ href: string; label: string }> = [
   { href: '/supplement-tracker-app', label: 'Supplement tracker app' },
   { href: '/supplement-stack-tracker', label: 'Supplement stack tracker' },
+  { href: '/supplement-stack-checker', label: 'Supplement stack checker' },
+  { href: '/longevity-supplement-stack-tracker', label: 'Longevity stack tracker' },
   { href: '/supplement-schedule-app', label: 'Supplement schedule app' },
   { href: '/supplement-schedule-planner', label: 'Supplement schedule planner' },
   { href: '/vitamin-tracker-app', label: 'Vitamin tracker app' },

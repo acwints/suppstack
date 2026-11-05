@@ -9,6 +9,8 @@ const PATHS = [
   '/changelog',
   '/supplement-tracker-app',
   '/supplement-stack-tracker',
+  '/supplement-stack-checker',
+  '/longevity-supplement-stack-tracker',
   '/supplement-schedule-app',
   '/supplement-schedule-planner',
   '/vitamin-tracker-app',
@@ -30,15 +32,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return PATHS.map((path) => ({
     url: new URL(path, 'https://www.suppstack.app').toString(),
     lastModified:
-      path === '/supplement-schedule-planner' ||
-      path === '/vitamin-tracker-app' ||
-      path === '/supplement-log-template'
-        ? new Date('2026-11-04T00:00:00.000Z')
-        : path === '/supplement-stack-tracker' ||
-            path === '/changelog' ||
-            path === '/creatine-timing-calculator'
-          ? new Date('2026-11-01T00:00:00.000Z')
-          : lastModified,
+      path === '/supplement-stack-checker' ||
+      path === '/longevity-supplement-stack-tracker'
+        ? new Date('2026-11-05T00:00:00.000Z')
+        : path === '/supplement-schedule-planner' ||
+            path === '/vitamin-tracker-app' ||
+            path === '/supplement-log-template'
+          ? new Date('2026-11-04T00:00:00.000Z')
+          : path === '/supplement-stack-tracker' ||
+              path === '/changelog' ||
+              path === '/creatine-timing-calculator'
+            ? new Date('2026-11-01T00:00:00.000Z')
+            : lastModified,
     changeFrequency: path === '/' ? 'weekly' : 'monthly',
     priority: path === '/' ? 1 : 0.7,
   }));

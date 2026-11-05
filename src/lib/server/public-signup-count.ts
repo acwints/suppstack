@@ -12,14 +12,16 @@ const MAX_PAGES = 50;
 
 const buckets = new Map<string, { windowStart: number; count: number }>();
 
-type CachedCount = {
+type CountPayload = {
   count: number;
+  referrals: number;
   updated_at: string;
-  expiresAt: number;
 };
 
+type CachedCount = CountPayload & { expiresAt: number };
+
 let cached: CachedCount | null = null;
-let inFlight: Promise<{ count: number; updated_at: string }> | null = null;
+let inFlight: Promise<CountPayload> | null = null;
 
 function clientIp(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for');
@@ -39,7 +41,7 @@ function rateLimited(request: NextRequest): boolean {
   return false;
 }
 
-function noStore(body: { count: number; updated_at: string } | { error: string }, status: number) {
+function noStore(body: CountPayload | { error: string }, status: number) {
   return NextResponse.json(body, {
     status,
     headers: { 'Cache-Control': 'no-store' },
@@ -72,16 +74,30 @@ async function fetchSignupCount(): Promise<number> {
   throw new Error('signup_count_page_cap');
 }
 
-async function loadSignupCount(): Promise<{ count: number; updated_at: string }> {
+async function fetchReferralCount(): Promise<number> {
+  const supabase = getSupabaseServiceClient();
+  if (!supabase) {
+    throw new Error('missing_service_role');
+  }
+
+  const { count, error } = await supabase
+    .from('commerce_checkout_events')
+    .select('event_id', { count: 'exact', head: true })
+    .eq('provider', 'referral');
+  if (error) throw error;
+  return count ?? 0;
+}
+
+async function loadSignupCount(): Promise<CountPayload> {
   const now = Date.now();
   if (cached && cached.expiresAt > now) {
-    return { count: cached.count, updated_at: cached.updated_at };
+    return { count: cached.count, referrals: cached.referrals, updated_at: cached.updated_at };
   }
 
   if (!inFlight) {
     inFlight = (async () => {
-      const count = await fetchSignupCount();
-      const payload = { count, updated_at: new Date().toISOString() };
+      const [count, referrals] = await Promise.all([fetchSignupCount(), fetchReferralCount()]);
+      const payload = { count, referrals, updated_at: new Date().toISOString() };
       cached = { ...payload, expiresAt: Date.now() + CACHE_MS };
       return payload;
     })().finally(() => {

@@ -83,6 +83,8 @@ function getMobileAppBarConfig(pathname: string): MobileAppBarConfig {
   if (pathname === '/terms') return { title: 'Terms', backHref: '/' };
   if (pathname === '/supplement-tracker-app') return { title: 'Supplement tracker', backHref: '/' };
   if (pathname === '/supplement-stack-tracker') return { title: 'Stack tracker', backHref: '/' };
+  if (pathname === '/supplement-stack-checker') return { title: 'Stack checker', backHref: '/' };
+  if (pathname === '/longevity-supplement-stack-tracker') return { title: 'Longevity stack', backHref: '/' };
   if (pathname === '/how-to-track-supplements') return { title: 'How to track', backHref: '/' };
   if (pathname === '/creatine-and-magnesium-timing') return { title: 'Creatine and magnesium', backHref: '/' };
   if (pathname === '/creatine-timing-calculator') return { title: 'Creatine timing', backHref: '/' };
