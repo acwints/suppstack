@@ -17,6 +17,7 @@ export const metadata: Metadata = {
 export default function SupplementSchedulePlannerPage() {
   return (
     <SeoLandingPage
+      earlyAccess
       path="/supplement-schedule-planner"
       eyebrow="Planner"
       title="Plan the days, then keep the list in one place"

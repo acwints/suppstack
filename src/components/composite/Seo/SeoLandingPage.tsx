@@ -30,6 +30,8 @@ export interface SeoLandingPageProps {
   /** Path the user lands on after sign-in. Defaults to the Stack tab. */
   nextPath?: string;
   ctaLabel?: string;
+  /** Show a "Get early access" signup capture above the fold. Uses the same sign-in flow. */
+  earlyAccess?: boolean;
 }
 
 const GUIDES: Array<{ href: string; label: string }> = [
@@ -71,6 +73,7 @@ export function SeoLandingPage({
   beforeSections,
   nextPath = '/stack',
   ctaLabel = 'Start your stack free',
+  earlyAccess = false,
 }: SeoLandingPageProps) {
   const loginHref = `/login?next=${encodeURIComponent(nextPath)}`;
   const related = GUIDES.filter((guide) => guide.href !== path);
@@ -81,12 +84,25 @@ export function SeoLandingPage({
       <h1 className="mt-3 text-3xl sm:text-4xl">{title}</h1>
       <p className="mt-4 text-lg text-gray-600">{intro}</p>
 
-      <div className="mt-6">
-        <Link href={loginHref} className={ctaClassName}>
-          {ctaLabel}
-        </Link>
-        <SignupCounter className="mt-4" />
-      </div>
+      {earlyAccess ? (
+        <div className="mt-6 rounded-lg border border-gray-200 p-4">
+          <h2 className="text-lg font-semibold">Get early access</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            Sign in with Apple or Google to save your stack. Core tracking is free.
+          </p>
+          <Link href={loginHref} className={`${ctaClassName} mt-3`}>
+            Get early access
+          </Link>
+          <SignupCounter className="mt-4" />
+        </div>
+      ) : (
+        <div className="mt-6">
+          <Link href={loginHref} className={ctaClassName}>
+            {ctaLabel}
+          </Link>
+          <SignupCounter className="mt-4" />
+        </div>
+      )}
 
       {notice ? (
         <p className="mt-8 rounded-lg border border-gray-900 bg-gray-50 p-4 text-sm font-medium text-gray-900">

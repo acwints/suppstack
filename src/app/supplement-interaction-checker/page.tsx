@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 export default function SupplementInteractionCheckerPage() {
   return (
     <SeoLandingPage
+      earlyAccess
       path="/supplement-interaction-checker"
       eyebrow="Supplement overlaps"
       title="Supplement overlap notes, with the source next to each one"
