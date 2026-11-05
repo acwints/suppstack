@@ -17,6 +17,7 @@ export const metadata: Metadata = {
 export default function CreatineTimingCalculatorPage() {
   return (
     <SeoLandingPage
+      earlyAccess
       path="/creatine-timing-calculator"
       eyebrow="Calculator"
       title="Creatine timing calculator"
