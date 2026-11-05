@@ -39,6 +39,7 @@ const GUIDES: Array<{ href: string; label: string }> = [
   { href: '/longevity-supplement-stack-tracker', label: 'Longevity stack tracker' },
   { href: '/supplement-schedule-app', label: 'Supplement schedule app' },
   { href: '/supplement-schedule-planner', label: 'Supplement schedule planner' },
+  { href: '/supplement-reminder-app', label: 'Supplement reminder app' },
   { href: '/vitamin-tracker-app', label: 'Vitamin tracker app' },
   { href: '/supplement-log-template', label: 'Supplement log template' },
   { href: '/how-to-track-supplements', label: 'How to track supplements' },
