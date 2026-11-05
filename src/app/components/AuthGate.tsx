@@ -48,6 +48,7 @@ const WEB_SEO_PATHS = [
   '/supplement-interaction-checker',
   '/supplement-restock-reminder',
   '/supplement-log-template',
+  '/supplement-reminder-app',
   '/supplement-schedule-app',
   '/supplement-schedule-planner',
   '/supplement-stack-checker',

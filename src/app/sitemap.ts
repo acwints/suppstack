@@ -13,6 +13,7 @@ const PATHS = [
   '/longevity-supplement-stack-tracker',
   '/supplement-schedule-app',
   '/supplement-schedule-planner',
+  '/supplement-reminder-app',
   '/vitamin-tracker-app',
   '/supplement-log-template',
   '/how-to-track-supplements',
@@ -33,7 +34,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: new URL(path, 'https://www.suppstack.app').toString(),
     lastModified:
       path === '/supplement-stack-checker' ||
-      path === '/longevity-supplement-stack-tracker'
+      path === '/longevity-supplement-stack-tracker' ||
+      path === '/supplement-reminder-app'
         ? new Date('2026-11-05T00:00:00.000Z')
         : path === '/supplement-schedule-planner' ||
             path === '/vitamin-tracker-app' ||

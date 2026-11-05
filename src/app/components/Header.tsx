@@ -96,6 +96,7 @@ function getMobileAppBarConfig(pathname: string): MobileAppBarConfig {
   if (pathname === '/supplement-log-template') return { title: 'Log template', backHref: '/' };
   if (pathname === '/vitamin-d-and-k2-timing') return { title: 'Vitamin D and K2', backHref: '/' };
   if (pathname === '/how-to-avoid-supplement-overlap') return { title: 'Overlap', backHref: '/' };
+  if (pathname === '/supplement-reminder-app') return { title: 'Reminders', backHref: '/' };
   if (pathname === '/supplement-restock-reminder') return { title: 'Restock', backHref: '/' };
   if (pathname === '/magnesium-glycinate-vs-citrate') return { title: 'Magnesium forms', backHref: '/' };
 
