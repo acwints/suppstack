@@ -15,6 +15,7 @@ import {
   PeptideReferenceShelf,
 } from '@/components/composite/Supplement';
 import { BrandLogo } from '@/components/composite/Brand';
+import { ReferralSignupPrompt } from '@/components/composite/Growth/ReferralSignupPrompt';
 import { isNativeApp } from '@/lib/native/capacitor';
 
 export default function HomePage() {
@@ -82,6 +83,7 @@ export default function HomePage() {
               <FiArrowRight className="shrink-0 text-gray-400" size={18} aria-hidden="true" />
             </Link>
           )}
+          <ReferralSignupPrompt />
         </div>
       </div>
 

@@ -20,7 +20,8 @@ import {
   hasNativeAppleSignInBridge,
 } from '@/lib/native/apple-sign-in';
 import { growthEnabled } from '@/lib/flags';
-import { clearRef, peekRef } from '@/lib/growth/referral';
+import { claimStoredReferral } from '@/lib/growth/referral-client-claim';
+import { loginRedirectWithRef, peekRef } from '@/lib/growth/referral';
 
 /**
  * New accounts get first-run onboarding once. Existing accounts (created
@@ -81,6 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           getOrCreateUserProfile(session.user).catch((error) => {
             console.error('Failed to prepare user profile:', error);
           });
+          void claimStoredReferral(session.access_token);
         }
       } catch (error) {
         console.error('Failed to load auth session:', error);
@@ -106,19 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // stays behind the flag for when that migration exists.
         const ref = peekRef();
         if (ref && session.access_token) {
-          void fetch('/api/referral', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({ ref }),
-          }).then((response) => {
-            if (response.ok) clearRef();
-            else console.error('referral record failed', response.status);
-          }, (error: unknown) => {
-            console.error('referral record failed', error);
-          });
+          void claimStoredReferral(session.access_token);
           if (growthEnabled('referrals')) {
             void supabase.rpc('claim_referral', { p_code: ref }).then(({ error }) => {
               if (error) console.error('claim_referral failed', error);
@@ -242,8 +232,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const redirectUrl =
       typeof window !== 'undefined'
-        ? `${window.location.origin}/login`
-        : 'https://www.suppstack.app/profile';
+        ? loginRedirectWithRef(window.location.origin, peekRef())
+        : 'https://www.suppstack.app/login';
 
     await supabase.auth.signInWithOAuth({
       provider,
