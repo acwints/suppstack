@@ -1,7 +1,13 @@
 import 'server-only';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { countFromUserPage, liveUserCount } from '@/lib/public-signup-count';
+import {
+  publicCountFromUsers,
+  publicReferralCount,
+  testAccountPatterns,
+  type ListedUser,
+  type ReferralCountEvent,
+} from '@/lib/public-signup-count';
 import { getSupabaseServiceClient } from '@/lib/server/supabase';
 
 const CACHE_MS = 60_000;
@@ -48,13 +54,30 @@ function noStore(body: CountPayload | { error: string }, status: number) {
   });
 }
 
-async function fetchSignupCount(): Promise<number> {
+function listedUser(user: {
+  id: string;
+  email?: string | null;
+  deleted_at?: string | null;
+  app_metadata?: Record<string, unknown> | null;
+  user_metadata?: Record<string, unknown> | null;
+}): ListedUser {
+  return {
+    id: user.id,
+    email: user.email ?? null,
+    deleted_at: user.deleted_at ?? null,
+    app_metadata: { is_test: user.app_metadata?.is_test === true },
+    user_metadata: { is_test: user.user_metadata?.is_test === true },
+  };
+}
+
+async function fetchListedUsers(): Promise<{ total: number; users: ListedUser[] }> {
   const supabase = getSupabaseServiceClient();
   if (!supabase) {
     throw new Error('missing_service_role');
   }
 
-  let counted = 0;
+  const users: ListedUser[] = [];
+  let total = 0;
   for (let page = 1; page <= MAX_PAGES; page += 1) {
     const { data, error } = await supabase.auth.admin.listUsers({
       page,
@@ -62,30 +85,39 @@ async function fetchSignupCount(): Promise<number> {
     });
     if (error) throw error;
 
-    const users = data.users ?? [];
-    const total = page === 1 && 'total' in data && typeof data.total === 'number' ? data.total : 0;
-    const resolved = countFromUserPage(total, users, PAGE_SIZE);
-    if (resolved.done) {
-      return counted + resolved.count;
+    if (page === 1 && 'total' in data && typeof data.total === 'number' && data.total > 0) {
+      total = data.total;
     }
-    counted += liveUserCount(users);
+    const batch = data.users ?? [];
+    users.push(...batch.map((user) => listedUser(user)));
+    if (batch.length < PAGE_SIZE) return { total, users };
   }
 
   throw new Error('signup_count_page_cap');
 }
 
-async function fetchReferralCount(): Promise<number> {
+async function fetchReferralEvents(): Promise<ReferralCountEvent[]> {
   const supabase = getSupabaseServiceClient();
   if (!supabase) {
     throw new Error('missing_service_role');
   }
 
-  const { count, error } = await supabase
-    .from('commerce_checkout_events')
-    .select('event_id', { count: 'exact', head: true })
-    .eq('provider', 'referral');
-  if (error) throw error;
-  return count ?? 0;
+  const events: ReferralCountEvent[] = [];
+  for (let page = 0; page < MAX_PAGES; page += 1) {
+    const from = page * PAGE_SIZE;
+    const { data, error } = await supabase
+      .from('commerce_checkout_events')
+      .select('user_id, metadata')
+      .eq('provider', 'referral')
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+
+    const rows = (data ?? []) as ReferralCountEvent[];
+    events.push(...rows);
+    if (rows.length < PAGE_SIZE) return events;
+  }
+
+  throw new Error('referral_count_page_cap');
 }
 
 async function loadSignupCount(): Promise<CountPayload> {
@@ -96,8 +128,13 @@ async function loadSignupCount(): Promise<CountPayload> {
 
   if (!inFlight) {
     inFlight = (async () => {
-      const [count, referrals] = await Promise.all([fetchSignupCount(), fetchReferralCount()]);
-      const payload = { count, referrals, updated_at: new Date().toISOString() };
+      const patterns = testAccountPatterns(process.env.TEST_ACCOUNT_EMAILS);
+      const [{ total, users }, events] = await Promise.all([fetchListedUsers(), fetchReferralEvents()]);
+      const payload = {
+        count: publicCountFromUsers(total, users, patterns),
+        referrals: publicReferralCount(events, users, patterns),
+        updated_at: new Date().toISOString(),
+      };
       cached = { ...payload, expiresAt: Date.now() + CACHE_MS };
       return payload;
     })().finally(() => {
