@@ -21,7 +21,7 @@
     "ios:open": "cap open ios",
     "ios:assets": "capacitor-assets generate --ios",
     "postinstall": "patch-package",
-    "ios:run": "cap run ios --no-sync --target $(xcrun simctl list devices booted | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)",
+    "ios:run": "node src/scripts/runIos.mjs",
     "ios:logs": "xcrun simctl spawn booted log stream --level=debug --style=compact --predicate 'process == \"App\"'",
     "check:peptides": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\",\"esModuleInterop\":true}' ts-node -r tsconfig-paths/register src/scripts/checkPeptideReferences.ts"
   },

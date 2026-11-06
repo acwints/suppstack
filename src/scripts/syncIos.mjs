@@ -48,7 +48,7 @@ async function restorePinnedCapacitorPackage() {
   const generated = await readFile(packageFile, 'utf8');
   const replacements = [
     [
-      '.package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.4.1")',
+      /\.package\(url: "https:\/\/github\.com\/ionic-team\/capacitor-swift-pm\.git", exact: "[^"]+"\)/,
       '.package(name: "CapacitorBinaries", path: "../CapacitorBinaries")',
     ],
     [
@@ -63,7 +63,8 @@ async function restorePinnedCapacitorPackage() {
 
   let restored = generated;
   for (const [from, to] of replacements) {
-    if (!restored.includes(from)) {
+    const matches = typeof from === 'string' ? restored.includes(from) : from.test(restored);
+    if (!matches) {
       throw new Error(`Capacitor generated an unexpected Package.swift; missing: ${from}`);
     }
     restored = restored.replace(from, to);
