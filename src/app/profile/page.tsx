@@ -13,6 +13,7 @@ import {
   FiTrash2,
   FiEye,
   FiLock,
+  FiLogOut,
   FiChevronRight,
 } from 'react-icons/fi';
 import { useAuth } from '@/app/context/AuthContext';
@@ -232,43 +233,27 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-12">
-        {/* Header */}
-        <header className="mb-12 pb-8 border-b border-gray-200">
-          <Inline justify="between" align="start">
-            <div className="flex items-start gap-6">
-              <Avatar
-                src={getUserAvatarUrl(user)}
-                alt={getUserDisplayName(user) ?? 'User'}
-                size="xl"
-              />
-              <div>
-                <h1 className="text-3xl font-serif text-gray-900 mb-1">
-                  {displayName || user.user_metadata?.full_name || 'Welcome'}
-                </h1>
-                <p className="text-gray-500 text-sm">{user.email}</p>
-                {bio && <p className="text-gray-600 mt-3 max-w-md">{bio}</p>}
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                await logout();
-                router.replace('/login');
-              }}
-            >
-              Sign out
-            </Button>
-          </Inline>
+      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
+        <header className="mb-5 flex items-center gap-4">
+          <Avatar
+            src={getUserAvatarUrl(user)}
+            alt={getUserDisplayName(user) ?? 'User'}
+            size="lg"
+          />
+          <div className="min-w-0">
+            <h1 className="break-words font-serif text-2xl text-gray-900 sm:text-3xl">
+              {displayName || user.user_metadata?.full_name || 'Welcome'}
+            </h1>
+            <p className="break-words text-sm text-gray-600">{user.email}</p>
+            {bio && <p className="mt-2 max-w-md break-words text-sm text-gray-600">{bio}</p>}
+          </div>
         </header>
 
-        <Link href="/changelog" className="mb-6 inline-flex min-h-11 items-center font-medium underline">What’s New</Link>
+        <PremiumStatusRow />
         <ReferralLink />
 
-        <PremiumStatusRow />
-
         {/* Tab Navigation */}
-        <Tabs.List variant="underline" className="mb-10">
+        <Tabs.List variant="underline" className="mb-6">
           {tabItems.map((tab) => (
             <Tabs.Tab
               key={tab.id}
@@ -378,7 +363,7 @@ export default function ProfilePage() {
         {activeTab === 'settings' && (
           <section>
             <div className="max-w-2xl">
-              <h2 className="text-2xl font-serif text-gray-900 mb-8">Profile Settings</h2>
+              <h2 className="sr-only">Profile settings</h2>
 
               <form onSubmit={handleProfileUpdate}>
                 <VStack gap={8}>
@@ -543,10 +528,24 @@ export default function ProfilePage() {
                 </Link>
               </div>
 
-              <div className="mt-12 border-t border-error-100 pt-8">
-                <h3 className="text-sm font-medium uppercase tracking-wider text-error-700">
-                  Account
-                </h3>
+              <div className="mt-10 border-t border-gray-200 pt-6">
+                <h3 className="text-base font-medium text-gray-900">Account</h3>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-4"
+                  leftIcon={<FiLogOut size={16} />}
+                  onClick={async () => {
+                    await logout();
+                    router.replace('/login');
+                  }}
+                >
+                  Sign out
+                </Button>
+              </div>
+
+              <div className="mt-8 border-t border-gray-200 pt-6">
+                <h3 className="text-base font-medium text-gray-900">Delete account</h3>
                 <p className="mt-3 text-sm text-gray-600">
                   Permanently delete your account and remove your profile, saved supplements,
                   stacks, tracking history, and subscription entitlement records from SuppStack AI.

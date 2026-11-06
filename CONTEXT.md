@@ -323,12 +323,12 @@ The customer can also branch from Evaluate into Save, Review, or Published Stack
 
 ### 7.13 Profile, support, sign-out, and account deletion
 
-- **Customer experience:** A customer edits optional identity/body details, signs out, gets support, or types DELETE to permanently remove the account.
+- **Customer experience:** A customer edits optional identity and body details, signs out from Settings, gets support, or types DELETE to permanently remove the account. Signed-in customers who have completed onboarding can open What’s New from the bell in the You top bar on mobile or the desktop header.
 - **Logic and data:** Production still upserts profile fields directly. The next release routes get/create and edit through atomic authenticated database commands and stores optional body data in `user_private_profiles`; deletion authenticates the bearer token, removes the profile, then calls Supabase Admin delete so the private row cascades.
 - **Metadata/events today:** Deletion has no durable operation record or customer-visible receipt. Errors return raw database/admin messages to the client.
 - **Performance commentary:** Profile loads after auth and can show a full-screen spinner without an inline recovery action.
 - **UX/privacy commentary:** In-app deletion satisfies a major App Store requirement. Public-profile RLS currently undermines the privacy of optional DOB/gender/height/weight fields. The privacy policy also says stacks are private even though published stacks default public.
-- **Status:** Deletion **Implemented/Partial**; profile privacy **Risk**. An invite link can appear on Profile only when the referrals flag is on and the visitor is outside the native shell. With the flag off, Profile is unchanged.
+- **Status:** Deletion **Implemented/Partial**; profile privacy **Risk**. The Invite a friend row on Profile reveals the UUID link, priority status, and terms on the web and in the native shell. Feedback submissions live under What’s New and follow the existing feedback validation and storage rules.
 
 ### 7.14 Public guides, signup count, and referral attribution
 
@@ -627,6 +627,7 @@ These are structural candidates, not permission to add product scope.
 
 | Date | Area | Change/evidence | Result | Next |
 | --- | --- | --- | --- | --- |
+| 2026-11-06 | Profile and updates | Moved What’s New into the signed-in top bar. Collapsed priority invite details into the Invite a friend row and moved Sign out into Settings. | Browser fixture checks covered 390px and desktop layouts, keyboard navigation to updates, invite copying, and access to feedback. | Verify on device after deployment. |
 | 2026-11-06 | Profile invite | After onboarding, the UUID invite was only on `/welcome`, and the profile copy stayed behind `NEXT_PUBLIC_FLAG_REFERRALS`, which is off and also hidden in the iOS shell. Profile now shows the same invite card on the web and in the shell, under the account header. If copying is denied, the link stays selectable and the card says so. | Unit checks and production build pass. Local screenshots are fixtures, not a signed-in session. | Review the PR. Do not merge from this change until that review. |
 | 2026-11-05 | Referral claim | A stored `?ref=` is claimed once per new account. Overlapping OAuth sign-in events share one request, and the referral row uses a stable id so a second insert does not increase the count. The return URL keeps `ref`. The homepage shows a create-account prompt only when that ref is stored on the web. No reward or count-rule change. | Unit checks cover one-time claim, self and stale skips, the UUID link, and the prompt. | Review the PR. Do not merge from this change until that review. |
 | 2026-11-05 | Referral priority | Welcome invite states a non-monetary rule: one verified friend signup, stored as a referral event with the referrer’s user id, places that account in a priority group invited before the standard group. Order inside each group is signup time. Test accounts, self-referrals, duplicate events, and short codes do not qualify. The link stays `?ref=` plus the user id. No migration and no change to `/api/count`. | Unit checks cover the exclusions, signup order, and the UUID link. | Review the PR. Do not merge from this change until that review. |

@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/app/context/AuthContext';
+import { needsOnboarding, useAuth } from '@/app/context/AuthContext';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
   FiArrowLeft,
+  FiBell,
   FiBookmark,
   FiChevronDown,
   FiCreditCard,
@@ -276,6 +277,18 @@ export function Header() {
     </button>
   );
 
+  const whatsNewLink = !loading && user && !needsOnboarding(user) ? (
+    <Link
+      href="/changelog"
+      aria-label="What’s New"
+      aria-current={pathname === '/changelog' ? 'page' : undefined}
+      title="What’s New"
+      className="flex size-11 shrink-0 items-center justify-center rounded text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
+    >
+      <FiBell size={20} aria-hidden="true" />
+    </Link>
+  ) : null;
+
   const savedProductsLink = (
     <Link
       href="/saved"
@@ -324,7 +337,8 @@ export function Header() {
                   {mobileAppBar.title}
                 </p>
               )}
-              {mobileAppBar.showSaved ? savedProductsLink : <span className="h-11 w-11 shrink-0" aria-hidden="true" />}
+              {pathname === '/profile' ? whatsNewLink : null}
+              {mobileAppBar.showSaved ? savedProductsLink : null}
             </>
           )}
         </div>
@@ -361,6 +375,7 @@ export function Header() {
           </nav>
 
           <div className="flex shrink-0 items-center gap-1">
+            {whatsNewLink}
             {savedProductsLink}
             {/* Auth — desktop only; on mobile the tab bar's You tab covers it,
                 keeping a single avatar per screen. */}

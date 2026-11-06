@@ -20,10 +20,10 @@ export interface ShippedFromFeedbackEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
-    id: '2026-11-01-improvements',
-    date: '2026-11-01',
-    title: 'Improvements box',
-    body: 'Every page has a box for how SuppStack should be different. Notes stay with the team until a change ships.',
+    id: '2026-11-06-whats-new',
+    date: '2026-11-06',
+    title: 'Updates and feedback',
+    body: 'Open What’s New from the top bar to see updates or send feedback.',
   },
 ];
 
