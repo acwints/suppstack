@@ -11,6 +11,12 @@ export function referralUrl(code: string): string {
   return `${REFERRAL_ORIGIN}/?ref=${encodeURIComponent(code)}`;
 }
 
+/** Button label and fallback when the clipboard is denied or missing. */
+export function copyLinkResult(ok: boolean): { button: 'Copied' | 'Copy link'; note: string | null } {
+  if (ok) return { button: 'Copied', note: null };
+  return { button: 'Copy link', note: 'Couldn’t copy. Select the link above.' };
+}
+
 /** A `?ref=` value worth storing. Short codes stay accepted; issued links are user ids. */
 export function refFromSearch(search: string): string | null {
   const ref = new URLSearchParams(search).get('ref');

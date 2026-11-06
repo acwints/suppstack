@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { REFERRAL_SIGNUP_PROMPT, showReferralSignupPrompt } from './referral-signup-prompt';
 import {
+  copyLinkResult,
   loginRedirectWithRef,
   refFromSearch,
   referralUrl,
@@ -112,6 +113,14 @@ test('overlapping claims post once, and a failed post keeps the ref', async () =
   assert.equal(shouldForgetStoredRef(false, null), false);
   assert.equal(shouldForgetStoredRef(true, { recorded: true }), true);
   assert.equal(shouldForgetStoredRef(true, { recorded: false, reason: 'duplicate' }), true);
+});
+
+test('a denied clipboard keeps the link selectable', () => {
+  assert.deepEqual(copyLinkResult(true), { button: 'Copied', note: null });
+  assert.deepEqual(copyLinkResult(false), {
+    button: 'Copy link',
+    note: 'Couldn’t copy. Select the link above.',
+  });
 });
 
 test('the homepage prompt is only for a stored web invite', () => {
