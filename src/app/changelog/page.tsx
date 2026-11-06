@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+import { ImprovementsBox } from '@/components/composite/Feedback';
 import { changelog, shippedFromFeedback } from '@/content/changelog';
 
 export const metadata: Metadata = {
-  title: 'Shipped from your feedback - SuppStack',
+  title: "What’s New - SuppStack",
   description: 'Changes in SuppStack that shipped from notes people sent.',
   alternates: { canonical: '/changelog' },
 };
@@ -10,7 +11,8 @@ export const metadata: Metadata = {
 export default function ChangelogPage() {
   return (
     <main className="mx-auto w-full max-w-3xl px-3 py-8 sm:px-6">
-      <h1 className="text-3xl text-gray-900">Shipped from your feedback</h1>
+      <h1 className="text-3xl text-gray-900">What’s New</h1>
+      <h2 className="mt-8 text-2xl text-gray-900">Shipped from your feedback</h2>
       <p className="mt-3 text-gray-600">
         When a change ships because of a note, it is listed here with a date and a short credit.
         Email addresses are not published.
@@ -44,6 +46,7 @@ export default function ChangelogPage() {
           </ol>
         </section>
       ) : null}
+      <ImprovementsBox />
     </main>
   );
 }

@@ -262,6 +262,7 @@ export default function ProfilePage() {
           </Inline>
         </header>
 
+        <Link href="/changelog" className="mb-6 inline-flex min-h-11 items-center font-medium underline">What’s New</Link>
         <ReferralLink />
 
         <PremiumStatusRow />

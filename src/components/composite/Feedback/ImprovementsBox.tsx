@@ -3,17 +3,13 @@
 import { FormEvent, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { supabase } from '@/app/supabase';
-import { cn } from '@/lib/design-system';
+import { needsOnboarding, useAuth } from '@/app/context/AuthContext';
 
 const MAX_MESSAGE = 2000;
 
-/**
- * Always-visible improvements prompt. One field, Enter or Send. No dialog.
- * Mounted by the app shell so it shows on the website and in the iOS shell.
- */
 export function ImprovementsBox() {
   const pathname = usePathname();
-  const bareChrome = pathname === '/login' || pathname === '/welcome';
+  const { user, loading } = useAuth();
   const [message, setMessage] = useState('');
   const [email, setEmail] = useState('');
   const [companyUrl, setCompanyUrl] = useState('');
@@ -62,14 +58,11 @@ export function ImprovementsBox() {
     }
   };
 
+  if (loading || !user || needsOnboarding(user)) return null;
+
   return (
-    <section
-      aria-label="Improvements"
-      className={cn(
-        'border-b border-gray-200 bg-white px-3 py-3 sm:px-6',
-        bareChrome && 'pt-[max(0.75rem,env(safe-area-inset-top))]'
-      )}
-    >
+    <details className="mt-8 border-t border-gray-200 pt-4">
+      <summary className="min-h-11 cursor-pointer py-2 font-medium text-gray-900">Send feedback</summary>
       <form onSubmit={(event) => void submit(event)} className="mx-auto w-full max-w-3xl">
         <label htmlFor="improvements-note" className="block text-sm font-medium text-gray-900">
           <span className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -136,6 +129,6 @@ export function ImprovementsBox() {
           </p>
         ) : null}
       </form>
-    </section>
+    </details>
   );
 }
