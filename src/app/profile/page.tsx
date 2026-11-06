@@ -262,6 +262,8 @@ export default function ProfilePage() {
           </Inline>
         </header>
 
+        <ReferralLink />
+
         <PremiumStatusRow />
 
         {/* Tab Navigation */}
@@ -526,8 +528,6 @@ export default function ProfilePage() {
                   </div>
                 </VStack>
               </form>
-
-              <ReferralLink />
 
               <div className="mt-12 border-t border-gray-200 pt-8">
                 <h3 className="text-sm font-medium uppercase tracking-wider text-gray-500">

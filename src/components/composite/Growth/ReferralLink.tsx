@@ -1,20 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { growthEnabled } from '@/lib/flags';
 import { InviteLink } from './InviteLink';
 
 /**
- * Profile invite. The short-code RPC is not required: the link is the user id.
- * Hidden until an effect confirms the flag is on and this is not the native shell.
+ * The same UUID invite as the welcome screen. It stays available after
+ * onboarding, on the web and in the iOS shell. It has no price. The
+ * short-code flag does not hide it.
  */
 export function ReferralLink() {
-  const [enabled, setEnabled] = useState(false);
-
-  useEffect(() => {
-    setEnabled(growthEnabled('referrals'));
-  }, []);
-
-  if (!enabled) return null;
   return <InviteLink />;
 }
