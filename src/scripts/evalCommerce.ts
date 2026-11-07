@@ -5,7 +5,7 @@ import { buildShopifyCartGroups, getShopifyCartPermalink } from '../lib/commerce
 import { resolveShopifyPurchaseSession } from '../lib/commerce/shopify-ucp-server';
 import { buildStackCheckout } from '../lib/commerce/stack-checkout';
 import { openInNativeBrowser } from '../lib/native/capacitor';
-import { presentNativeCheckout } from '../lib/native/checkout';
+import { presentMerchantCheckout, presentNativeCheckout } from '../lib/native/checkout';
 
 const product: Product = {
   product_id: 'eval-product',
@@ -146,6 +146,42 @@ async function main() {
       const plugins = window.Capacitor!.Plugins as Record<string, unknown>;
       plugins.SuppStackCheckout = { present: async () => ({ status: 'unknown' }) };
       await assert.rejects(presentNativeCheckout('https://merchant.example/cart/123:1'));
+    });
+    await evaluate('COM-PARITY-01-direct-shopify-uses-sdk', async () => {
+      const plugins = window.Capacitor!.Plugins as Record<string, unknown>;
+      plugins.SuppStackCheckout = { present: async () => ({ status: 'completed' }) };
+      assert.equal(await presentMerchantCheckout('https://merchant.example/checkouts/fixture', true), 'completed');
+      const plan = buildStackCheckout([{ ...product, shopify_variant_gid: undefined, shopify_checkout_url: 'https://merchant.example/checkouts/fixture' }]);
+      assert.equal(plan[0].nativeCheckout, true);
+    });
+    await evaluate('COM-PARITY-02-official-page-uses-browser', async () => {
+      const plugins = window.Capacitor!.Plugins as Record<string, unknown>;
+      plugins.SuppStackCheckout = { present: async () => { throw new Error('Official pages must not enter Checkout Kit'); } };
+      assert.equal(await presentMerchantCheckout('https://merchant.example/products/fixture', false), 'opened');
+    });
+    await evaluate('COM-PARITY-03-sdk-error-does-not-auto-reopen', async () => {
+      const plugins = window.Capacitor!.Plugins as Record<string, unknown>;
+      plugins.SuppStackCheckout = { present: async () => { throw new Error('SDK failed'); } };
+      openedUrl = '';
+      await assert.rejects(presentMerchantCheckout('https://merchant.example/checkouts/fixture', true));
+      assert.equal(openedUrl, '');
+    });
+    await evaluate('COM-PARITY-04-insecure-destination-never-opens', async () => {
+      openedUrl = '';
+      await assert.rejects(presentMerchantCheckout('http://merchant.example/cart/123:1', false));
+      assert.equal(openedUrl, '');
+    });
+    await evaluate('COM-PARITY-05-web-popup-keeps-buyer-gesture', async () => {
+      const capacitor = window.Capacitor!;
+      const native = capacitor.isNativePlatform;
+      capacitor.isNativePlatform = () => false;
+      let calls = 0;
+      window.open = () => { calls += 1; return null; };
+      try {
+        const result = presentMerchantCheckout('https://merchant.example/cart/123:1', true);
+        assert.equal(calls, 1);
+        assert.equal(await result, 'failed');
+      } finally { capacitor.isNativePlatform = native; }
     });
     await evaluate('COM-08-native-missing-bridge-is-recoverable', async () => {
       delete window.Capacitor?.Plugins?.Browser;

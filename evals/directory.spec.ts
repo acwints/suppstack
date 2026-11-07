@@ -126,21 +126,17 @@ test('DIR-06 desktop keeps the direct filter controls', async ({ page }) => {
   expect((await title.boundingBox())!.height).toBeGreaterThan(20);
 });
 
-test('DIR-07 slow hydration cannot silently discard a search', async ({ page }) => {
-  let releaseScripts!: () => void;
-  const scriptsReady = new Promise<void>((resolve) => { releaseScripts = resolve; });
-  await page.route('**/_next/static/chunks/**', async (route) => {
-    await scriptsReady;
-    await route.continue();
-  });
-  await page.goto('/products', { waitUntil: 'commit' });
+test('DIR-07 server-rendered search stays disabled until hydration', async ({ page, request }) => {
+  // Inspect SSR without blocking bootstrap or querying a script-disabled WebKit page.
+  const response = await request.get('/products');
+  expect(response.ok()).toBe(true);
+  const html = await response.text();
+  const fieldset = html.match(/<fieldset\b[^>]*>[\s\S]*?<\/fieldset>/g)?.find(tag => tag.includes('aria-label="Search and filters"'));
+  expect(fieldset).toContain('placeholder="Search products or ingredients"');
+  expect(fieldset?.match(/^<fieldset\b[^>]*>/)?.[0]).toMatch(/\sdisabled(?:=|\s|>)/);
+
+  await page.goto('/products');
   const search = page.getByRole('searchbox', { name: 'Search products' });
-  try {
-    await expect(search).toBeVisible();
-    await expect(search).toBeDisabled();
-  } finally {
-    releaseScripts();
-  }
   await expect(search).toBeEnabled();
   await search.fill('creatine');
   await expect(page.getByRole('button', { name: 'Remove filter "creatine"', exact: true })).toBeVisible();

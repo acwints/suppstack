@@ -8,10 +8,9 @@ import type { Product } from '@/types';
 import { Button, useToast } from '@/components/ui';
 import { EmbeddedCheckout } from '@/components/composite/Commerce';
 import { useAuth } from '@/app/context/AuthContext';
-import { useCommerceCheckout, useProductInStack, useSavedProducts, useStackIngredients } from '@/hooks';
+import { useProductInStack, useSavedProducts, useStackIngredients } from '@/hooks';
 import { summarizeProductAddition } from '@/lib/ingredients';
 import { canPurchase, getPurchaseLabel } from '@/lib/commerce/shopify-ucp';
-import { hasShopifyVariant } from '@/lib/commerce/product-source';
 import { cn } from '@/lib/design-system';
 import { loginHref } from '@/lib/navigation/login';
 
@@ -32,7 +31,6 @@ export function ProductActions({
   const pathname = usePathname();
   const toast = useToast();
   const { isInStack, isUpdating, addToStack } = useProductInStack(product);
-  const { isStartingCheckout, startCheckout } = useCommerceCheckout();
   const { isSaved, toggleSaved } = useSavedProducts();
   // Shared stack-intake context (single fetch across the app). Read via
   // context — NOT a direct `useStackIngredients` call — because this component
@@ -84,18 +82,7 @@ export function ProductActions({
     }
   };
 
-  const handleStartCheckout = async () => {
-    if (hasShopifyVariant(product)) {
-      setIsCheckoutOpen(true);
-      return;
-    }
-
-    try {
-      await startCheckout(product);
-    } catch {
-      toast.error('Unable to open purchase link. Please try again.');
-    }
-  };
+  const handleStartCheckout = () => setIsCheckoutOpen(true);
 
   if (variant === 'compact') {
     return (
@@ -143,7 +130,6 @@ export function ProductActions({
             size="lg"
             onClick={handleStartCheckout}
             disabled={!canPurchase(product)}
-            isLoading={isStartingCheckout}
             leftIcon={<FaShoppingCart />}
             className="min-h-11 flex-1"
           >
@@ -179,7 +165,6 @@ export function ProductActions({
           size="lg"
           onClick={handleStartCheckout}
           disabled={!canPurchase(product)}
-          isLoading={isStartingCheckout}
           leftIcon={<FaShoppingCart />}
           className="sm:flex-1"
         >

@@ -468,7 +468,7 @@ export default function ProfilePage() {
                             value={twitterHandle}
                             onChange={(e) => setTwitterHandle(e.target.value)}
                             placeholder="username"
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-r focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
+                            className="min-w-0 flex-1 px-4 py-2 border border-gray-200 rounded-r focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
                           />
                         </div>
                       </div>
@@ -486,7 +486,7 @@ export default function ProfilePage() {
                             value={instagramHandle}
                             onChange={(e) => setInstagramHandle(e.target.value)}
                             placeholder="username"
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-r focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
+                            className="min-w-0 flex-1 px-4 py-2 border border-gray-200 rounded-r focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
                           />
                         </div>
                       </div>
