@@ -118,21 +118,19 @@ test('DIR-06 desktop keeps the direct filter controls', async ({ page }) => {
   expect((await title.boundingBox())!.height).toBeGreaterThan(20);
 });
 
-test('DIR-07 slow hydration cannot silently discard a search', async ({ page }) => {
-  let releaseScripts!: () => void;
-  const scriptsReady = new Promise<void>((resolve) => { releaseScripts = resolve; });
-  await page.route('**/_next/static/chunks/**', async (route) => {
-    await scriptsReady;
-    await route.continue();
-  });
-  await page.goto('/products', { waitUntil: 'commit' });
-  const search = page.getByRole('searchbox', { name: 'Search products' });
+test('DIR-07 an unhydrated page cannot silently discard a search', async ({ page, browser, baseURL }) => {
+  // Blocking all framework scripts can also block WebKit's streaming document.
+  const unhydrated = await browser.newPage({ javaScriptEnabled: false });
   try {
+    await unhydrated.goto(`${baseURL}/products`, { waitUntil: 'domcontentloaded' });
+    const search = unhydrated.getByRole('searchbox', { name: 'Search products' });
     await expect(search).toBeVisible();
     await expect(search).toBeDisabled();
   } finally {
-    releaseScripts();
+    await unhydrated.close();
   }
+  await page.goto('/products');
+  const search = page.getByRole('searchbox', { name: 'Search products' });
   await expect(search).toBeEnabled();
   await search.fill('creatine');
   await expect(page.getByRole('button', { name: 'Remove filter "creatine"', exact: true })).toBeVisible();
