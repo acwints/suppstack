@@ -8,7 +8,9 @@ export default defineConfig({
   testDir: './evals',
   fullyParallel: false,
   workers: 1,
-  reporter: [['list'], ['json', { outputFile: 'test-results/commerce-report.json' }]],
+  reporter: [['list'], ['json', {
+    outputFile: process.env.COMMERCE_EVAL_REPORT || 'test-results/commerce-report.json',
+  }]],
   use: {
     baseURL: `http://127.0.0.1:${port}`,
     viewport: { width: 390, height: 844 },
