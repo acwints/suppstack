@@ -42,3 +42,7 @@ supabase/.temp/
 next-env.d.ts
 DerivedData
 ios/DerivedData.nosync
+
+/test-results/
+
+/playwright-report/

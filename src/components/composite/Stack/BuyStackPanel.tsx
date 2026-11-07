@@ -15,7 +15,6 @@ import {
 } from '@/lib/commerce/shopify-ucp';
 import { mergeProductSources } from '@/lib/commerce/product-source';
 import { openExternalUrl } from '@/lib/native/capacitor';
-import { useAllowsExternalPurchase } from '@/components/WebOnly';
 import {
   findCatalogSupplementById,
   findCatalogSupplementByName,
@@ -47,7 +46,6 @@ export function BuyStackPanel({
   const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set());
-  const allowsExternalPurchase = useAllowsExternalPurchase();
 
   useEffect(() => {
     async function fetchProducts() {
@@ -169,7 +167,6 @@ export function BuyStackPanel({
     });
   };
 
-  if (!allowsExternalPurchase) return null;
 
   if (isLoading) {
     return (
