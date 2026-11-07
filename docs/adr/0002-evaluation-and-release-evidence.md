@@ -1,0 +1,41 @@
+# ADR 0002 — Evaluate improvements against task outcomes
+
+Date November 7, 2026. Status accepted.
+
+## Context
+
+A passing build did not catch hidden native purchase controls or feedback forms on sign-in. Improvements need stable task scenarios and evidence for the environment tested.
+
+## Decision
+
+Use deterministic commerce evaluations for routing and capability decisions, Playwright for rendered behavior, and device checks for native releases. Keep stable scenario IDs. Change expectations only when an ADR explains a deliberate behavior change.
+
+For every iteration, record the source commit, scenario set, before and after results, failed cases and evidence links. Existing safety cases must pass before visual or performance improvements count. Fixture success and physical-device verification remain separate.
+
+## Commands
+
+- npm run eval:commerce runs eight offline scenarios and emits JSON with IDs and pass count.
+- npm run eval:ui starts or reuses the local development server on port 3511.
+- Install the test browser once with npx playwright install chromium.
+- UI tests need the project’s public Supabase URL to derive the storage key. They intercept Supabase and checkout responses, use an artificial buyer, and stop before payment.
+- npm run check:catalog runs existing catalog checks.
+- Failed browser traces stay under test-results. Review their contents before sharing.
+
+## Gates
+
+| Area | Acceptance | Evidence |
+| --- | --- | --- |
+| Variant and quantity | Selected merchant variant and container quantity survive | COM-01, COM-05, COM-07, COM-UI-01 |
+| Inventory | Unavailable products never contact the merchant or start checkout | COM-02, COM-UI-02 |
+| Capability truth | Permalink is not reported as authenticated UCP checkout | COM-03 |
+| Recovery | Missing/rejected native bridge produces a recovery state | COM-08, COM-UI-03 |
+| Action visibility | Native product detail has a usable Buy action | COM-UI-01 |
+| Account boundary | Sign-in has no feedback prompt or updates icon | UX-01 |
+| Catalog | Zero catalog-check failures | Existing catalog command |
+| Native release | Cold launch, resume, checkout return and Apple sign-in on physical iPad | Open |
+
+For visual refinement, capture the same route, content, viewport and state before and after. Review competing actions, hierarchy, overflow, keyboard focus, touch targets and reduced motion. Record the specific issue improved. Performance work records navigation-to-usable-control time under the same network/cache conditions while preserving these gates.
+
+## First iteration
+
+The pre-change resolver scored 6/8. Recovery scores 8/8. Browser scenarios cover native presentation, unavailable live stock, bridge failure and sign-in noise. Expand this baseline as the real checkout integration is added.
