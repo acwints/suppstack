@@ -31,7 +31,9 @@ jobs:
       - run: node --test src/scripts/iosPackageClassList.test.mjs
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run eval:ui
-      - run: npm run eval:ui -- evals/directory.spec.ts --browser=webkit
+      # Linux headless WebKit can stall its frame-based click checks (playwright#33057).
+      - run: xvfb-run --auto-servernum npm run eval:ui -- evals/directory.spec.ts --browser=webkit --headed
+        timeout-minutes: 3
       - run: npx tsc --noEmit
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
