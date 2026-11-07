@@ -1,10 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
+import type { Product } from '../src/types';
 
 const productPath = '/product/real-naked-creatine-monohydrate';
 
 type SdkOutcome = 'completed' | 'dismissed' | 'failed' | 'unknown' | 'pending';
 
-async function prepareNativeBuyer(page: Page, unavailable = false, bridgeFails = false, sdkOutcome?: SdkOutcome, stack = false) {
+async function prepareNativeBuyer(page: Page, unavailable = false, bridgeFails = false, sdkOutcome?: SdkOutcome, stack = false, directProduct?: Partial<Product>, sticky = false) {
   const hydrationErrors: string[] = [];
   page.on('pageerror', (error) => {
     if (error.message.includes('Hydration failed')) hydrationErrors.push(error.message);
@@ -30,6 +31,10 @@ async function prepareNativeBuyer(page: Page, unavailable = false, bridgeFails =
         supplement_id: product.supplement_id, is_core: true, order_index: index,
         supplements: { supplement_name: product.product_name },
       })),
+    } : directProduct && url.pathname.endsWith('/products') ? {
+      ...fixtureProducts[0], product_id: 'checkout-direct', product_image: '', amazon_url: '',
+      shopify_store_domain: undefined, shopify_variant_gid: undefined,
+      ...directProduct,
     } : stack && url.pathname.endsWith('/products') ? fixtureProducts
       : url.pathname.includes('get_or_create_own_account_profile') ? { display_name: 'Commerce QA' }
       : route.request().headers().accept?.includes('application/vnd.pgrst.object+json') ? null : [];
@@ -83,8 +88,8 @@ async function prepareNativeBuyer(page: Page, unavailable = false, bridgeFails =
       };
     }
   }, { storageKey, bridgeFails, sdkOutcome });
-  await page.goto(stack ? '/stacks/checkout-eval' : productPath);
-  if (!stack) await page.getByRole('button', { name: 'Buy Now', exact: true }).first().click();
+  await page.goto(stack ? '/stacks/checkout-eval' : directProduct ? '/product/checkout-direct' : productPath);
+  if (!stack) await page.getByRole('button', { name: sticky ? 'Buy' : directProduct && !directProduct.shopify_checkout_url ? 'Brand Store' : 'Buy Now', exact: true }).first().click();
   expect(hydrationErrors).toEqual([]);
 }
 
@@ -284,4 +289,81 @@ test('COM-STACK-08 changing a sibling selection preserves an unchanged completed
   await expect(dialog.getByText('1 of 1 checkouts completed')).toBeVisible();
   await expect(dialog.getByRole('button', { name: 'Completed', exact: true })).toBeDisabled();
   expect(await page.evaluate(() => sessionStorage.getItem('eval-sdk-count'))).toBe('1');
+});
+
+test('COM-PARITY-01 direct Shopify checkout without variant uses native checkout', async ({ page }) => {
+  await prepareNativeBuyer(page, false, false, 'completed', false, {
+    shopify_checkout_url: 'https://alpha.example/checkouts/fixture',
+  });
+  await expect(page.getByRole('button', { name: 'Increase quantity' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Complete secure checkout' }).click();
+  await expect(page.getByText('Checkout completed', { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => sessionStorage.getItem('eval-sdk-url'))).toBe('https://alpha.example/checkouts/fixture');
+  expect(await page.evaluate(() => sessionStorage.getItem('eval-checkout-url'))).toBeNull();
+});
+
+test('COM-PARITY-02 official merchant page uses browser and never claims completion', async ({ page }) => {
+  await prepareNativeBuyer(page, false, false, 'completed', false, {
+    product_url: 'https://official.example/products/fixture',
+  });
+  await page.getByRole('button', { name: 'Complete secure checkout' }).click();
+  await expect(page.getByText('Merchant checkout opened', { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => sessionStorage.getItem('eval-sdk-count'))).toBeNull();
+  expect(await page.evaluate(() => sessionStorage.getItem('eval-checkout-url'))).toBe('https://official.example/products/fixture');
+});
+
+test('COM-PARITY-03 direct cart opens without an unused checkout-session request', async ({ page }) => {
+  let requests = 0;
+  page.on('request', request => { if (new URL(request.url()).pathname === '/api/commerce/checkout') requests += 1; });
+  await prepareNativeBuyer(page, false, false, 'completed');
+  await page.getByRole('button', { name: 'Complete secure checkout' }).click();
+  await expect(page.getByText('Checkout completed', { exact: true })).toBeVisible();
+  expect(requests).toBe(0);
+});
+
+test('COM-PARITY-04 a pending native sheet cannot lose its review through Escape', async ({ page }) => {
+  await prepareNativeBuyer(page, false, false, 'pending');
+  await page.getByRole('button', { name: 'Complete secure checkout' }).click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: 'Checkout', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Close modal' })).toHaveCount(0);
+  await finishStackCheckout(page, 'dismissed');
+  await expect(page.getByRole('button', { name: 'Complete secure checkout' })).toBeVisible();
+});
+
+test('COM-PARITY-05 sticky mobile Buy keeps checkout inside the viewport', async ({ page }, testInfo) => {
+  await prepareNativeBuyer(page, false, false, 'completed', false, undefined, true);
+  const dialog = page.getByRole('dialog', { name: 'Checkout', exact: true });
+  await expect(dialog).toBeVisible();
+  const bounds = await dialog.boundingBox();
+  expect(bounds!.y).toBeGreaterThanOrEqual(0);
+  expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+  await page.screenshot({ path: testInfo.outputPath('sticky-buy-checkout.png'), animations: 'disabled' });
+  await page.getByRole('button', { name: 'Increase quantity' }).click();
+  await page.getByRole('button', { name: 'Complete secure checkout' }).click();
+  await expect(page.getByText('Checkout completed', { exact: true })).toBeVisible();
+  expect(new URL((await page.evaluate(() => sessionStorage.getItem('eval-sdk-url')))! ).pathname).toBe('/cart/1248822167:2');
+});
+
+test('COM-PARITY-06 slow availability never leaves checkout stuck loading', async ({ page }) => {
+  await prepareNativeBuyer(page, false, false, 'completed');
+  await page.getByRole('button', { name: 'Close modal' }).click();
+  await page.route('**/api/commerce/product-status', async route => {
+    await new Promise(resolve => setTimeout(resolve, 9500));
+    await route.fulfill({ json: { status: 'available', price: 35.99 } }).catch(() => undefined);
+  });
+  await page.getByRole('button', { name: 'Buy Now', exact: true }).first().click();
+  await expect(page.getByRole('button', { name: 'Complete secure checkout' })).toBeEnabled({ timeout: 12000 });
+  await page.getByRole('button', { name: 'Complete secure checkout' }).click();
+  await expect(page.getByText('Checkout completed', { exact: true })).toBeVisible();
+});
+
+test('COM-PARITY-07 insecure merchant URLs cannot bypass checkout validation', async ({ page }) => {
+  await prepareNativeBuyer(page, false, false, 'completed', false, {
+    product_url: 'http://official.example/products/fixture',
+  });
+  await expect(page.getByRole('button', { name: 'Complete secure checkout' })).toBeDisabled();
+  await expect(page.getByText('A secure merchant link is currently unavailable.')).toBeVisible();
+  expect(await page.evaluate(() => sessionStorage.getItem('eval-sdk-count'))).toBeNull();
+  expect(await page.evaluate(() => sessionStorage.getItem('eval-checkout-url'))).toBeNull();
 });

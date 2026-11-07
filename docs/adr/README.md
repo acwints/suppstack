@@ -10,6 +10,7 @@ Each ADR records context, a decision, the implementation boundary, and evidence.
 | [0003](0003-ucp-capabilities-and-universal-checkout.md) | Negotiate UCP capabilities and qualify Universal Checkout | Proposed |
 | [0005](0005-multi-merchant-checkout-progress.md) | Track separate merchant checkout progress and recovery | Accepted, implementation and fixture evaluation complete |
 | [0006](0006-mobile-directory-search-and-filters.md) | Put search and product results before mobile filter details | Accepted, implementation and Chromium/WebKit evaluations complete; physical accessibility QA pending |
+| [0007](0007-merchant-checkout-parity.md) | Complete product checkout from mobile sticky Buy and direct merchant links | Accepted, portal and shared presentation implemented |
 
 ## Delivery queue
 

@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CatalogImage } from '@/components/ui/CatalogImage';
 import { FiAlertCircle, FiExternalLink, FiLock, FiMinus, FiPlus, FiShoppingBag } from 'react-icons/fi';
 import type { Product } from '@/types';
 import { Badge, Button, Inline, Modal, Spinner, VStack } from '@/components/ui';
 import { formatCurrency } from '@/lib/utils';
-import { useCommerceCheckout } from '@/hooks';
-import { presentNativeCheckout } from '@/lib/native/checkout';
-import { isNativeApp, openInNativeBrowser } from '@/lib/native/capacitor';
+import { isSecureCheckoutUrl, presentMerchantCheckout } from '@/lib/native/checkout';
 import { BrandLogo } from '@/components/composite/Brand';
 import {
   getPurchaseDestination,
@@ -30,8 +29,6 @@ interface LiveStatus {
   variantTitle: string | null;
 }
 
-const CHECKOUT_WINDOW_NAME = 'suppstack_shopify_checkout';
-
 function merchantDomain(product: Product) {
   const domain = product.shopify_store_domain;
   if (!domain) return null;
@@ -42,31 +39,12 @@ function merchantDomain(product: Product) {
   }
 }
 
-/**
- * Shopify merchant checkouts set `frame-ancestors 'none'`, so they cannot be
- * rendered inside an iframe. The closest embedded experience is a dedicated
- * checkout window sized like a payment sheet, driven from this in-app panel.
- */
-function openCheckoutWindow(url: string) {
-  const width = 480;
-  const height = 800;
-  const left = Math.max(0, window.screenX + (window.outerWidth - width) / 2);
-  const top = Math.max(0, window.screenY + (window.outerHeight - height) / 2);
-
-  return window.open(
-    url,
-    CHECKOUT_WINDOW_NAME,
-    `popup=yes,width=${width},height=${height},left=${left},top=${top}`
-  );
-}
-
 export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutProps) {
   const [quantity, setQuantity] = useState(1);
   const nativeInFlight = useRef(false);
   const presentationGeneration = useRef(0);
   const [stage, setStage] = useState<CheckoutStage>('review');
   const [live, setLive] = useState<LiveStatus>({ status: 'loading', price: null, variantTitle: null });
-  const { resolveCheckoutSession } = useCommerceCheckout();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -76,12 +54,20 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
     setStage('review');
     setLive({ status: 'loading', price: null, variantTitle: null });
 
+    if (!product.shopify_store_domain || !getShopifyVariantNumericId(product.shopify_variant_gid) || !product.product_url) {
+      setLive({ status: 'unknown', price: null, variantTitle: null });
+      return () => { presentationGeneration.current += 1; };
+    }
+
     // Resolve the merchant's live variant state at view time so the panel
     // shows current price and availability rather than the catalog snapshot.
     let cancelled = false;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
     fetch('/api/commerce/product-status', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
+      signal: controller.signal,
       body: JSON.stringify({
         productUrl: product.product_url,
         variantGid: product.shopify_variant_gid,
@@ -98,13 +84,16 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
       })
       .catch(() => {
         if (!cancelled) setLive({ status: 'unknown', price: null, variantTitle: null });
-      });
+      })
+      .finally(() => clearTimeout(timeout));
 
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
+      controller.abort();
       presentationGeneration.current += 1;
     };
-  }, [isOpen, product.product_id, product.product_url, product.shopify_variant_gid]);
+  }, [isOpen, product.product_id, product.product_url, product.shopify_variant_gid, product.shopify_store_domain]);
 
   const domain = merchantDomain(product);
   const variantId = getShopifyVariantNumericId(product.shopify_variant_gid);
@@ -114,54 +103,37 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
   const unitPrice = live.price ?? product.product_price;
   const subtotal = unitPrice * quantity;
   const checkoutUrl = cartPermalink ?? destination.url;
+  const secureCheckout = isSecureCheckoutUrl(checkoutUrl);
+  const shopifyCheckout = Boolean(cartPermalink) || destination.mode === 'shopify_checkout';
   const isUnavailable = live.status === 'unavailable' || product.inventory_status === 'out_of_stock';
 
-  /**
-   * The cart permalink is known synchronously, so the checkout window opens
-   * inside the click's user-activation window — no await before window.open,
-   * which would trip popup blockers. Session logging happens in the
-   * background and never gates the checkout.
-   */
   const launchCheckout = () => {
-    if (isUnavailable || nativeInFlight.current) return;
-    if (isNativeApp()) {
-      nativeInFlight.current = true;
-      setStage('presenting');
-      const generation = presentationGeneration.current;
-      void (async () => {
-        const result = await presentNativeCheckout(checkoutUrl);
-        if (result) return result.status;
-        return await openInNativeBrowser(checkoutUrl) ? 'opened' : 'blocked';
-      })()
-        .then((status) => {
-          if (generation !== presentationGeneration.current) return;
-          setStage(status === 'failed' ? 'blocked' : status === 'dismissed' ? 'review' : status);
-        })
-        .catch(() => {
-          if (generation === presentationGeneration.current) setStage('blocked');
-        })
-        .finally(() => { nativeInFlight.current = false; });
-    } else {
-      const checkoutWindow = openCheckoutWindow(checkoutUrl);
-
-      if (checkoutWindow) {
-        checkoutWindow.focus();
-        setStage('opened');
-      } else {
-        setStage('blocked');
-      }
-    }
-
-    resolveCheckoutSession(product, quantity).catch(() => undefined);
+    if (!secureCheckout || isUnavailable || live.status === 'loading' || nativeInFlight.current) return;
+    nativeInFlight.current = true;
+    setStage('presenting');
+    const generation = presentationGeneration.current;
+    void presentMerchantCheckout(checkoutUrl, shopifyCheckout)
+      .then((status) => {
+        if (generation !== presentationGeneration.current) return;
+        setStage(status === 'failed' ? 'blocked' : status === 'dismissed' ? 'review' : status);
+      })
+      .catch(() => {
+        if (generation === presentationGeneration.current) setStage('blocked');
+      })
+      .finally(() => { nativeInFlight.current = false; });
   };
 
-  return (
+  if (!isOpen || typeof document === 'undefined') return null;
+  return createPortal(
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Checkout"
       description={hasVerifiedVariant ? 'Verified merchant product' : destination.label}
       size="md"
+      showCloseButton={stage !== 'presenting'}
+      closeOnEscape={stage !== 'presenting'}
+      closeOnOverlayClick={stage !== 'presenting'}
     >
       <VStack gap={6}>
         {/* Order summary */}
@@ -230,7 +202,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
           <>
             {/* Quantity + totals */}
             <div className="rounded border border-gray-200">
-              <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+              {hasVerifiedVariant && <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
                 <span className="text-sm text-gray-600">Quantity</span>
                 <div className="flex items-center gap-3">
                   <button
@@ -255,7 +227,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
                     <FiPlus className="h-3.5 w-3.5" />
                   </button>
                 </div>
-              </div>
+              </div>}
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="text-sm text-gray-600">Subtotal</span>
                 <span className="text-sm font-semibold text-gray-900">
@@ -273,12 +245,13 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
                 size="lg"
                 onClick={launchCheckout}
                 isLoading={live.status === 'loading'}
+                disabled={!secureCheckout}
                 leftIcon={<FiShoppingBag />}
               >
                 {live.status === 'loading' ? 'Confirming availability' : 'Complete secure checkout'}
               </Button>
               <p className="text-center text-xs text-gray-500">
-                {hasVerifiedVariant
+                {!secureCheckout ? 'A secure merchant link is currently unavailable.' : hasVerifiedVariant
                   ? 'Your cart is prefilled with the verified item. Payment is completed securely on the merchant checkout.'
                   : 'Payment is completed on the merchant store.'}
               </p>
@@ -286,7 +259,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
           </>
         )}
 
-        {isUnavailable && product.product_url && (
+        {isUnavailable && isSecureCheckoutUrl(product.product_url) && (
           <a
             href={product.product_url}
             target="_blank"
@@ -340,7 +313,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
             <Button variant="outline" onClick={launchCheckout} className="mt-4">
               Try again
             </Button>
-            <a
+            {secureCheckout && <a
               href={checkoutUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -348,10 +321,10 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
             >
               Open secure checkout
               <FiExternalLink />
-            </a>
+            </a>}
           </div>
         )}
       </VStack>
-    </Modal>
+    </Modal>, document.body
   );
 }

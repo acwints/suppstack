@@ -1,5 +1,5 @@
 import type { Product } from '@/types';
-import { buildShopifyCartGroups, getPreferredPurchaseUrl, isShopifySearchUrl } from './shopify-ucp';
+import { buildShopifyCartGroups, getPreferredPurchaseUrl, getPurchaseDestination, isShopifySearchUrl } from './shopify-ucp';
 
 export interface MerchantCheckout {
   id: string;
@@ -41,7 +41,7 @@ export function buildStackCheckout(products: Product[]): MerchantCheckout[] {
         name: product.brands?.brand_name || parsed.hostname,
         products: [product],
         url,
-        nativeCheckout: false,
+        nativeCheckout: getPurchaseDestination(product).mode === 'shopify_checkout',
       });
     } catch {
       // A missing or invalid destination cannot become a checkout action.

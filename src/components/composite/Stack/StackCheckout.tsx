@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Button, Modal } from '@/components/ui';
 import type { MerchantCheckout, MerchantOutcome } from '@/lib/commerce/stack-checkout';
-import { isNativeApp, openInNativeBrowser } from '@/lib/native/capacitor';
-import { presentNativeCheckout } from '@/lib/native/checkout';
+import { presentMerchantCheckout } from '@/lib/native/checkout';
 
 const outcomeText: Record<MerchantOutcome, string> = {
   completed: 'Checkout completed',
@@ -59,16 +58,7 @@ export function StackCheckout({ merchants, isOpen, onClose }: {
     inFlight.current = true;
     setPending(merchant.id);
     try {
-      let outcome: MerchantOutcome;
-      if (isNativeApp()) {
-        const result = merchant.nativeCheckout ? await presentNativeCheckout(merchant.url) : null;
-        outcome = result?.status ?? (await openInNativeBrowser(merchant.url) ? 'opened' : 'failed');
-      } else {
-        // Keep the popup inside the buyer gesture. Async preparation loses it.
-        const opened = window.open(merchant.url, '_blank');
-        if (opened) opened.opener = null;
-        outcome = opened ? 'opened' : 'failed';
-      }
+      const outcome = await presentMerchantCheckout(merchant.url, merchant.nativeCheckout);
       setOutcomes(previous => ({ ...previous, [merchant.id]: outcome }));
     } catch {
       setOutcomes(previous => ({ ...previous, [merchant.id]: 'failed' }));
