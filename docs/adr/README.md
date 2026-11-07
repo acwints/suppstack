@@ -9,6 +9,7 @@ Each ADR records context, a decision, the implementation boundary, and evidence.
 | [0004](0004-native-checkout-kit-lifecycle.md) | Own native presentation outcomes through Checkout Kit | Accepted, implementation and fixtures complete; physical payment verification pending |
 | [0003](0003-ucp-capabilities-and-universal-checkout.md) | Negotiate UCP capabilities and qualify Universal Checkout | Proposed |
 | [0005](0005-multi-merchant-checkout-progress.md) | Track separate merchant checkout progress and recovery | Accepted, implementation and fixture evaluation complete |
+| [0005](0005-mobile-directory-search-and-filters.md) | Put search and product results before mobile filter details | Accepted, implementation and Chromium/WebKit evaluations complete; physical accessibility QA pending |
 
 ## Delivery queue
 
@@ -23,6 +24,7 @@ Each ADR records context, a decision, the implementation boundary, and evidence.
 | UX-1 | Keep feedback inside What’s New | Signed-out evaluation passes; signed-in header icon opens updates | Existing implementation, sign-in regression automated |
 | UX-2 | Improve checkout loading and recovery | Slow merchant, unavailable inventory, bridge failure, cancel and retry tested on phone and iPad | Initial browser fixtures; device coverage pending |
 | UX-3 | Eliminate native/server first-render mismatch | Native fixture page has no hydration warning | Auth gate corrected; native browser fixtures now assert no hydration errors |
+| UX-4 | Make mobile catalog search and filtering usable before scrolling | DIR-01 through DIR-07 in Chromium and WebKit; same-route visual comparison | Search and two-column products lead; draft/apply filter sheet implemented; device keyboard and VoiceOver QA pending |
 | REL-1 | Resolve App Review rejection | Physical iPad Release/TestFlight cold launch, resume and Apple sign-in evidence plus accepted submission | Open; build 91 available in TestFlight |
 
 ## Source review on November 7, 2026

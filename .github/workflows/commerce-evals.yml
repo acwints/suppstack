@@ -29,8 +29,9 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run eval:commerce
       - run: node --test src/scripts/iosPackageClassList.test.mjs
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - run: npm run eval:ui
+      - run: npm run eval:ui -- evals/directory.spec.ts --browser=webkit
       - run: npx tsc --noEmit
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()

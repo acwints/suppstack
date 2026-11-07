@@ -17,6 +17,7 @@ For every iteration, record the source commit, scenario set, before and after re
 - npm run eval:commerce runs eleven offline scenarios and emits JSON with IDs and pass count.
 - npm run eval:ui starts or reuses the local development server on port 3511.
 - Install the test browser once with npx playwright install chromium.
+- Directory iOS-engine checks use `npx playwright install webkit`, then `npm run eval:ui -- evals/directory.spec.ts --browser=webkit`.
 - UI tests need the project’s public Supabase URL to derive the storage key. They intercept Supabase and checkout responses, use an artificial buyer, and stop before payment.
 - npm run check:catalog runs existing catalog checks.
 - Failed browser traces stay under test-results. Review their contents before sharing.
@@ -45,3 +46,7 @@ The pre-change resolver scored 6/8. Recovery scores 8/8. Browser scenarios cover
 After merging #45, Checkout Kit lifecycle work expands the offline suite to 11/11 and the browser suite to 9/9. The additional gates distinguish completion from dismissal, reject unknown outcomes, preserve older-binary fallback and prevent duplicate presentation. Every native product fixture also asserts hydration consistency. See ADR 0004 for the native dependency and remaining device checks.
 
 The Commerce evaluations GitHub Actions workflow runs the offline, registration, browser and TypeScript checks on pull requests and main. It uses dummy public Supabase configuration and intercepted browser requests, with no production secrets.
+
+## Mobile directory iteration
+
+ADR 0005 adds seven stable directory scenarios: phone layout, draft cancellation and focus, combined search/facets/sort, persistence, reset, overflow, desktop controls and delayed hydration. The directory suite runs in Chromium and WebKit in CI. The browser baseline is now 16 Chromium cases plus seven WebKit directory cases; offline commerce remains 11 cases. Physical keyboard and VoiceOver verification remain separate.
