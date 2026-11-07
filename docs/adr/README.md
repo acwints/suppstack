@@ -8,6 +8,7 @@ Each ADR records context, a decision, the implementation boundary, and evidence.
 | [0002](0002-evaluation-and-release-evidence.md) | Evaluate stable scenarios and record device verification separately | Accepted, suites implemented |
 | [0004](0004-native-checkout-kit-lifecycle.md) | Own native presentation outcomes through Checkout Kit | Accepted, implementation and fixtures complete; physical payment verification pending |
 | [0003](0003-ucp-capabilities-and-universal-checkout.md) | Negotiate UCP capabilities and qualify Universal Checkout | Proposed |
+| [0005](0005-multi-merchant-checkout-progress.md) | Track separate merchant checkout progress and recovery | Accepted, implementation and fixture evaluation complete |
 
 ## Delivery queue
 
@@ -17,7 +18,8 @@ Each ADR records context, a decision, the implementation boundary, and evidence.
 | COM-2 | Respect unavailable inventory and report fallback honestly | COM-02 and COM-03 pass without merchant requests for unavailable products | Implemented, 8/8 commerce evaluations |
 | COM-3 | Qualify supported embedded native Shopify checkout | Device callback tests cover close, cancel, failure, completion, Shop Pay and authentication return | SDK plugin implemented; native build and browser fixtures verified; physical payment tests pending |
 | COM-4 | Negotiate merchant UCP schemas with an owned agent profile | Discovery, authentication, escalation and supported-version fixtures pass | Pending |
-| COM-5 | Qualify multi-merchant Universal Checkout | Access, merchant eligibility, shipping/tax/consent and partial failure scenarios verified | Pending access investigation |
+| COM-5 | Qualify multi-merchant Universal Checkout | Access, merchant eligibility, shipping/tax/consent and partial failure scenarios verified | No Catalog credentials in production; approved client and owned profile still required |
+| COM-6 | Make separate merchant checkout usable | One sheet per gesture, partial completion, sibling retry and unchanged-cart progress preserved | Implemented with offline and normal stack-route browser evaluations; see ADR 0005 |
 | UX-1 | Keep feedback inside What’s New | Signed-out evaluation passes; signed-in header icon opens updates | Existing implementation, sign-in regression automated |
 | UX-2 | Improve checkout loading and recovery | Slow merchant, unavailable inventory, bridge failure, cancel and retry tested on phone and iPad | Initial browser fixtures; device coverage pending |
 | UX-3 | Eliminate native/server first-render mismatch | Native fixture page has no hydration warning | Auth gate corrected; native browser fixtures now assert no hydration errors |

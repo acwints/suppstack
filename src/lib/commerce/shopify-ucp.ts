@@ -25,6 +25,7 @@ export function normalizeShopifyStoreOrigin(storeDomain?: string | null) {
   try {
     const origin = storeDomain.startsWith('http') ? storeDomain : `https://${storeDomain}`;
     const url = new URL(origin);
+    if (!['https:', 'http:'].includes(url.protocol) || !url.hostname || url.username || url.password) return null;
     return `https://${url.hostname.toLowerCase()}`;
   } catch {
     return null;
@@ -73,7 +74,7 @@ export function buildShopifyCartGroups(products: Product[]): ShopifyCartGroup[] 
     // One container per product; servings_per_day is a dosage figure, not a
     // purchase quantity.
     group.products.push(product);
-    group.lines.push(`${variantId}:1`);
+    if (!group.lines.includes(`${variantId}:1`)) group.lines.push(`${variantId}:1`);
     if (product.brands?.brand_name) {
       group.brandNames.add(product.brands.brand_name);
     }
@@ -81,7 +82,7 @@ export function buildShopifyCartGroups(products: Product[]): ShopifyCartGroup[] 
   });
 
   return Array.from(groups.entries()).map(([origin, group]) => {
-    const url = new URL(`/cart/${group.lines.join(',')}`, origin);
+    const url = new URL(`/cart/${group.lines.sort().join(',')}`, origin);
     url.searchParams.set('utm_source', 'suppstack');
     url.searchParams.set('utm_medium', 'stack_cart');
     url.searchParams.set('utm_campaign', 'buy_stack');

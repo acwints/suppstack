@@ -1,20 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiShoppingCart, FiExternalLink, FiChevronDown, FiChevronUp, FiCheck } from 'react-icons/fi';
+import { FiShoppingCart, FiChevronDown, FiChevronUp, FiCheck } from 'react-icons/fi';
 import { supabase } from '@/app/supabase';
 import { Card, Button, Spinner, Badge } from '@/components/ui';
 import { cn } from '@/lib/design-system';
 import { calculatePrices, formatCurrency } from '@/lib/utils';
 import type { StackSupplement, Product } from '@/types';
-import {
-  buildShopifyCartGroups,
-  getPreferredPurchaseUrl,
-  getPurchaseLabel,
-  isShopifySearchUrl,
-} from '@/lib/commerce/shopify-ucp';
+import { buildStackCheckout } from '@/lib/commerce/stack-checkout';
+import { StackCheckout } from './StackCheckout';
 import { mergeProductSources } from '@/lib/commerce/product-source';
-import { openExternalUrl } from '@/lib/native/capacitor';
 import {
   findCatalogSupplementById,
   findCatalogSupplementByName,
@@ -45,6 +40,7 @@ export function BuyStackPanel({
   const [stackProducts, setStackProducts] = useState<StackProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set());
 
   useEffect(() => {
@@ -150,23 +146,7 @@ export function BuyStackPanel({
   const selectedProducts = purchasableProducts
     .map(item => item.selectedProduct)
     .filter((product): product is Product => Boolean(product));
-  const cartGroups = buildShopifyCartGroups(selectedProducts);
-  const groupedProductIds = new Set(cartGroups.flatMap(group => group.products.map(product => product.product_id)));
-  const individualFallbackProducts = selectedProducts.filter(
-    product => !groupedProductIds.has(product.product_id)
-  );
-
-  const handleBuySelected = () => {
-    // openExternalUrl uses SFSafariViewController in the native shell (where
-    // window.open is unreliable) and tabs on the web.
-    cartGroups.forEach(group => {
-      void openExternalUrl(group.url);
-    });
-    individualFallbackProducts.forEach(product => {
-      void openExternalUrl(getPreferredPurchaseUrl(product));
-    });
-  };
-
+  const merchants = buildStackCheckout(selectedProducts);
 
   if (isLoading) {
     return (
@@ -227,6 +207,9 @@ export function BuyStackPanel({
               >
                 <div className="flex items-start gap-3">
                   <button
+                    type="button"
+                    aria-label={`${checkedItems.has(index) ? 'Remove' : 'Include'} ${item.supplement_name} in checkout`}
+                    aria-pressed={checkedItems.has(index)}
                     onClick={() => toggleCheck(index)}
                     className={cn(
                       'mt-0.5 w-5 h-5 rounded border flex items-center justify-center shrink-0 transition-colors',
@@ -264,6 +247,7 @@ export function BuyStackPanel({
                       </p>
                     ) : (
                       <select
+                        aria-label={`Product for ${item.supplement_name}`}
                         value={item.selectedProduct?.product_id || ''}
                         onChange={(e) => {
                           // product_id is an integer for database rows;
@@ -310,87 +294,17 @@ export function BuyStackPanel({
             </div>
           </div>
 
-          {cartGroups.length > 0 && (
-            <div className="mb-4 rounded-lg border border-accent-100 bg-accent-50 p-3">
-              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-accent-800">
-                One-click brand carts
-              </div>
-              <div className="space-y-2">
-                {cartGroups.map(group => (
-                  <a
-                    key={group.storeDomain}
-                    href={group.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex min-h-11 items-center justify-between gap-3 rounded border border-accent-100 bg-white px-3 py-2 text-sm text-accent-900 transition-[background-color,border-color,transform] duration-150 hover:border-accent-200 hover:bg-accent-50 active:scale-[0.96]"
-                  >
-                    <span className="min-w-0">
-                      <span className="block truncate font-medium">
-                        {group.brandNames.join(', ') || group.storeDomain}
-                      </span>
-                      <span className="text-xs text-accent-800">
-                        {group.products.length} item{group.products.length !== 1 ? 's' : ''} in one cart
-                      </span>
-                    </span>
-                    <FiExternalLink className="shrink-0 text-accent-700" size={14} />
-                  </a>
-                ))}
-              </div>
-            </div>
+          {merchants.length > 0 && (
+            <Button variant="primary" fullWidth onClick={() => setCheckoutOpen(true)} leftIcon={<FiShoppingCart />}>
+              Review checkout · {merchants.length} merchant{merchants.length !== 1 ? 's' : ''}
+            </Button>
           )}
-
-          {/* Buy Actions */}
-          <div className="space-y-2">
-            {purchasableProducts.length > 0 && (
-              <Button
-                variant="primary"
-                fullWidth
-                onClick={handleBuySelected}
-                leftIcon={<FiShoppingCart />}
-              >
-                {cartGroups.length > 0
-                  ? `Open ${cartGroups.length} Merchant Cart${cartGroups.length !== 1 ? 's' : ''}`
-                  : `Buy ${purchasableProducts.length > 1 ? `All ${purchasableProducts.length}` : ''} Selected`}
-              </Button>
-            )}
-
-            {checkedProducts.length > 0 && (
-              <div className="grid grid-cols-1 gap-1.5">
-                {checkedProducts.map(item => {
-                  const p = item.selectedProduct;
-                  if (!p) return null;
-                  return (
-                    <div key={p.product_id} className="flex items-center gap-2">
-                      {(p.shopify_checkout_url || p.ucp_enabled || p.product_url || p.amazon_url) && (
-                        <a
-                          href={getPreferredPurchaseUrl(p)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors px-2 py-1 rounded hover:bg-gray-50"
-                        >
-                          <FiExternalLink size={10} />
-                          {item.supplement_name} · {getPurchaseLabel(p)}
-                        </a>
-                      )}
-                      {p.product_url && !isShopifySearchUrl(p.product_url) && p.product_url !== getPreferredPurchaseUrl(p) && (
-                        <a
-                          href={p.product_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors px-2 py-1 rounded hover:bg-gray-50"
-                        >
-                          <FiExternalLink size={10} />
-                          Official
-                        </a>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          {selectedProducts.some(product => product.inventory_status === 'out_of_stock') && (
+            <p className="mt-2 text-sm text-gray-500">Sold-out products are excluded from checkout.</p>
+          )}
         </div>
       )}
+      <StackCheckout merchants={merchants} isOpen={checkoutOpen} onClose={() => setCheckoutOpen(false)} />
     </Card>
   );
 }

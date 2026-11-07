@@ -3,6 +3,7 @@ import type { Product } from '../types';
 import { createFallbackPurchaseSession } from '../lib/commerce/purchase-session';
 import { buildShopifyCartGroups, getShopifyCartPermalink } from '../lib/commerce/shopify-ucp';
 import { resolveShopifyPurchaseSession } from '../lib/commerce/shopify-ucp-server';
+import { buildStackCheckout } from '../lib/commerce/stack-checkout';
 import { openInNativeBrowser } from '../lib/native/capacitor';
 import { presentNativeCheckout } from '../lib/native/checkout';
 
@@ -77,6 +78,42 @@ async function main() {
     assert.equal(groups.length, 2);
     assert.equal(groups.reduce((count, group) => count + group.products.length, 0), 2);
     assert.equal(new URL(groups[0].url).pathname, '/cart/123:1');
+  });
+  await evaluate('COM-STACK-PLAN-01-one-container-per-variant', () => {
+    const groups = buildStackCheckout([product, product, { ...product, product_id: 'duplicate-variant' }]);
+    assert.equal(groups.length, 1);
+    assert.equal(new URL(groups[0].url).pathname, '/cart/123:1');
+    assert.equal(groups[0].products.length, 2);
+  });
+  await evaluate('COM-STACK-PLAN-02-sold-out-never-becomes-fallback', () => {
+    assert.deepEqual(buildStackCheckout([{ ...product, inventory_status: 'out_of_stock' }]), []);
+  });
+  await evaluate('COM-STACK-PLAN-03-mixed-destinations-retain-their-presentation', () => {
+    const plan = buildStackCheckout([product, {
+      ...product, product_id: 'official', shopify_store_domain: undefined, shopify_variant_gid: undefined,
+      product_url: 'https://official.example/products/fixture',
+    }]);
+    assert.equal(plan.length, 2);
+    assert.equal(plan[0].nativeCheckout, true);
+    assert.equal(plan[1].nativeCheckout, false);
+    assert.equal(plan[1].url, 'https://official.example/products/fixture');
+  });
+  await evaluate('COM-STACK-PLAN-04-untrusted-destinations-are-not-actions', () => {
+    for (const url of ['javascript:alert(1)', 'http://merchant.example/buy', 'https://user:secret@merchant.example/buy', '']) {
+      assert.deepEqual(buildStackCheckout([{
+        ...product, shopify_store_domain: undefined, shopify_variant_gid: undefined, product_url: url,
+      }]), []);
+    }
+  });
+  await evaluate('COM-STACK-PLAN-05-shared-fallback-has-one-action', () => {
+    const fallback = { ...product, shopify_store_domain: undefined, shopify_variant_gid: undefined };
+    const plan = buildStackCheckout([fallback, { ...fallback, product_id: 'second' }]);
+    assert.equal(plan.length, 1);
+    assert.equal(plan[0].products.length, 2);
+  });
+  await evaluate('COM-STACK-PLAN-06-cart-identity-survives-selection-reordering', () => {
+    const second = { ...product, product_id: 'second', shopify_variant_gid: 'gid://shopify/ProductVariant/456' };
+    assert.equal(buildStackCheckout([product, second])[0].id, buildStackCheckout([second, product])[0].id);
   });
   await evaluate('COM-06-browser-is-not-a-native-presentation', async () => {
     assert.equal(await openInNativeBrowser('https://merchant.example/cart/123:1'), false);
