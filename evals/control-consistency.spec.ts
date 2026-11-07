@@ -22,15 +22,14 @@ async function prepareAccount(page: Page, onboarded = true) {
 
 async function expectUsableControls(page: Page) {
   await expect(page.locator('a button, button a')).toHaveCount(0);
-  const undersized = await page.locator('button, select, input:not([type]), input:is([type="text"], [type="email"], [type="password"], [type="search"], [type="number"], [type="url"], [type="date"], [type="time"]), a.inline-flex, a.flex').evaluateAll((controls) => controls.flatMap((control) => {
+  await expect.poll(() => page.locator('button, select, input:not([type]), input:is([type="text"], [type="email"], [type="password"], [type="search"], [type="number"], [type="url"], [type="date"], [type="time"]), a.inline-flex, a.flex').evaluateAll((controls) => controls.flatMap((control) => {
     const root = control.getRootNode();
     if (root instanceof ShadowRoot && root.host.tagName === 'NEXTJS-PORTAL') return [];
     const rect = control.getBoundingClientRect();
     if (!rect.width || !rect.height || getComputedStyle(control).visibility === 'hidden') return [];
     return rect.height < 43.9 || (control.tagName === 'BUTTON' && rect.width < 43.9)
       ? [`${control.tagName} ${control.getAttribute('aria-label') || control.textContent?.trim().slice(0, 60)}: ${rect.width}×${rect.height}`] : [];
-  }));
-  expect(undersized).toEqual([]);
+  }))).toEqual([]);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth ? [] : Array.from(document.querySelectorAll('button, input, select, h1, h2, form')).filter((node) => node.getBoundingClientRect().right > innerWidth + 1).map((node) => `${node.tagName} ${node.getAttribute('aria-label') || node.textContent?.trim().slice(0, 50)}: right=${node.getBoundingClientRect().right}`));
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), overflow.join('\n')).toBe(true);
 }
