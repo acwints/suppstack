@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Spinner } from '@/components/ui';
 import { useAuth } from '@/app/context/AuthContext';
@@ -58,8 +58,7 @@ const WEB_SEO_PATHS = [
   '/vitamin-tracker-app',
 ];
 
-function isPublicPath(pathname: string) {
-  const native = isNativeApp();
+function isPublicPath(pathname: string, native: boolean) {
   const paths = native ? NATIVE_PUBLIC_PATHS : WEB_PUBLIC_PATHS;
   if (pathname === '/') return paths.includes('/');
   if (!native && WEB_SEO_PATHS.includes(pathname)) return true;
@@ -70,7 +69,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const publicPath = isPublicPath(pathname);
+  // Match the server's public-web snapshot for hydration, then apply native routing.
+  const [native, setNative] = useState(false);
+  useEffect(() => { setNative(isNativeApp()); }, []);
+  const publicPath = isPublicPath(pathname, native);
 
   useEffect(() => {
     if (loading || user || publicPath) return;

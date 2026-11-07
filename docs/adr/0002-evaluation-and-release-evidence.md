@@ -14,7 +14,7 @@ For every iteration, record the source commit, scenario set, before and after re
 
 ## Commands
 
-- npm run eval:commerce runs eight offline scenarios and emits JSON with IDs and pass count.
+- npm run eval:commerce runs eleven offline scenarios and emits JSON with IDs and pass count.
 - npm run eval:ui starts or reuses the local development server on port 3511.
 - Install the test browser once with npx playwright install chromium.
 - UI tests need the project’s public Supabase URL to derive the storage key. They intercept Supabase and checkout responses, use an artificial buyer, and stop before payment.
@@ -39,3 +39,9 @@ For visual refinement, capture the same route, content, viewport and state befor
 ## First iteration
 
 The pre-change resolver scored 6/8. Recovery scores 8/8. Browser scenarios cover native presentation, unavailable live stock, bridge failure and sign-in noise. Expand this baseline as the real checkout integration is added.
+
+## Native integration iteration
+
+After merging #45, Checkout Kit lifecycle work expands the offline suite to 11/11 and the browser suite to 9/9. The additional gates distinguish completion from dismissal, reject unknown outcomes, preserve older-binary fallback and prevent duplicate presentation. Every native product fixture also asserts hydration consistency. See ADR 0004 for the native dependency and remaining device checks.
+
+The Commerce evaluations GitHub Actions workflow runs the offline, registration, browser and TypeScript checks on pull requests and main. It uses dummy public Supabase configuration and intercepted browser requests, with no production secrets.

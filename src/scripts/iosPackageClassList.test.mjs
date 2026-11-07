@@ -24,6 +24,7 @@ test('a cap sync that omits PurchasesPlugin still registers it', () => {
     'PurchasesPlugin',
     'SuppStackHealthPlugin',
     'SuppStackAppleSignInPlugin',
+    'SuppStackCheckoutPlugin',
   ]);
 });
 
@@ -47,6 +48,8 @@ test('root capacitor config and the native shell both name PurchasesPlugin', asy
   for (const pluginClass of REQUIRED_IOS_PLUGIN_CLASSES) {
     assert.ok(fromSource.includes(pluginClass), `capacitor.config.ts is missing ${pluginClass}`);
   }
-  assert.ok(native.packageClassList.includes('PurchasesPlugin'));
+  for (const pluginClass of REQUIRED_IOS_PLUGIN_CLASSES) {
+    assert.ok(native.packageClassList.includes(pluginClass), `Native config is missing ${pluginClass}`);
+  }
   assert.deepEqual(mergePackageClassList(fromSource), fromSource);
 });

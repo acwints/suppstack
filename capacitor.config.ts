@@ -51,6 +51,7 @@ const config: CapacitorConfig & { packageClassList?: string[] } = {
     'PurchasesPlugin',
     'SuppStackHealthPlugin',
     'SuppStackAppleSignInPlugin',
+    'SuppStackCheckoutPlugin',
   ],
 };
 
