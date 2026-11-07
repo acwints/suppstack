@@ -170,7 +170,7 @@ export function ProductActions({
           size="lg"
           leftIcon={isInStack ? <FaCheck /> : <FaPlus />}
           isLoading={isUpdating}
-          className={cn('flex-1', isInStack && 'bg-gray-100 text-gray-700 border-gray-200')}
+          className={cn('sm:flex-1', isInStack && 'bg-gray-100 text-gray-700 border-gray-200')}
         >
           {isInStack ? 'In Stack' : 'Add to Stack'}
         </Button>
@@ -181,7 +181,7 @@ export function ProductActions({
           disabled={!canPurchase(product)}
           isLoading={isStartingCheckout}
           leftIcon={<FaShoppingCart />}
-          className="flex-1"
+          className="sm:flex-1"
         >
           {getPurchaseLabel(product)}
         </Button>

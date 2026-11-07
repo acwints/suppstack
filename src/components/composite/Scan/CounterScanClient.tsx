@@ -10,7 +10,6 @@ import {
   FiCamera,
   FiCheckCircle,
   FiImage,
-  FiRefreshCw,
   FiSearch,
   FiUpload,
 } from 'react-icons/fi';
@@ -243,6 +242,7 @@ export function CounterScanClient() {
   const { user, session, loading } = useAuth();
   const { openPaywall } = usePremium();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const libraryInputRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -250,7 +250,6 @@ export function CounterScanClient() {
   const [scan, setScan] = useState<CounterScanApiResponse | null>(null);
   const [isNativeShell, setIsNativeShell] = useState<boolean | null>(null);
 
-  const hasPhoto = Boolean(file && previewUrl);
   const matchedCount = scan?.matchedCount ?? 0;
   const totalCount = scan?.items.length ?? 0;
 
@@ -395,16 +394,35 @@ export function CounterScanClient() {
             onChange={(event) => handleFile(event.target.files?.[0] ?? null)}
           />
 
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <input
+            ref={libraryInputRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            aria-label="Choose a photo from your library"
+            onChange={(event) => handleFile(event.target.files?.[0] ?? null)}
+          />
+
+          <div className="mt-4 grid grid-cols-2 gap-2">
             <Button
               type="button"
               variant="outline"
               size="lg"
               onClick={() => inputRef.current?.click()}
-              leftIcon={hasPhoto ? <FiRefreshCw /> : <FiCamera />}
-              className="flex-1"
+              leftIcon={<FiCamera />}
+              className="gap-1 px-2 text-sm sm:gap-2 sm:px-6 sm:text-base"
             >
-              {hasPhoto ? 'Change Photo' : 'Take Photo'}
+              Take Photo
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={() => libraryInputRef.current?.click()}
+              leftIcon={<FiImage />}
+              className="gap-1 px-2 text-sm sm:gap-2 sm:px-6 sm:text-base"
+            >
+              Choose Photo
             </Button>
             <Button
               type="button"
@@ -414,7 +432,7 @@ export function CounterScanClient() {
               disabled={!file || isScanning || loading}
               isLoading={isScanning}
               leftIcon={<FiUpload />}
-              className="flex-1"
+              className="col-span-2"
             >
               Scan Your Stack
             </Button>

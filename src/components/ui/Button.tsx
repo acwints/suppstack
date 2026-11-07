@@ -60,9 +60,9 @@ const variantStyles: Record<ButtonVariant, string> = {
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'h-11 px-3 text-sm gap-1.5 sm:h-10',
-  md: 'h-11 px-4 text-sm gap-2',
-  lg: 'h-12 px-6 text-base gap-2',
+  sm: 'h-11 min-h-11 px-3 text-sm gap-1.5 sm:h-10 sm:min-h-10',
+  md: 'h-11 min-h-11 px-4 text-sm gap-2',
+  lg: 'h-12 min-h-12 px-6 text-base gap-2',
 };
 
 const iconSizeStyles: Record<ButtonSize, string> = {
@@ -98,7 +98,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={isDisabled}
         className={cn(
           // Base styles
-          'inline-flex items-center justify-center',
+          'inline-flex shrink-0 items-center justify-center',
           'font-medium rounded',
           'transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out',
           'enabled:active:scale-[0.96]',

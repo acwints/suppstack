@@ -103,7 +103,7 @@ export default async function HealthGoalPage(props: { params: Promise<{ id: stri
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
               {featuredProducts.slice(0, 12).map((product) => (
                 <ProductTile key={product.product_id} product={product} />
               ))}
