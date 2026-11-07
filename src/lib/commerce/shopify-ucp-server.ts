@@ -156,6 +156,8 @@ export async function resolveShopifyPurchaseSession(
   quantity = 1
 ): Promise<PurchaseSession> {
   const fallback = createFallbackPurchaseSession(product, quantity);
+  if (fallback.status === 'unavailable') return fallback;
+
   const variantId = toProductVariantGid(product.shopify_variant_gid);
 
   if (!variantId || !product.shopify_store_domain) {
@@ -169,8 +171,8 @@ export async function resolveShopifyPurchaseSession(
       status: 'ready',
       capabilityStatus: {
         discovery: 'not_required',
-        cart: 'supported',
-        checkout: 'supported',
+        cart: 'not_required',
+        checkout: 'fallback',
       },
       messages: ['Using verified Shopify variant cart permalink.'],
     };

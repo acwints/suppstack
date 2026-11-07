@@ -55,11 +55,15 @@ export function useCommerceCheckout() {
 
   const startCheckout = async (product: Product, quantity = 1): Promise<PurchaseSession> => {
     const session = await resolveCheckoutSession(product, quantity);
+    if (session.status === 'unavailable') {
+      throw new Error('This product is currently unavailable.');
+    }
     if (session.purchaseUrl) {
       // Native shell → SFSafariViewController; web → new tab with a same-tab
       // fallback when the popup is blocked (the await above can expire the
       // user-activation window), so the click never silently does nothing.
-      await openExternalUrl(session.purchaseUrl);
+      const opened = await openExternalUrl(session.purchaseUrl);
+      if (!opened) throw new Error('Unable to open checkout.');
     }
     return session;
   };

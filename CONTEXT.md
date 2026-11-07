@@ -297,11 +297,11 @@ The customer can also branch from Evaluate into Save, Review, or Published Stack
 ### 7.10 Physical-product checkout
 
 - **Customer experience:** The customer selects Buy and completes the physical-goods purchase on the independent merchant’s visible checkout surface.
-- **Logic and data:** Shopify/UCP discovery is attempted only for allowlisted merchant hosts; otherwise the app creates a verified fallback purchase session. The native app opens checkout in `SFSafariViewController`.
+- **Logic and data:** Product and stack purchase actions are available on web and native. Variant-backed products normally use a merchant cart permalink; UCP discovery is limited to allowlisted hosts and is usually bypassed by that path. Native presentation uses SFSafariViewController. Unavailable products return before merchant requests. A permalink reports fallback checkout capability. The native embedded checkout and Universal Checkout targets are tracked in docs/adr/0001-physical-product-checkout.md and docs/adr/0003-ucp-capabilities-and-universal-checkout.md.
 - **Metadata/events today:** `commerce_checkout_events` stores provider, mode, status, URLs, quantity, product/brand, and capability messages through a service-role-only sink. It does not prove purchase completion and currently has no authenticated user attribution.
 - **Performance commentary:** Checkout resolution is awaited before browser open, which can exhaust the direct user-activation window on web; fallback behavior mitigates it. Quantity is lower-bounded but not upper-bounded.
 - **UX/security commentary:** Merchant allowlisting is a strong SSRF control. Errors fall back to a purchase URL, which favors completion but can hide service degradation unless operationally measured.
-- **Status:** **Partial**. Keep the audit distinction between route resolution and merchant conversion.
+- **Status:** **Partial**. Merchant presentation is implemented; managed UCP completion and physical-device checkout verification are open. The evaluation baseline lives in docs/adr/0002-evaluation-and-release-evidence.md.
 
 ### 7.11 Premium purchase, restore, and access
 
@@ -627,6 +627,7 @@ These are structural candidates, not permission to add product scope.
 
 | Date | Area | Change/evidence | Result | Next |
 | --- | --- | --- | --- | --- |
+| 2026-11-07 | Commerce recovery and evaluation | Restore native product and stack Buy controls, short-circuit unavailable inventory, and report cart-link fallback accurately. Add three ADRs and deterministic/browser commerce evaluations. | Offline baseline improves from 6/8 to 8/8; four mobile-width browser scenarios pass. | Qualify native embedded checkout, Universal Checkout access, and physical-iPad behavior before claiming payment completion. |
 | 2026-11-06 | Profile and updates | Moved What’s New into the signed-in top bar. Collapsed priority invite details into the Invite a friend row and moved Sign out into Settings. | Browser fixture checks covered 390px and desktop layouts, keyboard navigation to updates, invite copying, and access to feedback. | Verify on device after deployment. |
 | 2026-11-06 | Profile invite | After onboarding, the UUID invite was only on `/welcome`, and the profile copy stayed behind `NEXT_PUBLIC_FLAG_REFERRALS`, which is off and also hidden in the iOS shell. Profile now shows the same invite card on the web and in the shell, under the account header. If copying is denied, the link stays selectable and the card says so. | Unit checks and production build pass. Local screenshots are fixtures, not a signed-in session. | Review the PR. Do not merge from this change until that review. |
 | 2026-11-05 | Referral claim | A stored `?ref=` is claimed once per new account. Overlapping OAuth sign-in events share one request, and the referral row uses a stable id so a second insert does not increase the count. The return URL keeps `ref`. The homepage shows a create-account prompt only when that ref is stored on the web. No reward or count-rule change. | Unit checks cover one-time claim, self and stale skips, the UUID link, and the prompt. | Review the PR. Do not merge from this change until that review. |

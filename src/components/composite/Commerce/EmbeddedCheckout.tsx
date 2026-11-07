@@ -119,7 +119,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
   const unitPrice = live.price ?? product.product_price;
   const subtotal = unitPrice * quantity;
   const checkoutUrl = cartPermalink ?? destination.url;
-  const isUnavailable = live.status === 'unavailable';
+  const isUnavailable = live.status === 'unavailable' || product.inventory_status === 'out_of_stock';
 
   /**
    * The cart permalink is known synchronously, so the checkout window opens
@@ -297,7 +297,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
         {stage === 'opened' && !isUnavailable && (
           <div className="rounded border border-gray-200 bg-gray-50 p-5 text-center">
             <FiLock className="mx-auto mb-3 h-5 w-5 text-gray-500" />
-            <p className="font-medium text-gray-900">Secure checkout window opened</p>
+            <p className="font-medium text-gray-900">Merchant checkout opened</p>
             <p className="mt-1 text-sm text-gray-600">
               Finish your payment in the secure checkout window
               {domain ? ` on ${domain}` : ''}. You can keep browsing here.
@@ -315,7 +315,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
 
         {stage === 'blocked' && !isUnavailable && (
           <div className="rounded border border-warning-200 bg-warning-50 p-5 text-center">
-            <p className="font-medium text-gray-900">Popup was blocked</p>
+            <p className="font-medium text-gray-900">Checkout could not open</p>
             <p className="mt-1 text-sm text-gray-600">
               Use the link below to open the secure checkout directly.
             </p>
