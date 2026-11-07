@@ -49,4 +49,4 @@ The Commerce evaluations GitHub Actions workflow runs the offline, registration,
 
 ## Mobile directory iteration
 
-ADR 0005 adds seven stable directory scenarios: phone layout, draft cancellation and focus, combined search/facets/sort, persistence, reset, overflow, desktop controls and delayed hydration. The directory suite runs in Chromium and WebKit in CI. The browser baseline is now 16 Chromium cases plus seven WebKit directory cases; offline commerce remains 11 cases. Physical keyboard and VoiceOver verification remain separate.
+ADR 0006 adds seven stable directory scenarios: phone layout, draft cancellation and focus, combined search/facets/sort, persistence, reset, overflow, desktop controls and delayed hydration. The directory suite runs in Chromium and WebKit in CI. This iteration adds seven Chromium cases and seven WebKit directory cases to the existing commerce and scanner suites. Physical keyboard and VoiceOver verification remain separate.

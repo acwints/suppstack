@@ -9,7 +9,7 @@ Each ADR records context, a decision, the implementation boundary, and evidence.
 | [0004](0004-native-checkout-kit-lifecycle.md) | Own native presentation outcomes through Checkout Kit | Accepted, implementation and fixtures complete; physical payment verification pending |
 | [0003](0003-ucp-capabilities-and-universal-checkout.md) | Negotiate UCP capabilities and qualify Universal Checkout | Proposed |
 | [0005](0005-multi-merchant-checkout-progress.md) | Track separate merchant checkout progress and recovery | Accepted, implementation and fixture evaluation complete |
-| [0005](0005-mobile-directory-search-and-filters.md) | Put search and product results before mobile filter details | Accepted, implementation and Chromium/WebKit evaluations complete; physical accessibility QA pending |
+| [0006](0006-mobile-directory-search-and-filters.md) | Put search and product results before mobile filter details | Accepted, implementation and Chromium/WebKit evaluations complete; physical accessibility QA pending |
 
 ## Delivery queue
 

@@ -1,4 +1,4 @@
-# ADR 0005 — Put product search and results before mobile filters
+# ADR 0006 — Put product search and results before mobile filters
 
 Date November 7, 2026. Status accepted.
 
