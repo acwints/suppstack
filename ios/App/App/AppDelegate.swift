@@ -26,18 +26,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 // Kept in this target's existing source file so Xcode Cloud compiles the delegate.
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
+    private var launchObserver: NSObjectProtocol?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard !connectionOptions.urlContexts.isEmpty || !connectionOptions.userActivities.isEmpty else { return }
         // Cold-start callbacks must wait until the bridge has registered its plugins.
-        var observer: NSObjectProtocol?
-        observer = NotificationCenter.default.addObserver(forName: .capacitorViewDidAppear, object: nil, queue: .main) { [weak self] _ in
-            if let observer { NotificationCenter.default.removeObserver(observer) }
+        launchObserver = NotificationCenter.default.addObserver(forName: .capacitorViewDidAppear, object: nil, queue: .main) { [weak self] _ in
             guard let self else { return }
+            if let launchObserver = self.launchObserver {
+                NotificationCenter.default.removeObserver(launchObserver)
+                self.launchObserver = nil
+            }
             self.scene(scene, openURLContexts: connectionOptions.urlContexts)
             for activity in connectionOptions.userActivities {
                 self.scene(scene, continue: activity)
             }
+        }
+    }
+
+    deinit {
+        if let launchObserver {
+            NotificationCenter.default.removeObserver(launchObserver)
         }
     }
 

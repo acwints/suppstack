@@ -29,7 +29,6 @@ run('xcodebuild', [
   '-configuration', 'Debug',
   '-destination', `id=${udid}`,
   '-derivedDataPath', derivedData,
-  '-quiet',
   'build',
 ]);
 run('xcrun', ['simctl', 'install', udid, app]);
