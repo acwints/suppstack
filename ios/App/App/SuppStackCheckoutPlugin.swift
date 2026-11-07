@@ -14,7 +14,7 @@ public class SuppStackCheckoutPlugin: CAPPlugin, CAPBridgedPlugin {
     private var pendingPresentation: CheckoutPresentation?
 
     @objc func present(_ call: CAPPluginCall) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [self] in
             guard self.pendingPresentation == nil else {
                 call.reject("Checkout is already open.", "CHECKOUT_IN_PROGRESS")
                 return
