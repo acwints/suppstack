@@ -34,7 +34,7 @@ Baseline source: `e5ca03e` (the native checkout merge). Before/after comparison 
 | DIR-03 | Search, three facets and sort combine; preview matches applied count; reload preserves selection; removing a facet preserves the query |
 | DIR-04 | Reset clears draft facets; applying preserves search; Clear all restores the directory |
 | DIR-05 | Long unmatched queries stay within the viewport and offer a working reset |
-| DIR-06 | Desktop filters remain directly available |
+| DIR-06 | Desktop filters remain directly available; tablets retain a visible page title when the mobile navigation title is absent |
 | DIR-07 | Delayed JavaScript cannot accept and silently discard search text |
 
 Run `npm run eval:ui` for the complete Chromium suite and `npm run eval:ui -- evals/directory.spec.ts --browser=webkit` for the seven directory scenarios in WebKit. Both commands are CI gates. Browser evidence does not verify the physical iPhone keyboard, VoiceOver or native picker presentation; those remain device QA.

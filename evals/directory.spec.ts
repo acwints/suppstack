@@ -112,6 +112,10 @@ test('DIR-06 desktop keeps the direct filter controls', async ({ page }) => {
   await page.getByRole('combobox', { name: 'Goal', exact: true }).selectOption('body-composition');
   await expect(page.getByRole('button', { name: 'Remove filter Body Composition', exact: true })).toBeVisible();
   expect(new URL(page.url()).searchParams.get('goal')).toBe('body-composition');
+  await page.setViewportSize({ width: 768, height: 1024 });
+  const title = await page.getByRole('heading', { name: 'All Products', exact: true }).boundingBox();
+  expect(title!.width).toBeGreaterThan(100);
+  expect(title!.height).toBeGreaterThan(20);
 });
 
 test('DIR-07 slow hydration cannot silently discard a search', async ({ page }) => {
