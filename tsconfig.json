@@ -38,6 +38,7 @@
   ],
   "exclude": [
     "node_modules",
+    "build/**",
     "ios/DerivedData/**",
     "ios/DerivedData.nosync/**"
   ]

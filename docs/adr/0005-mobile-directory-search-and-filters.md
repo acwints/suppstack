@@ -38,3 +38,5 @@ Baseline source: `e5ca03e` (the native checkout merge). Before/after comparison 
 | DIR-07 | Delayed JavaScript cannot accept and silently discard search text |
 
 Run `npm run eval:ui` for the complete Chromium suite and `npm run eval:ui -- evals/directory.spec.ts --browser=webkit` for the seven directory scenarios in WebKit. Both commands are CI gates. Browser evidence does not verify the physical iPhone keyboard, VoiceOver or native picker presentation; those remain device QA.
+
+Local evidence on November 7: 16/16 Chromium cases, 7/7 WebKit cases, 11/11 offline commerce cases, 3/3 native registration checks, changed-file ESLint and the production build passed. The production build initially included downloaded native SDK test sources; excluding the already-ignored `build/` output from TypeScript fixed that failure while preserving all application checks. The iOS simulator build also succeeded and relaunched on the user's existing iPhone 18 Pro Max. Implementation is tracked in [PR #47](https://github.com/acwints/suppstack/pull/47).
