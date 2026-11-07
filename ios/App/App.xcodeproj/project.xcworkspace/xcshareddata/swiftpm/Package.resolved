@@ -1,6 +1,15 @@
 {
-  "originHash" : "f4215e861db312dbbcd3c75916623ed05beea1a742895c17f151bb2518d4474b",
+  "originHash" : "1da156faccbbd4af8f8b1b0fdf580e2b548739be000254b9ae18f5c531c6e004",
   "pins" : [
+    {
+      "identity" : "checkout-kit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Shopify/checkout-kit",
+      "state" : {
+        "revision" : "e24a2ba3fe392989aaf19dfcd174e88a5fa1fd40",
+        "version" : "4.0.0"
+      }
+    },
     {
       "identity" : "purchases-hybrid-common",
       "kind" : "remoteSourceControl",

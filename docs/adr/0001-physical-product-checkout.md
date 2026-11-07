@@ -16,7 +16,7 @@ Restore physical-product purchase actions in the native shell. Retain the existi
 
 Treat opening checkout as presentation only. An unavailable product returns before merchant requests. Cart permalinks report fallback checkout capability and do not fabricate UCP checkout IDs.
 
-A subsequent milestone will evaluate Shopify’s supported embedded checkout integration against Capacitor, with callbacks and device verification.
+ADR 0004 implements Shopify Checkout Kit through Capacitor with distinct completion, dismissal and failure outcomes. Device payment verification remains open.
 
 ## Implemented
 

@@ -10,6 +10,7 @@ export const REQUIRED_IOS_PLUGIN_CLASSES = [
   'PurchasesPlugin',
   'SuppStackHealthPlugin',
   'SuppStackAppleSignInPlugin',
+  'SuppStackCheckoutPlugin',
 ];
 
 /** Pull the string entries out of the `packageClassList` array in capacitor.config.ts. */

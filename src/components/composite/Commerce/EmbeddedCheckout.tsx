@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { FiAlertCircle, FiExternalLink, FiLock, FiMinus, FiPlus, FiShoppingBag } from 'react-icons/fi';
 import type { Product } from '@/types';
 import { Badge, Button, Inline, Modal, Spinner, VStack } from '@/components/ui';
 import { formatCurrency } from '@/lib/utils';
 import { useCommerceCheckout } from '@/hooks';
+import { presentNativeCheckout } from '@/lib/native/checkout';
 import { isNativeApp, openInNativeBrowser } from '@/lib/native/capacitor';
 import { BrandLogo } from '@/components/composite/Brand';
 import {
@@ -26,7 +27,7 @@ export interface EmbeddedCheckoutProps {
   onClose: () => void;
 }
 
-type CheckoutStage = 'review' | 'opened' | 'blocked';
+type CheckoutStage = 'review' | 'presenting' | 'completed' | 'opened' | 'blocked';
 
 interface LiveStatus {
   status: 'loading' | 'available' | 'unavailable' | 'unknown';
@@ -66,6 +67,8 @@ function openCheckoutWindow(url: string) {
 
 export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutProps) {
   const [quantity, setQuantity] = useState(1);
+  const nativeInFlight = useRef(false);
+  const presentationGeneration = useRef(0);
   const [stage, setStage] = useState<CheckoutStage>('review');
   const [imageSrc, setImageSrc] = useState(() => getProductImageSrc(product.product_image));
   const [live, setLive] = useState<LiveStatus>({ status: 'loading', price: null, variantTitle: null });
@@ -78,6 +81,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
   useEffect(() => {
     if (!isOpen) return;
 
+    presentationGeneration.current += 1;
     setQuantity(1);
     setStage('review');
     setLive({ status: 'loading', price: null, variantTitle: null });
@@ -108,6 +112,7 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
 
     return () => {
       cancelled = true;
+      presentationGeneration.current += 1;
     };
   }, [isOpen, product.product_id, product.product_url, product.shopify_variant_gid]);
 
@@ -128,13 +133,24 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
    * background and never gates the checkout.
    */
   const launchCheckout = () => {
+    if (isUnavailable || nativeInFlight.current) return;
     if (isNativeApp()) {
-      // The native shell has no popup windows; present the merchant checkout
-      // in SFSafariViewController instead. No popup blocker exists there, so
-      // the async call is safe outside the user-activation window.
-      openInNativeBrowser(checkoutUrl)
-        .then((opened) => setStage(opened ? 'opened' : 'blocked'))
-        .catch(() => setStage('blocked'));
+      nativeInFlight.current = true;
+      setStage('presenting');
+      const generation = presentationGeneration.current;
+      void (async () => {
+        const result = await presentNativeCheckout(checkoutUrl);
+        if (result) return result.status;
+        return await openInNativeBrowser(checkoutUrl) ? 'opened' : 'blocked';
+      })()
+        .then((status) => {
+          if (generation !== presentationGeneration.current) return;
+          setStage(status === 'failed' ? 'blocked' : status === 'dismissed' ? 'review' : status);
+        })
+        .catch(() => {
+          if (generation === presentationGeneration.current) setStage('blocked');
+        })
+        .finally(() => { nativeInFlight.current = false; });
     } else {
       const checkoutWindow = openCheckoutWindow(checkoutUrl);
 
@@ -294,6 +310,20 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
           </a>
         )}
 
+        {stage === 'presenting' && (
+          <p role="status" className="text-center text-sm text-gray-600">
+            Checkout is open. Finish or close it to return here.
+          </p>
+        )}
+
+        {stage === 'completed' && (
+          <div className="text-center">
+            <p role="status" className="font-medium text-gray-900">Checkout completed</p>
+            <p className="mt-2 text-sm text-gray-600">Check your merchant receipt for order details.</p>
+            <Button variant="primary" onClick={onClose} className="mt-4">Done</Button>
+          </div>
+        )}
+
         {stage === 'opened' && !isUnavailable && (
           <div className="rounded border border-gray-200 bg-gray-50 p-5 text-center">
             <FiLock className="mx-auto mb-3 h-5 w-5 text-gray-500" />
@@ -317,8 +347,11 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
           <div className="rounded border border-warning-200 bg-warning-50 p-5 text-center">
             <p className="font-medium text-gray-900">Checkout could not open</p>
             <p className="mt-1 text-sm text-gray-600">
-              Use the link below to open the secure checkout directly.
+              Try again or open the merchant checkout directly.
             </p>
+            <Button variant="outline" onClick={launchCheckout} className="mt-4">
+              Try again
+            </Button>
             <a
               href={checkoutUrl}
               target="_blank"

@@ -4,6 +4,7 @@ import { createFallbackPurchaseSession } from '../lib/commerce/purchase-session'
 import { buildShopifyCartGroups, getShopifyCartPermalink } from '../lib/commerce/shopify-ucp';
 import { resolveShopifyPurchaseSession } from '../lib/commerce/shopify-ucp-server';
 import { openInNativeBrowser } from '../lib/native/capacitor';
+import { presentNativeCheckout } from '../lib/native/checkout';
 
 const product: Product = {
   product_id: 'eval-product',
@@ -93,6 +94,21 @@ async function main() {
       const url = getShopifyCartPermalink(product, 2)!;
       assert.equal(await openInNativeBrowser(url), true);
       assert.equal(new URL(openedUrl).pathname, '/cart/123:2');
+    });
+    await evaluate('COM-09-old-binary-falls-back-without-sdk', async () => {
+      assert.equal(await presentNativeCheckout('https://merchant.example/cart/123:1'), null);
+    });
+    await evaluate('COM-10-sdk-rejects-insecure-url-before-presenting', async () => {
+      const plugins = window.Capacitor!.Plugins as Record<string, unknown>;
+      let calls = 0;
+      plugins.SuppStackCheckout = { present: async () => { calls += 1; return { status: 'completed' }; } };
+      await assert.rejects(presentNativeCheckout('http://merchant.example/cart/123:1'));
+      assert.equal(calls, 0);
+    });
+    await evaluate('COM-11-unknown-sdk-outcome-is-not-success', async () => {
+      const plugins = window.Capacitor!.Plugins as Record<string, unknown>;
+      plugins.SuppStackCheckout = { present: async () => ({ status: 'unknown' }) };
+      await assert.rejects(presentNativeCheckout('https://merchant.example/cart/123:1'));
     });
     await evaluate('COM-08-native-missing-bridge-is-recoverable', async () => {
       delete window.Capacitor?.Plugins?.Browser;
