@@ -30,7 +30,7 @@ Baseline source: `e5ca03e` (the native checkout merge). Before/after comparison 
 | Scenario | Required behavior |
 | --- | --- |
 | DIR-01 | Search spans the phone width; two cards share a row; the first row fits above navigation at 320, 390 and 430px; no horizontal overflow |
-| DIR-02 | Draft changes leave the URL untouched; Escape restores applied products and focus; background controls cannot receive focus while the sheet is open |
+| DIR-02 | Draft changes leave the URL untouched; Escape restores applied products and focus; background controls cannot receive focus while the sheet is open; the results button stays within the sheet at 320, 390 and 430px |
 | DIR-03 | Search, three facets and sort combine; preview matches applied count; reload preserves selection; removing a facet preserves the query |
 | DIR-04 | Reset clears draft facets; applying preserves search; Clear all restores the directory |
 | DIR-05 | Long unmatched queries stay within the viewport and offer a working reset |
@@ -42,3 +42,5 @@ Run `npm run eval:ui` for the complete Chromium suite and `npm run eval:ui -- ev
 Local evidence on November 7: 16/16 Chromium cases, 7/7 WebKit cases, 11/11 offline commerce cases, 3/3 native registration checks, changed-file ESLint and the production build passed. The production build initially included downloaded native SDK test sources; excluding the already-ignored `build/` output from TypeScript fixed that failure while preserving all application checks. The iOS simulator build also succeeded and relaunched on the user's existing iPhone 18 Pro Max. Implementation is tracked in [PR #47](https://github.com/acwints/suppstack/pull/47).
 
 The first Linux WebKit CI run stalled at frame-based pointer stability checks, matching [Playwright's reported headless WPE issue](https://github.com/microsoft/playwright/issues/33057). CI runs the same scenarios headed under Xvfb, preserving normal click checks and all assertions. Local macOS WebKit runs headless. CI keeps each browser's report and trace output separately so the second invocation cannot erase the first suite's evidence.
+
+Post-deploy visual QA caught the results button extending beyond the sheet after the shared Button component acquired a fixed shrink setting. The sheet's primary action now takes the remaining flex space beside Reset; DIR-02 checks the button's actual right edge on three phone widths.

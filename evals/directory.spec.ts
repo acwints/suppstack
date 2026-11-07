@@ -30,6 +30,14 @@ test('DIR-02 dismissing draft filters preserves results, URL and keyboard focus'
   const filters = page.getByRole('button', { name: 'Filters (1)', exact: true });
   await filters.click();
   const sheet = page.getByRole('dialog', { name: 'Filters' });
+  const apply = sheet.getByRole('button', { name: /^Show \d+ products?$/ });
+  for (const width of [320, 390, 430]) {
+    await page.setViewportSize({ width, height: 844 });
+    await expect.poll(async () => {
+      const box = await apply.boundingBox();
+      return box ? box.x + box.width : Infinity;
+    }).toBeLessThanOrEqual(width - 12);
+  }
   await sheet.getByRole('combobox', { name: 'Goal', exact: true }).selectOption('sleep-recovery');
   await sheet.getByRole('combobox', { name: 'Brand', exact: true }).selectOption('AG1');
   await expect(sheet.getByRole('button', { name: 'Show 0 products', exact: true })).toBeVisible();

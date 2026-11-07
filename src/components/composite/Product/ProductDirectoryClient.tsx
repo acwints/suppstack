@@ -493,7 +493,7 @@ export function ProductDirectoryClient({
               Reset
             </Button>
             <Button
-              fullWidth
+              className="min-w-0 flex-1"
               onClick={() => {
                 setGoalId(draftFilters.goalId);
                 setCategory(draftFilters.category);
