@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
+import { CatalogImage } from '@/components/ui/CatalogImage';
 import { FiAlertCircle, FiExternalLink, FiLock, FiMinus, FiPlus, FiShoppingBag } from 'react-icons/fi';
 import type { Product } from '@/types';
 import { Badge, Button, Inline, Modal, Spinner, VStack } from '@/components/ui';
@@ -15,11 +15,6 @@ import {
   getShopifyCartPermalink,
   getShopifyVariantNumericId,
 } from '@/lib/commerce/shopify-ucp';
-import {
-  getProductImageSrc,
-  isRemoteImageSrc,
-  PRODUCT_IMAGE_FALLBACK,
-} from '@/lib/catalog/product-image';
 
 export interface EmbeddedCheckoutProps {
   product: Product;
@@ -70,13 +65,8 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
   const nativeInFlight = useRef(false);
   const presentationGeneration = useRef(0);
   const [stage, setStage] = useState<CheckoutStage>('review');
-  const [imageSrc, setImageSrc] = useState(() => getProductImageSrc(product.product_image));
   const [live, setLive] = useState<LiveStatus>({ status: 'loading', price: null, variantTitle: null });
   const { resolveCheckoutSession } = useCommerceCheckout();
-
-  useEffect(() => {
-    setImageSrc(getProductImageSrc(product.product_image));
-  }, [product.product_image]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -177,14 +167,12 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
         {/* Order summary */}
         <div className="flex gap-4">
           <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded border border-gray-200 bg-gray-50">
-            <Image
-              src={imageSrc}
+            <CatalogImage
+              src={product.product_image}
               alt={product.product_name}
               fill
               className="object-contain p-2"
               sizes="96px"
-              unoptimized={isRemoteImageSrc(imageSrc)}
-              onError={() => setImageSrc(PRODUCT_IMAGE_FALLBACK)}
             />
           </div>
           <div className="min-w-0 flex-1">

@@ -1,18 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { CatalogImage } from '@/components/ui/CatalogImage';
 import Link from 'next/link';
 import type { Product } from '@/types';
 import { BrandLogo } from '@/components/composite/Brand';
 import { ProductActions } from './ProductActions';
 import { ProductPriceLine } from './ProductPriceLine';
 import { ProductSourceBadge } from './ProductSourceBadge';
-import {
-  getProductImageSrc,
-  isRemoteImageSrc,
-  PRODUCT_IMAGE_FALLBACK,
-} from '@/lib/catalog/product-image';
 
 export interface ProductTileProps {
   product: Product;
@@ -20,27 +14,18 @@ export interface ProductTileProps {
 
 export function ProductTile({ product }: ProductTileProps) {
   const productId = String(product.product_id);
-  const [imageSrc, setImageSrc] = useState<string | null>(() =>
-    getProductImageSrc(product.product_image)
-  );
-
-  useEffect(() => {
-    setImageSrc(getProductImageSrc(product.product_image));
-  }, [product.product_image]);
 
   return (
     <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded border border-gray-200 bg-white transition-colors duration-150 hover:border-gray-300">
       <div className="relative aspect-square border-b border-gray-100 bg-white">
         <Link href={`/product/${productId}`} className="block h-full" aria-label={product.product_name}>
-          {imageSrc ? (
-            <Image
-              src={imageSrc}
+          {product.product_image ? (
+            <CatalogImage
+              src={product.product_image}
               alt={product.product_name}
               fill
               className="object-contain p-4 transition-transform duration-200 group-hover:scale-[1.03]"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              unoptimized={isRemoteImageSrc(imageSrc)}
-              onError={() => setImageSrc(PRODUCT_IMAGE_FALLBACK)}
             />
           ) : (
             <span className="flex h-full items-center justify-center text-3xl font-semibold text-gray-300">

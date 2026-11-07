@@ -99,8 +99,9 @@ export function Modal({
             </div>
             {showCloseButton && (
               <button
+                type="button"
                 onClick={onClose}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
                 aria-label="Close modal"
               >
                 <FaTimes className="w-5 h-5" />
@@ -116,7 +117,7 @@ export function Modal({
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+          <div className="flex flex-wrap items-center justify-end gap-3 p-6 border-t border-gray-200">
             {footer}
           </div>
         )}

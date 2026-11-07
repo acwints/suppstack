@@ -1,10 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import { CatalogImage } from '@/components/ui/CatalogImage';
 import type { SupplementBrowseGroup } from '@/lib/catalog/supplement-families';
 import { formatCurrency } from '@/lib/utils';
-import { isRemoteImageSrc } from '@/lib/catalog/product-image';
 
 export interface SupplementCardProps {
   group: SupplementBrowseGroup;
@@ -37,14 +36,13 @@ export function SupplementCard({ group, index }: SupplementCardProps) {
             </span>
           )}
           {flagship.image_url ? (
-            <Image
+            <CatalogImage
               src={flagship.image_url}
               alt={group.name}
               fill
               priority={typeof index === 'number' && index < 2}
               className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.04]"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-              unoptimized={isRemoteImageSrc(flagship.image_url)}
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-gray-50">

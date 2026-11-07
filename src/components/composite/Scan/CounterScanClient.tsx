@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { CatalogImage } from '@/components/ui/CatalogImage';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -18,11 +19,6 @@ import { loginHref } from '@/lib/navigation/login';
 import { ProductActions, ProductPriceLine, ProductSourceBadge } from '@/components/composite/Product';
 import { BrandLogo } from '@/components/composite/Brand';
 import { Button, Spinner } from '@/components/ui';
-import {
-  getProductImageSrc,
-  isRemoteImageSrc,
-  PRODUCT_IMAGE_FALLBACK,
-} from '@/lib/catalog/product-image';
 import { cn } from '@/lib/design-system';
 import { isNativeApp } from '@/lib/native/capacitor';
 import type {
@@ -111,23 +107,15 @@ async function compressForScan(file: File) {
 }
 
 function ProductImage({ product }: { product: Product }) {
-  const [src, setSrc] = useState(() => getProductImageSrc(product.product_image));
-
-  useEffect(() => {
-    setSrc(getProductImageSrc(product.product_image));
-  }, [product.product_image]);
-
   return (
     <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded bg-white outline outline-1 -outline-offset-1 outline-black/10 sm:h-28 sm:w-28">
-      {src ? (
-        <Image
-          src={src}
+      {product.product_image ? (
+        <CatalogImage
+          src={product.product_image}
           alt={product.product_name}
           fill
           className="object-contain p-3"
           sizes="112px"
-          unoptimized={isRemoteImageSrc(src)}
-          onError={() => setSrc(PRODUCT_IMAGE_FALLBACK)}
         />
       ) : (
         <span className="flex h-full w-full items-center justify-center text-2xl font-semibold text-gray-300">
@@ -142,7 +130,7 @@ function AlternateLink({ product }: { product: Product }) {
   return (
     <Link
       href={`/product/${product.product_id}`}
-      className="inline-flex min-h-10 items-center gap-2 rounded bg-gray-50 px-3 text-sm font-medium text-gray-800 shadow-[inset_0_0_0_1px_rgba(17,24,39,0.08)] transition-[background-color,box-shadow,transform] duration-150 ease-out hover:bg-white hover:shadow-surface active:scale-[0.96]"
+      className="inline-flex min-h-11 items-center gap-2 rounded bg-gray-50 px-3 text-sm font-medium text-gray-800 shadow-[inset_0_0_0_1px_rgba(17,24,39,0.08)] transition-[background-color,box-shadow,transform] duration-150 ease-out hover:bg-white hover:shadow-surface active:scale-[0.96]"
     >
       <span className="truncate">{product.product_name}</span>
       <FiArrowRight size={14} aria-hidden="true" />

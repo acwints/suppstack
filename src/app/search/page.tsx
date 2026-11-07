@@ -72,7 +72,7 @@ function SearchResults() {
                 <Link
                   key={goal.id}
                   href={goal.href}
-                  className="inline-flex min-h-9 items-center rounded border border-gray-300 bg-white px-3 text-xs font-medium text-gray-900 transition-colors hover:border-gray-400 hover:bg-gray-50"
+                  className="inline-flex min-h-11 items-center rounded border border-gray-300 bg-white px-3 text-xs font-medium text-gray-900 transition-colors hover:border-gray-400 hover:bg-gray-50"
                 >
                   {goal.name}
                 </Link>

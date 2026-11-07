@@ -68,7 +68,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               error
                 ? 'border-error-500 focus:ring-error-200 focus:border-error-500'
                 : 'border-gray-300 focus:ring-gray-200 focus:border-gray-400',
-              'appearance-none truncate bg-white border rounded-lg text-gray-900',
+              'min-h-[var(--control-min-size)] appearance-none truncate bg-white border rounded-lg text-gray-900',
               'focus:ring-2 focus:outline-none transition-[border-color,box-shadow] duration-150',
               className,
             )}

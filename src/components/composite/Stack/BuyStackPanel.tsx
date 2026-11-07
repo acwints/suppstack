@@ -212,7 +212,7 @@ export function BuyStackPanel({
                     aria-pressed={checkedItems.has(index)}
                     onClick={() => toggleCheck(index)}
                     className={cn(
-                      'mt-0.5 w-5 h-5 rounded border flex items-center justify-center shrink-0 transition-colors',
+                      'mt-0.5 w-11 h-11 rounded border flex items-center justify-center shrink-0 transition-colors',
                       checkedItems.has(index)
                         ? 'bg-gray-900 border-gray-900 text-white'
                         : 'border-gray-300 hover:border-gray-400'

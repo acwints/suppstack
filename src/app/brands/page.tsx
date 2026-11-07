@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { CatalogImage } from '@/components/ui/CatalogImage';
 import Link from 'next/link';
 import { FiArrowRight } from 'react-icons/fi';
 import { brandSlug, buildCatalogBrandDiscovery } from '@/lib/catalog/brand-discovery';
@@ -10,7 +10,7 @@ import { brandMatchesCatalogQuery } from '@/lib/catalog/catalog-search';
 import { formatCurrency } from '@/lib/utils';
 import { BrandLogo } from '@/components/composite/Brand';
 import { EnhancedSearchBar } from '@/components/composite/Search';
-import { getProductImageSrc, isRemoteImageSrc } from '@/lib/catalog/product-image';
+import { getProductImageSrc } from '@/lib/catalog/product-image';
 
 export default function BrandsPage() {
   const router = useRouter();
@@ -80,13 +80,12 @@ export default function BrandsPage() {
               >
                 <div className="relative aspect-[4/3] border-b border-gray-100 bg-white">
                   {brand.heroProduct.product_image && (
-                    <Image
+                    <CatalogImage
                       src={getProductImageSrc(brand.heroProduct.product_image)}
                       alt={brand.heroProduct.product_name}
                       fill
                       className="object-contain p-6"
                       sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                      unoptimized={isRemoteImageSrc(getProductImageSrc(brand.heroProduct.product_image))}
                     />
                   )}
                 </div>
@@ -128,7 +127,7 @@ export default function BrandsPage() {
                   <div className="mt-5 flex gap-3">
                     <Link
                       href={`/brands/${brandSlug(brand.brandName)}`}
-                      className="inline-flex h-10 flex-1 items-center justify-center rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
+                      className="inline-flex min-h-11 flex-1 items-center justify-center rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
                     >
                       View Brand Shelf
                     </Link>

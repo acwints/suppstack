@@ -22,7 +22,7 @@ export default function BrandPage(props: { params: Promise<{ slug: string }> }) 
         <section className="container-custom py-12">
           <Link
             href="/brands"
-            className="mb-8 hidden items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 md:inline-flex"
+            className="min-h-11 mb-8 hidden items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 md:inline-flex"
           >
             <FiArrowLeft />
             Back to brands
@@ -35,7 +35,7 @@ export default function BrandPage(props: { params: Promise<{ slug: string }> }) 
             </p>
             <Link
               href="/brands"
-              className="mt-6 inline-flex h-10 items-center justify-center rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
+              className="mt-6 inline-flex min-h-11 items-center justify-center rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
             >
               Browse Brands
             </Link>
@@ -53,7 +53,7 @@ export default function BrandPage(props: { params: Promise<{ slug: string }> }) 
         <div className="container-custom py-10 lg:py-14">
           <Link
             href="/brands"
-            className="mb-8 hidden items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 md:inline-flex"
+            className="min-h-11 mb-8 hidden items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 md:inline-flex"
           >
             <FiArrowLeft />
             Back to brands

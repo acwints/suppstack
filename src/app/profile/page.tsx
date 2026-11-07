@@ -1,5 +1,7 @@
 'use client';
 
+import { ButtonLink } from '@/components/ui/ButtonLink';
+
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -269,16 +271,14 @@ export default function ProfilePage() {
         {/* Tab Content */}
         {activeTab === 'stacks' && (
           <section>
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
               <div>
                 <h2 className="text-2xl font-serif text-gray-900">Shared stacks</h2>
                 <p className="text-gray-500 mt-1">Supplement combinations you&apos;ve created</p>
               </div>
-              <Link href="/stacks/create">
-                <Button variant="primary" leftIcon={<FiPlus />}>
-                  Create Stack
-                </Button>
-              </Link>
+              <ButtonLink href="/stacks/create" variant="primary" leftIcon={<FiPlus />}>
+                Create Stack
+              </ButtonLink>
             </div>
 
             {stacksLoading ? (
@@ -291,11 +291,9 @@ export default function ProfilePage() {
                 title="No stacks yet"
                 description="Create and share your supplement combinations with the community."
                 action={
-                  <Link href="/stacks/create">
-                    <Button variant="primary" leftIcon={<FiPlus />}>
-                      Create Your First Stack
-                    </Button>
-                  </Link>
+                  <ButtonLink href="/stacks/create" variant="primary" leftIcon={<FiPlus />}>
+                    Create Your First Stack
+                  </ButtonLink>
                 }
                 variant="card"
                 size="lg"

@@ -177,7 +177,7 @@ export function ReviewCard({
 
       {/* Actions */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm text-gray-500">
             Was this helpful?
           </span>

@@ -110,7 +110,7 @@ export function ProductFilterPanel({
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex min-h-11 items-center gap-2 rounded border border-gray-200 px-3 text-sm text-gray-700 transition-colors hover:border-gray-300 hover:text-gray-900 sm:min-h-0 sm:border-0 sm:px-0"
+          className="flex min-h-11 items-center gap-2 rounded border border-gray-200 px-3 text-sm text-gray-700 transition-colors hover:border-gray-300 hover:text-gray-900 sm:border-0 sm:px-0"
         >
           <FiFilter size={16} />
           <span>Filters</span>
@@ -126,7 +126,7 @@ export function ProductFilterPanel({
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as ProductSortBy)}
-            className="h-11 min-w-0 flex-1 rounded border border-gray-200 px-3 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300 sm:h-9 sm:flex-none"
+            className="h-11 min-w-0 flex-1 rounded border border-gray-200 px-3 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300 sm:h-11 sm:flex-none"
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>

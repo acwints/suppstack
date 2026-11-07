@@ -1,10 +1,9 @@
-import Image from 'next/image';
+import { CatalogImage } from '@/components/ui/CatalogImage';
 import Link from 'next/link';
 import { FiArrowRight } from 'react-icons/fi';
 import { supplementCatalog } from '@/lib/catalog/supplement-catalog';
 import { buildHealthGoalDirectory, healthGoalHref } from '@/lib/catalog/health-goal-directory';
 import { HEALTH_GOAL_ICONS } from '@/lib/catalog/health-goal-icons';
-import { isRemoteImageSrc } from '@/lib/catalog/product-image';
 import { formatCurrency } from '@/lib/utils';
 
 export default function HealthPage() {
@@ -42,13 +41,12 @@ export default function HealthPage() {
                       className="relative aspect-square overflow-hidden rounded border border-gray-100 bg-white"
                     >
                       {supplement.image_url && (
-                        <Image
+                        <CatalogImage
                           src={supplement.image_url}
                           alt={supplement.supplement_name}
                           fill
                           className="object-contain p-1.5"
                           sizes="80px"
-                          unoptimized={isRemoteImageSrc(supplement.image_url)}
                         />
                       )}
                     </span>

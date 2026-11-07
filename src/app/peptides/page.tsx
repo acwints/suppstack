@@ -13,7 +13,7 @@ export default function PeptidesPage() {
     <main className="mobile-page bg-white">
       <Link
         href="/"
-        className="mb-6 hidden items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 md:inline-flex"
+        className="min-h-11 mb-6 hidden items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 md:inline-flex"
       >
         <FiArrowLeft />
         Back to shop

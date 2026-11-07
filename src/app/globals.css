@@ -4,6 +4,9 @@
 
 :root {
   /* Professional editorial theme */
+  --control-min-size: 2.75rem;
+  --control-action-size: 3rem;
+
   --color-primary: oklch(0.205 0 0);
   --color-accent: oklch(0.693 0.16 50);
 
@@ -100,7 +103,22 @@
 
   button {
     @apply select-none font-medium;
+    min-height: var(--control-min-size);
+    min-width: var(--control-min-size);
+    flex-shrink: 0;
+    touch-action: manipulation;
   }
+
+  button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  select, input:not([type]),
+  input:is([type="text"], [type="search"], [type="email"], [type="password"], [type="number"], [type="url"], [type="tel"], [type="date"], [type="time"]) {
+    min-height: var(--control-min-size);
+  }
+
 
   img {
     outline: 1px solid oklch(0 0 0 / 0.1);

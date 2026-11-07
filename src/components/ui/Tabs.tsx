@@ -110,6 +110,7 @@ const Tab = forwardRef<HTMLButtonElement, TabProps>(
     return (
       <button
         ref={ref}
+        type="button"
         role="tab"
         aria-selected={isActive}
         disabled={disabled}

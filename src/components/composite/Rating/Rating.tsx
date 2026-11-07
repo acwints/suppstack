@@ -65,7 +65,7 @@ export function Rating({
 
   return (
     <div className={`flex items-center ${gapClasses[size]} ${className}`}>
-      <div className={`flex items-center ${gapClasses[size]}`}>
+      <div className={`flex items-center ${gapClasses[size]}`} role={readonly ? 'img' : 'group'} aria-label={`${value} out of ${max} stars`}>
         {Array.from({ length: max }, (_, i) => {
           const starIndex = i + 1;
           const fill = getStarFill(starIndex, displayValue, precision);
@@ -76,22 +76,22 @@ export function Rating({
               ? FaStarHalfAlt
               : FaRegStar;
 
-          return (
+          const icon = <StarIcon className={sizeClasses[size]} aria-hidden="true" />;
+          const color = fill === 'empty' ? 'text-gray-200' : 'text-gray-900';
+          return readonly ? (
+            <span key={i} className={color} aria-hidden="true">{icon}</span>
+          ) : (
             <button
               key={i}
               type="button"
-              className={`
-                ${sizeClasses[size]}
-                ${fill === 'empty' ? 'text-gray-200' : 'text-gray-900'}
-                ${!readonly ? 'cursor-pointer hover:scale-110 transition-transform' : 'cursor-default'}
-              `}
+              className={`inline-flex h-11 w-11 items-center justify-center ${color} transition-transform hover:scale-110`}
               onMouseEnter={() => handleMouseEnter(starIndex)}
               onMouseLeave={handleMouseLeave}
               onClick={() => handleClick(starIndex)}
-              disabled={readonly}
               aria-label={`${starIndex} stars`}
+              aria-pressed={value === starIndex}
             >
-              <StarIcon className="w-full h-full" />
+              {icon}
             </button>
           );
         })}

@@ -1,7 +1,9 @@
 'use client';
 
+import { ButtonLink } from '@/components/ui/ButtonLink';
+
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import { CatalogImage } from '@/components/ui/CatalogImage';
 import Link from 'next/link';
 import { FiX, FiPlus, FiCheck, FiStar, FiExternalLink } from 'react-icons/fi';
 import { supabase } from '@/app/supabase';
@@ -9,7 +11,7 @@ import { Card, Button, Spinner, Badge } from '@/components/ui';
 import { cn } from '@/lib/design-system';
 import { formatCurrency, calculatePrices } from '@/lib/utils';
 import { isListableDatabaseProduct } from '@/lib/catalog/supplement-catalog';
-import { getProductImageSrc, isRemoteImageSrc } from '@/lib/catalog/product-image';
+import { getProductImageSrc } from '@/lib/catalog/product-image';
 import type { Product } from '@/types';
 
 export interface CompareProductsProps {
@@ -127,6 +129,7 @@ export function CompareProducts({
             setIsOpen(false);
             setSelectedIds([]);
           }}
+          aria-label="Close comparison"
           className="text-gray-400 hover:text-gray-600 transition-colors"
         >
           <FiX size={18} />
@@ -161,6 +164,7 @@ export function CompareProducts({
                 <div key={product.product_id} className="border border-gray-200 rounded-lg p-4 relative">
                   <button
                     onClick={() => removeProduct(product.product_id)}
+                    aria-label={`Remove ${product.product_name} from comparison`}
                     className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
                   >
                     <FiX size={14} />
@@ -168,12 +172,11 @@ export function CompareProducts({
                   <div className="text-center mb-3">
                     {product.product_image ? (
                       <div className="relative w-16 h-16 mx-auto mb-2">
-                        <Image
+                        <CatalogImage
                           src={getProductImageSrc(product.product_image)}
                           alt={product.product_name}
                           fill
                           className="object-contain"
-                          unoptimized={isRemoteImageSrc(getProductImageSrc(product.product_image))}
                         />
                       </div>
                     ) : (
@@ -202,6 +205,7 @@ export function CompareProducts({
                 <span className="text-sm font-medium text-gray-700">Select a product</span>
                 <button
                   onClick={() => setShowPicker(false)}
+                  aria-label="Close product picker"
                   className="text-gray-400 hover:text-gray-600"
                 >
                   <FiX size={16} />
@@ -355,11 +359,9 @@ export function CompareProducts({
                     <td className="py-2.5 pr-4 text-gray-600">Buy</td>
                     {products.map((p) => (
                       <td key={p.product_id} className="py-2.5 px-2 text-center">
-                        <Link href={`/product/${p.product_id}`}>
-                          <Button variant="outline" size="sm">
-                            View
-                          </Button>
-                        </Link>
+                        <ButtonLink href={`/product/${p.product_id}`} variant="outline" size="sm">
+                          View
+                        </ButtonLink>
                       </td>
                     ))}
                   </tr>

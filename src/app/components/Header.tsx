@@ -327,7 +327,7 @@ export function Header() {
           ) : (
             <>
               {mobileAppBar.brandTitle ? (
-                <Link href="/" className="group min-w-0 flex-1">
+                <Link href="/" className="group flex min-h-11 min-w-0 flex-1 items-center">
                   <span className="block truncate font-serif text-xl font-normal tracking-normal text-gray-900">
                     {mobileAppBar.title}
                   </span>
@@ -345,7 +345,7 @@ export function Header() {
 
         <div className="app-header-row hidden items-center justify-between gap-3 md:flex">
           {/* Logo */}
-          <Link href="/" className="group flex min-w-0 items-center">
+          <Link href="/" className="group flex min-h-11 min-w-0 items-center">
             <span className="truncate font-serif text-xl font-normal tracking-normal text-gray-900 sm:text-2xl">
               SuppStack AI
             </span>

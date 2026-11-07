@@ -1,5 +1,7 @@
 'use client';
 
+import { ButtonLink } from '@/components/ui/ButtonLink';
+
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -153,9 +155,7 @@ export default function StackDetailPage() {
           title="Stack not found"
           description="This stack may have been deleted or made private."
           action={
-            <Link href="/">
-              <Button variant="primary">Back to Shop</Button>
-            </Link>
+            <ButtonLink href="/" variant="primary">Back to Shop</ButtonLink>
           }
           size="lg"
         />
@@ -171,7 +171,7 @@ export default function StackDetailPage() {
       {/* Back Button */}
       <Link
         href="/profile"
-        className="mb-6 hidden items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 md:inline-flex"
+        className="min-h-11 mb-6 hidden items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 md:inline-flex"
       >
         <FiArrowLeft />
         <span>Back to profile</span>
@@ -421,11 +421,9 @@ export default function StackDetailPage() {
               <p className="text-sm text-gray-700 mb-4">
                 Sign in to copy this stack, track refill cost, and keep your supplements organized.
               </p>
-              <Link href={loginHref}>
-                <Button variant="primary" fullWidth>
-                  Sign In
-                </Button>
-              </Link>
+              <ButtonLink href={loginHref} variant="primary" fullWidth>
+                Sign In
+              </ButtonLink>
             </div>
           )}
         </VStack>

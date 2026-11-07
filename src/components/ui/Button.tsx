@@ -24,35 +24,35 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const variantStyles: Record<ButtonVariant, string> = {
   primary: cn(
     'bg-gray-900 text-white',
-    'hover:bg-gray-800',
+    'hover:bg-gray-800 hover:text-white',
     'active:bg-gray-700',
     'focus-visible:ring-gray-900',
     'disabled:bg-gray-300'
   ),
   secondary: cn(
     'bg-gray-100 text-gray-900',
-    'hover:bg-gray-200',
+    'hover:bg-gray-200 hover:text-gray-900',
     'active:bg-gray-300',
     'focus-visible:ring-gray-500',
     'disabled:bg-gray-100 disabled:text-gray-400'
   ),
   outline: cn(
     'bg-white text-gray-700 shadow-surface',
-    'hover:bg-gray-50 hover:shadow-surface-hover',
+    'hover:bg-gray-50 hover:text-gray-900 hover:shadow-surface-hover',
     'active:bg-gray-100',
     'focus-visible:ring-gray-500',
     'disabled:text-gray-400 disabled:shadow-surface'
   ),
   ghost: cn(
     'bg-transparent text-gray-700',
-    'hover:bg-gray-100',
+    'hover:bg-gray-100 hover:text-gray-900',
     'active:bg-gray-200',
     'focus-visible:ring-gray-500',
     'disabled:text-gray-400'
   ),
   danger: cn(
     'bg-error-600 text-white',
-    'hover:bg-error-700',
+    'hover:bg-error-700 hover:text-white',
     'active:bg-error-800',
     'focus-visible:ring-error-600',
     'disabled:bg-error-300'
@@ -60,9 +60,9 @@ const variantStyles: Record<ButtonVariant, string> = {
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'h-11 min-h-11 px-3 text-sm gap-1.5 sm:h-10 sm:min-h-10',
-  md: 'h-11 min-h-11 px-4 text-sm gap-2',
-  lg: 'h-12 min-h-12 px-6 text-base gap-2',
+  sm: 'min-h-[var(--control-min-size)] px-3 py-2 text-sm gap-1.5',
+  md: 'min-h-[var(--control-min-size)] px-4 py-2 text-sm gap-2',
+  lg: 'min-h-[var(--control-action-size)] px-6 py-2.5 text-base gap-2',
 };
 
 const iconSizeStyles: Record<ButtonSize, string> = {
@@ -74,9 +74,23 @@ const iconSizeStyles: Record<ButtonSize, string> = {
 /**
  * Button component with multiple variants and sizes
  */
+export function buttonClassName({ variant = 'primary', size = 'md', fullWidth = false, className }: Pick<ButtonProps, 'variant' | 'size' | 'fullWidth' | 'className'> = {}) {
+  return cn(
+    'inline-flex shrink-0 items-center justify-center',
+    'font-medium rounded',
+    'transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out',
+    'enabled:active:scale-[0.96]',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+    'disabled:cursor-not-allowed',
+    variantStyles[variant], sizeStyles[size], iconSizeStyles[size],
+    fullWidth && 'w-full', className
+  );
+}
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
+      type = 'button',
       variant = 'primary',
       size = 'md',
       isLoading = false,
@@ -95,23 +109,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
+        type={type}
         disabled={isDisabled}
-        className={cn(
-          // Base styles
-          'inline-flex shrink-0 items-center justify-center',
-          'font-medium rounded',
-          'transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out',
-          'enabled:active:scale-[0.96]',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-          'disabled:cursor-not-allowed',
-          // Variant & Size
-          variantStyles[variant],
-          sizeStyles[size],
-          iconSizeStyles[size],
-          // Modifiers
-          fullWidth && 'w-full',
-          className
-        )}
+        className={buttonClassName({ variant, size, fullWidth, className })}
         {...props}
       >
         {isLoading ? (

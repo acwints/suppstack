@@ -3616,7 +3616,7 @@ const curatedProductSeeds: CuratedProductSeed[] = [
     product_price: 26,
     product_url: 'https://www.thorne.com/products/dp/stress-b-complex',
     amazon_url: '',
-    product_image: shopifyImage('https://d1vo8zfysxy97v.cloudfront.net/media/product/b107__v5dabbd1393b8a7ff4f391f3839b63fa757822234.png'),
+    product_image: shopifyImage('https://d1vo8zfysxy97v.cloudfront.net/media/product/b107__vf4cde66d36033760ee72bfffbf7c5fdc6256885b.webp'),
     servings_per_container: 60,
     servings_per_day: 1,
     brand_id: 'thorne',

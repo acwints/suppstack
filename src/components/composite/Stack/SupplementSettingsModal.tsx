@@ -71,12 +71,13 @@ export function SupplementSettingsModal({
         {/* Status */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {SUPPLEMENT_STATUS_OPTIONS.map(option => (
               <button
                 key={option.value}
                 type="button"
                 onClick={() => setStatus(option.value)}
+                aria-pressed={status === option.value}
                 className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   status === option.value
                     ? 'bg-gray-900 text-white'
@@ -119,13 +120,15 @@ export function SupplementSettingsModal({
             <FiCalendar className="inline mr-1" />
             Schedule Days
           </label>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {DAYS_OF_WEEK.map(day => (
               <button
                 key={day.value}
                 type="button"
                 onClick={() => toggleDay(day.value)}
-                className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
+                aria-label={day.label}
+                aria-pressed={scheduleDays.includes(day.value)}
+                className={`w-11 h-11 rounded-full text-sm font-medium transition-colors ${
                   scheduleDays.includes(day.value)
                     ? 'bg-accent-500 text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -138,7 +141,7 @@ export function SupplementSettingsModal({
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t">
+        <div className="flex flex-wrap justify-end gap-3 pt-4 border-t">
           <Button type="button" variant="ghost" onClick={onRemove} className="mr-auto">
             Remove from stack
           </Button>

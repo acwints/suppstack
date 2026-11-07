@@ -91,7 +91,7 @@ export default function HomePage() {
             <section>
               <Inline justify="between" align="end" className="section-header">
                 <h2>Shop by Goal</h2>
-                <Link href="/health" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                <Link href="/health" className="inline-flex min-h-11 items-center text-sm font-medium text-gray-600 hover:text-gray-900">
                   View all
                 </Link>
               </Inline>
@@ -101,7 +101,7 @@ export default function HomePage() {
             <section>
               <Inline justify="between" align="end" className="section-header">
                 <h2>All Products</h2>
-                <Link href="/products" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                <Link href="/products" className="inline-flex min-h-11 items-center text-sm font-medium text-gray-600 hover:text-gray-900">
                   View all
                 </Link>
               </Inline>
@@ -148,7 +148,7 @@ export default function HomePage() {
             <section>
               <Inline justify="between" align="end" className="section-header">
                 <h2>Shop Brands</h2>
-                <Link href="/brands" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                <Link href="/brands" className="inline-flex min-h-11 items-center text-sm font-medium text-gray-600 hover:text-gray-900">
                   View all
                 </Link>
               </Inline>
@@ -176,7 +176,7 @@ export default function HomePage() {
               <section>
                 <Inline justify="between" align="end" className="section-header">
                   <h2>Peptides Reference</h2>
-                  <Link href="/peptides" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                  <Link href="/peptides" className="inline-flex min-h-11 items-center text-sm font-medium text-gray-600 hover:text-gray-900">
                     View all
                   </Link>
                 </Inline>

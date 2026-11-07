@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { CatalogImage } from '@/components/ui/CatalogImage';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FiArrowLeft } from 'react-icons/fi';
@@ -7,7 +7,6 @@ import {
   HEALTH_GOAL_DEFINITIONS,
   findHealthGoalDirectoryItem,
 } from '@/lib/catalog/health-goal-directory';
-import { isRemoteImageSrc } from '@/lib/catalog/product-image';
 import { formatCurrency } from '@/lib/utils';
 
 export function generateStaticParams() {
@@ -40,7 +39,7 @@ export default async function HealthGoalPage(props: { params: Promise<{ id: stri
       <section className="container-custom py-6 sm:py-8">
         <Link
           href="/health"
-          className="mb-4 hidden min-h-10 items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900 md:inline-flex"
+          className="mb-4 hidden min-h-11 items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900 md:inline-flex"
         >
           <FiArrowLeft />
           <span>All goals</span>
@@ -65,13 +64,12 @@ export default async function HealthGoalPage(props: { params: Promise<{ id: stri
                 >
                   <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded border border-gray-100 bg-white">
                     {supplement.image_url && (
-                      <Image
+                      <CatalogImage
                         src={supplement.image_url}
                         alt={supplement.supplement_name}
                         fill
                         className="object-contain p-1.5"
                         sizes="64px"
-                        unoptimized={isRemoteImageSrc(supplement.image_url)}
                       />
                     )}
                   </span>
@@ -97,7 +95,7 @@ export default async function HealthGoalPage(props: { params: Promise<{ id: stri
               </div>
               <Link
                 href={`/products?goal=${goal.id}`}
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                className="inline-flex min-h-11 items-center text-sm font-medium text-gray-600 hover:text-gray-900"
               >
                 View all {goal.productCount}
               </Link>

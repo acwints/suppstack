@@ -1,11 +1,10 @@
 'use client';
 
-import Image from 'next/image';
+import { CatalogImage } from '@/components/ui/CatalogImage';
 import Link from 'next/link';
 import { FiArrowRight } from 'react-icons/fi';
 import { buildHealthGoalDirectory, healthGoalHref } from '@/lib/catalog/health-goal-directory';
 import { HEALTH_GOAL_ICONS } from '@/lib/catalog/health-goal-icons';
-import { isRemoteImageSrc } from '@/lib/catalog/product-image';
 import type { Supplement } from '@/types';
 
 export interface HealthGoalDirectoryProps {
@@ -44,13 +43,12 @@ export function HealthGoalDirectory({ supplements }: HealthGoalDirectoryProps) {
                 <div key={supplement.supplement_id} className="min-w-0">
                   <div className="relative aspect-square overflow-hidden rounded border border-gray-100 bg-white">
                     {supplement.image_url ? (
-                      <Image
+                      <CatalogImage
                         src={supplement.image_url}
                         alt=""
                         fill
                         className="object-contain p-2"
                         sizes="112px"
-                        unoptimized={isRemoteImageSrc(supplement.image_url)}
                       />
                     ) : (
                       <span className="flex h-full items-center justify-center text-xs font-semibold text-gray-300">

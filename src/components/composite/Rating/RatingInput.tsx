@@ -15,7 +15,7 @@ export interface RatingInputProps {
 
 const sizeClasses = {
   md: { star: 'w-8 h-8', gap: 'gap-1' },
-  lg: { star: 'w-10 h-10', gap: 'gap-2' },
+  lg: { star: 'w-10 h-10', gap: 'gap-1' },
 };
 
 const ratingLabels = ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
@@ -42,14 +42,14 @@ export function RatingInput({
         </label>
       )}
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-2">
         <div className={`flex items-center ${sizeClasses[size].gap}`}>
           {[1, 2, 3, 4, 5].map((starValue) => (
             <button
               key={starValue}
               type="button"
               className={`
-                ${sizeClasses[size].star}
+                inline-flex h-11 w-11 items-center justify-center
                 ${starValue <= displayValue ? 'text-gray-900' : 'text-gray-200'}
                 transition-[color,transform] duration-150 ease-out hover:scale-110 hover:text-gray-900 active:scale-[0.96]
               `}
@@ -57,8 +57,9 @@ export function RatingInput({
               onMouseLeave={() => setHoverValue(null)}
               onClick={() => onChange(starValue)}
               aria-label={`Rate ${starValue} stars`}
+              aria-pressed={value === starValue}
             >
-              <FaStar className="w-full h-full" />
+              <FaStar className={sizeClasses[size].star} aria-hidden="true" />
             </button>
           ))}
         </div>

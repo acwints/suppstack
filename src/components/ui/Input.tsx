@@ -74,7 +74,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               leftIcon && 'pl-12',
               rightIcon && 'pr-12',
               error && 'border-error-500 focus:ring-error-200 focus:border-error-500',
-              'bg-white text-gray-900 placeholder-gray-500',
+              'min-h-[var(--control-min-size)] bg-white text-gray-900 placeholder-gray-500',
               'focus:outline-none transition-[border-color,box-shadow] duration-150',
               className,
             )}

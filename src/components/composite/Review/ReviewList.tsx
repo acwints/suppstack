@@ -87,7 +87,7 @@ export function ReviewList({
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-2xl font-bold text-gray-900">
           Customer Reviews
         </h2>
@@ -112,7 +112,7 @@ export function ReviewList({
       {/* User's Review Section */}
       {userReview && !isEditingReview && (
         <div className="bg-accent-50 rounded-xl p-6 border border-accent-100">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <h3 className="font-semibold text-gray-900">Your Review</h3>
             <div className="flex gap-2">
               <Button

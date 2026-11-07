@@ -1,5 +1,7 @@
 'use client';
 
+import { ButtonLink } from '@/components/ui/ButtonLink';
+
 import { useEffect, useState, type JSX } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -219,7 +221,7 @@ export default function CreateStackPage() {
       {/* Back Button */}
       <Link
         href="/profile"
-        className="mb-6 hidden items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 md:inline-flex"
+        className="min-h-11 mb-6 hidden items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 md:inline-flex"
       >
         <FiArrowLeft />
         <span>Back to profile</span>
@@ -532,11 +534,9 @@ export default function CreateStackPage() {
 
           {/* Submit */}
           <Inline gap={3}>
-            <Link href="/profile" className="flex-1">
-              <Button type="button" variant="outline" fullWidth>
-                Cancel
-              </Button>
-            </Link>
+            <ButtonLink href="/profile" className="flex-1" variant="outline" fullWidth>
+              Cancel
+            </ButtonLink>
             <Button
               type="submit"
               variant="primary"

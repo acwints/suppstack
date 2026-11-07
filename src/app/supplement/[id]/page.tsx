@@ -1,5 +1,7 @@
 'use client';
 
+import { ButtonLink } from '@/components/ui/ButtonLink';
+
 import { useState, useEffect, useMemo, use } from 'react';
 import Link from 'next/link';
 import { FiArrowLeft, FiPackage, FiPlus } from 'react-icons/fi';
@@ -184,9 +186,7 @@ export default function SupplementPage(props: { params: Promise<{ id: string }> 
           title="Supplement not found"
           description="This supplement category doesn't exist or has been removed."
           action={
-            <Link href="/">
-              <Button variant="primary">Back to Home</Button>
-            </Link>
+            <ButtonLink href="/" variant="primary">Back to Home</ButtonLink>
           }
           size="lg"
         />
@@ -199,7 +199,7 @@ export default function SupplementPage(props: { params: Promise<{ id: string }> 
       {/* Back Navigation */}
       <Link
         href="/"
-        className="mb-5 hidden min-h-10 items-center gap-2 rounded border border-gray-200 px-3 text-sm text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900 md:inline-flex md:border-0 md:px-0"
+        className="mb-5 hidden min-h-11 items-center gap-2 rounded border border-gray-200 px-3 text-sm text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900 md:inline-flex md:border-0 md:px-0"
       >
         <FiArrowLeft />
         <span>All products</span>
@@ -248,8 +248,8 @@ export default function SupplementPage(props: { params: Promise<{ id: string }> 
                   aria-current={isCurrent ? 'page' : undefined}
                   className={
                     isCurrent
-                      ? 'rounded border border-gray-900 bg-gray-900 px-2.5 py-1 text-xs font-medium text-white'
-                      : 'rounded border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900'
+                      ? 'inline-flex min-h-11 items-center rounded border border-gray-900 bg-gray-900 px-2.5 py-1 text-xs font-medium text-white'
+                      : 'inline-flex min-h-11 items-center rounded border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900'
                   }
                 >
                   {familyFormLabel(member.supplement_name, family.familyName)}

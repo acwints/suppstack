@@ -1,3 +1,5 @@
+export { ButtonLink } from './ButtonLink';
+export type { ButtonLinkProps } from './ButtonLink';
 // =============================================================================
 // Base UI Components
 // =============================================================================

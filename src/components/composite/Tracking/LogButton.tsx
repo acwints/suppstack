@@ -16,7 +16,7 @@ export interface LogButtonProps {
 }
 
 const sizeStyles = {
-  sm: 'h-10 w-10',
+  sm: 'h-11 w-11',
   md: 'h-11 w-11',
   lg: 'h-12 w-12',
 } as const;

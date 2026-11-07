@@ -106,7 +106,7 @@ export function ProductActions({
           disabled={isInStack || isUpdating}
           aria-label={isInStack ? `${product.product_name} is in your stack` : `Add ${product.product_name} to stack`}
           className={cn(
-            'flex min-h-10 min-w-10 items-center justify-center rounded-full border border-gray-200 bg-white/95 text-gray-700 shadow-sm backdrop-blur transition-colors',
+            'flex min-h-11 min-w-11 items-center justify-center rounded-full border border-gray-200 bg-white/95 text-gray-700 shadow-sm backdrop-blur transition-colors',
             'hover:border-gray-300 hover:bg-white hover:text-gray-950 active:bg-gray-50',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900',
             'disabled:cursor-default disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-700',

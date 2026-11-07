@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Image from 'next/image';
+import { CatalogImage } from '@/components/ui/CatalogImage';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FiArrowLeft, FiCamera, FiCheck, FiPlus } from 'react-icons/fi';
@@ -16,11 +16,6 @@ import {
   buildHealthGoalDirectory,
   type HealthGoalId,
 } from '@/lib/catalog/health-goal-directory';
-import {
-  getProductImageSrc,
-  isRemoteImageSrc,
-  PRODUCT_IMAGE_FALLBACK,
-} from '@/lib/catalog/product-image';
 import type { Product } from '@/types';
 import { usePremium, useProductInStack } from '@/hooks';
 
@@ -294,9 +289,6 @@ function SuggestionRow({
   onError: () => void;
 }) {
   const { isInStack, isUpdating, addToStack } = useProductInStack(product);
-  const [imageSrc, setImageSrc] = useState<string | null>(() =>
-    getProductImageSrc(product.product_image)
-  );
 
   const handleAdd = async () => {
     if (isInStack || isUpdating) return;
@@ -311,15 +303,13 @@ function SuggestionRow({
   return (
     <li className="flex items-center gap-3 py-3">
       <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md border border-gray-100 bg-white">
-        {imageSrc ? (
-          <Image
-            src={imageSrc}
+        {product.product_image ? (
+          <CatalogImage
+            src={product.product_image}
             alt=""
             fill
             sizes="48px"
             className="object-contain p-1"
-            unoptimized={isRemoteImageSrc(imageSrc)}
-            onError={() => setImageSrc(PRODUCT_IMAGE_FALLBACK)}
           />
         ) : (
           <span className="flex h-full items-center justify-center text-base font-semibold text-gray-300">

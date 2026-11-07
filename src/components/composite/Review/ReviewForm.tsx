@@ -131,7 +131,7 @@ export function ReviewForm({
       />
 
       {/* Additional Ratings */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Effectiveness
@@ -204,6 +204,7 @@ export function ReviewForm({
               <button
                 type="button"
                 onClick={() => removePro(index)}
+                aria-label={`Remove pro ${index + 1}`}
                 className="text-gray-400 hover:text-error-500"
               >
                 <FaTimes className="w-3 h-3" />
@@ -240,6 +241,7 @@ export function ReviewForm({
               <button
                 type="button"
                 onClick={() => removeCon(index)}
+                aria-label={`Remove con ${index + 1}`}
                 className="text-gray-400 hover:text-error-500"
               >
                 <FaTimes className="w-3 h-3" />

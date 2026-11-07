@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, use, useRef } from 'react';
-import Image from 'next/image';
+import { CatalogImage } from '@/components/ui/CatalogImage';
 import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
 import { FiShield } from 'react-icons/fi';
@@ -22,11 +22,6 @@ import { BrandLogo } from '@/components/composite/Brand';
 import { findDatabaseProductId, resolveDatabaseProductId } from '@/lib/catalog/catalog-sync';
 import { isCuratedCatalogProductId } from '@/lib/commerce/product-source';
 import {
-  getProductImageSrc,
-  isRemoteImageSrc,
-  PRODUCT_IMAGE_FALLBACK,
-} from '@/lib/catalog/product-image';
-import {
   ProductActions,
   ProductIngredientList,
   ProductPriceLine,
@@ -37,7 +32,6 @@ export default function ProductPage(props: { params: Promise<{ id: string }> }) 
   const params = use(props.params);
   const { user } = useAuth();
   const { product, isLoading } = useProduct(params.id);
-  const [productImageSrc, setProductImageSrc] = useState(PRODUCT_IMAGE_FALLBACK);
   const [sortBy, setSortBy] = useState<ReviewSortBy>('newest');
   const isLocalCatalogProductId = isCuratedCatalogProductId(params.id);
 
@@ -65,10 +59,6 @@ export default function ProductPage(props: { params: Promise<{ id: string }> }) 
     sortBy,
     enabled: !!reviewProductId,
   });
-
-  useEffect(() => {
-    setProductImageSrc(getProductImageSrc(product?.product_image));
-  }, [product?.product_image]);
 
   // Resolve the database identity for catalog products so reviews attach to
   // the canonical DB row when one already exists. Signed-in users may create
@@ -127,7 +117,7 @@ export default function ProductPage(props: { params: Promise<{ id: string }> }) 
           action={
             <Link
               href="/"
-              className="inline-flex h-10 items-center justify-center rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
+              className="inline-flex min-h-11 items-center justify-center rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800"
             >
               Back to Home
             </Link>
@@ -150,7 +140,7 @@ export default function ProductPage(props: { params: Promise<{ id: string }> }) 
             ? `/supplement/${product.supplements.supplement_id}`
             : '/'
         }
-        className="mb-6 hidden items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 md:inline-flex"
+        className="min-h-11 mb-6 hidden items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 md:inline-flex"
       >
         <FaArrowLeft className="w-4 h-4" />
         Back to {product.supplements?.supplement_name || 'stack picks'}
@@ -160,14 +150,12 @@ export default function ProductPage(props: { params: Promise<{ id: string }> }) 
       <Grid cols={{ sm: 1, lg: 2 }} gap={12} className="mb-12">
         {/* Product Image */}
         <Card padding="lg" className="aspect-square relative overflow-hidden bg-gray-50">
-          <Image
-            src={productImageSrc}
+          <CatalogImage
+            src={product.product_image}
             alt={product.product_name}
             fill
             className="object-contain p-8"
             sizes="(max-width: 1024px) 100vw, 50vw"
-            unoptimized={isRemoteImageSrc(productImageSrc)}
-            onError={() => setProductImageSrc(PRODUCT_IMAGE_FALLBACK)}
           />
         </Card>
 
