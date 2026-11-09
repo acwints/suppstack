@@ -28,6 +28,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: npm run eval:commerce
+      - run: TS_NODE_COMPILER_OPTIONS='{"module":"commonjs","moduleResolution":"node","esModuleInterop":true}' npx ts-node -r tsconfig-paths/register src/scripts/checkFirstProductAdds.ts
       - run: node --test src/scripts/iosPackageClassList.test.mjs
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run eval:ui -- --output=test-results/chromium
