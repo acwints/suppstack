@@ -2,24 +2,41 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/app/context/AuthContext';
-import { finishPostIntentInvite } from '@/lib/growth/post-intent-invite';
+import { finishPostIntentInvite, postIntentInviteRenderable } from '@/lib/growth/post-intent-invite';
 import { InviteLink } from './InviteLink';
 
 /**
  * One invite after the first stack save or verified checkout. It is not a
  * modal, and it is not the welcome or profile card.
  */
+function dialogIsOpen(): boolean {
+  return document.querySelector('[role="dialog"]') != null;
+}
+
 export function PostIntentInvite() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
-    const show = () => setOpen(true);
+    const show = () => {
+      setOpen(true);
+      setDialogOpen(dialogIsOpen());
+    };
     window.addEventListener('suppstack:post-intent-invite', show);
     return () => window.removeEventListener('suppstack:post-intent-invite', show);
   }, []);
 
-  if (!open || !user) return null;
+  useEffect(() => {
+    if (!open) return;
+    const sync = () => setDialogOpen(dialogIsOpen());
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [open]);
+
+  if (!postIntentInviteRenderable(open, dialogOpen) || !user) return null;
 
   const close = () => {
     finishPostIntentInvite(window.localStorage);
@@ -27,8 +44,8 @@ export function PostIntentInvite() {
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-20 z-[60] px-3 md:bottom-6">
-      <div className="mx-auto max-w-md rounded-lg border border-gray-200 bg-white shadow-surface">
+    <div className="relative z-10 border-b border-gray-200 bg-white px-3 py-3">
+      <div className="mx-auto max-w-md rounded-lg border border-gray-200 bg-gray-50">
         <div className="flex justify-end px-3 pt-3">
           <button
             type="button"

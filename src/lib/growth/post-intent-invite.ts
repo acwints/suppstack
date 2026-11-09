@@ -5,6 +5,11 @@ type InvitePromptStorage = {
   setItem: (key: string, value: string) => void;
 };
 
+/** The card stays off-screen while any dialog is open, including stack checkout. */
+export function postIntentInviteRenderable(wanted: boolean, dialogOpen: boolean): boolean {
+  return wanted && !dialogOpen;
+}
+
 /** First high-intent moment wins. Later saves and checkouts do not show it again. */
 export function claimPostIntentInvite(storage: InvitePromptStorage): boolean {
   const current = storage.getItem(KEY);
