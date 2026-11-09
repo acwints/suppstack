@@ -1,4 +1,5 @@
 // Personal stack
+export { EmptyStackStarter } from './EmptyStackStarter';
 export { MyStackSection } from './MyStackSection';
 export type { MyStackSectionProps } from './MyStackSection';
 

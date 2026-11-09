@@ -10,7 +10,7 @@ import {
   WeeklyCalendar,
 } from '@/components/composite/Tracking';
 import { PremiumGate } from '@/components/composite/Billing';
-import { MyStackSection } from '@/components/composite/Stack';
+import { EmptyStackStarter, MyStackSection } from '@/components/composite/Stack';
 import {
   OverlapList,
   StackIngredientBreakdown,
@@ -32,6 +32,7 @@ export default function StackPage() {
     isLoading: isStackLoading,
     saveItemSettings,
     removeItem,
+    refetch: refetchStack,
   } = useMyStack();
   const {
     intake,
@@ -146,6 +147,14 @@ export default function StackPage() {
       </header>
 
       <VStack gap={8}>
+        {stack.length === 0 && (
+          <EmptyStackStarter
+            onAdded={() => {
+              void refetchStack();
+              void refetchIntake();
+            }}
+          />
+        )}
         {todayItems.length > 0 ? (
           <>
             <DailyLogCard
@@ -181,11 +190,13 @@ export default function StackPage() {
             <RestockReminders key={restockKey} />
           </PremiumGate>
         )}
-        <MyStackSection
-          items={stack}
-          onSaveSettings={handleSaveSettings}
-          onRemove={handleRemove}
-        />
+        {stack.length > 0 && (
+          <MyStackSection
+            items={stack}
+            onSaveSettings={handleSaveSettings}
+            onRemove={handleRemove}
+          />
+        )}
 
         {/* Ingredient intake rollup — only when the user has a stack,
             mirroring how the tracking cards gate on it. */}
