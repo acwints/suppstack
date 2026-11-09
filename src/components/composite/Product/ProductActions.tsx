@@ -12,6 +12,7 @@ import { useProductInStack, useSavedProducts, useStackIngredients } from '@/hook
 import { summarizeProductAddition } from '@/lib/ingredients';
 import { canPurchase, getPurchaseLabel } from '@/lib/commerce/shopify-ucp';
 import { cn } from '@/lib/design-system';
+import { requestPostIntentInvite } from '@/lib/growth/post-intent-invite';
 import { loginHref } from '@/lib/navigation/login';
 
 export interface ProductActionsProps {
@@ -77,6 +78,7 @@ export function ProductActions({
     try {
       await addToStack();
       toast.success('Added to stack', buildAddedDescription());
+      requestPostIntentInvite();
     } catch {
       toast.error('Failed to add product to stack. Please try again.');
     }

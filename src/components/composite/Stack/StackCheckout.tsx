@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Button, Modal } from '@/components/ui';
 import type { MerchantCheckout, MerchantOutcome } from '@/lib/commerce/stack-checkout';
+import { reportCheckoutFunnel } from '@/lib/commerce/report-checkout-funnel';
+import { requestPostIntentInvite } from '@/lib/growth/post-intent-invite';
 import { presentMerchantCheckout } from '@/lib/native/checkout';
 
 const outcomeText: Record<MerchantOutcome, string> = {
@@ -57,8 +59,17 @@ export function StackCheckout({ merchants, isOpen, onClose }: {
     if (inFlight.current || outcomes[merchant.id] === 'completed') return;
     inFlight.current = true;
     setPending(merchant.id);
+    const attemptId = crypto.randomUUID();
     try {
       const outcome = await presentMerchantCheckout(merchant.url, merchant.nativeCheckout);
+      reportCheckoutFunnel({
+        outcome,
+        attemptId,
+        productId: String(merchant.products[0]?.product_id ?? 'stack'),
+        surface: 'stack',
+        nativeKit: merchant.nativeCheckout,
+      });
+      if (outcome === 'completed') requestPostIntentInvite();
       setOutcomes(previous => ({ ...previous, [merchant.id]: outcome }));
     } catch {
       setOutcomes(previous => ({ ...previous, [merchant.id]: 'failed' }));

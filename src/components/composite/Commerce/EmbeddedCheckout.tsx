@@ -7,6 +7,8 @@ import { FiAlertCircle, FiExternalLink, FiLock, FiMinus, FiPlus, FiShoppingBag }
 import type { Product } from '@/types';
 import { Badge, Button, Inline, Modal, Spinner, VStack } from '@/components/ui';
 import { formatCurrency } from '@/lib/utils';
+import { reportCheckoutFunnel } from '@/lib/commerce/report-checkout-funnel';
+import { requestPostIntentInvite } from '@/lib/growth/post-intent-invite';
 import { isSecureCheckoutUrl, presentMerchantCheckout } from '@/lib/native/checkout';
 import { BrandLogo } from '@/components/composite/Brand';
 import {
@@ -112,9 +114,18 @@ export function EmbeddedCheckout({ product, isOpen, onClose }: EmbeddedCheckoutP
     nativeInFlight.current = true;
     setStage('presenting');
     const generation = presentationGeneration.current;
+    const attemptId = crypto.randomUUID();
     void presentMerchantCheckout(checkoutUrl, shopifyCheckout)
       .then((status) => {
+        reportCheckoutFunnel({
+          outcome: status,
+          attemptId,
+          productId: String(product.product_id),
+          surface: 'product',
+          nativeKit: shopifyCheckout,
+        });
         if (generation !== presentationGeneration.current) return;
+        if (status === 'completed') requestPostIntentInvite();
         setStage(status === 'failed' ? 'blocked' : status === 'dismissed' ? 'review' : status);
       })
       .catch(() => {
