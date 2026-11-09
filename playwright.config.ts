@@ -21,5 +21,10 @@ export default defineConfig({
     url: `http://127.0.0.1:${port}/login`,
     reuseExistingServer: false,
     timeout: 120_000,
+    env: {
+      ...process.env,
+      // Fixture only. Production uses FEEDBACK_READ_TOKEN and is not written here.
+      FEEDBACK_READ_TOKEN: 'eval-read-token',
+    },
   },
 });
