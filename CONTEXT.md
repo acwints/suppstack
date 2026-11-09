@@ -259,7 +259,7 @@ The customer can also branch from Evaluate into Save, Review, or Published Stack
 
 ### 7.6 Add a product and configure the personal stack
 
-- **Customer experience:** A signed-in customer taps Add. The product becomes active with daily default settings; they may edit servings/schedule or pause/stop/remove it.
+- **Customer experience:** A signed-in customer taps Add. The product becomes active with daily default settings; they may edit servings/schedule or pause/stop/remove it. When the personal stack has no products, the Stack screen lists a few existing catalog products with that same Add action and a link to the catalog. A successful add still writes membership and settings, then requests the existing one-time invite.
 - **Logic and data:** A curated product is first materialized through an authenticated server Adapter. The client then inserts `users_products` and upserts `user_supplement_settings` sequentially.
 - **Metadata/events today:** The database rows are customer records, not analytics events. Success is a toast; failure is a generic toast and console error.
 - **Performance commentary:** Product cards independently check membership, causing repeated queries. The shared ingredient context correctly avoids one composition fetch per card.
@@ -268,7 +268,7 @@ The customer can also branch from Evaluate into Save, Review, or Published Stack
 
 ### 7.7 Daily log and unlog
 
-- **Customer experience:** The Stack tab shows today’s active products. Each is a one-tap checkoff with completion and weekly context; a second tap removes the log.
+- **Customer experience:** The Stack tab shows today’s active products. Each is a one-tap checkoff with completion and weekly context; a second tap removes the log. An empty personal stack shows the first-add list instead of a checklist.
 - **Logic and data:** The client inserts/deletes `supplement_logs`; a database trigger updates `daily_tracking_summary`; streak is also recomputed in the client for the header.
 - **Metadata/events today:** The log is the authoritative customer record. There is no separate coarse success/failure/latency event.
 - **Performance commentary:** Local state updates after server confirmation, so feedback waits on the network and has no offline queue. Stats issue three additional queries after mutations.
@@ -627,6 +627,7 @@ These are structural candidates, not permission to add product scope.
 
 | Date | Area | Change/evidence | Result | Next |
 | --- | --- | --- | --- | --- |
+| 2026-11-09 | Empty stack first add | Last screen reached is not instrumented. Non-test signed-in accounts: 13, excluding `*@suppstack.app`, `*@mail.grokbot.com`, and auth `is_test`. Referrals: 0. Checkout funnel since 2026-11-07T21:44:42Z: 0 started, 0 completed, 0 dismissed, 0 failed. Merchant checkouts before that tracking are unknown. All 13 accounts are older than the welcome window, so sign-in opens `/stack`. Personal stack membership is not in a public aggregate, so zero-item versus one-or-more was not counted. The empty Stack screen now offers an existing catalog product with Add. | Playwright covers the signed-in empty-stack add, the in-flow invite, and a stack that already has a product. | Confirm the production deployment of this merge. |
 | 2026-11-07 | Native checkout lifecycle | Merge #45 to production, add pinned Checkout Kit 4.0.0 and a per-presentation Capacitor delegate, preserve old-binary fallback, and fix native/server auth-gate hydration. | Eleven offline and nine browser cases pass. Native iOS simulator target compiles. | Verify real merchant payment and receipt on physical iPad/iPhone; qualify Universal Checkout access separately. |
 | 2026-11-07 | Commerce recovery and evaluation | Restore native product and stack Buy controls, short-circuit unavailable inventory, and report cart-link fallback accurately. Add three ADRs and deterministic/browser commerce evaluations. | Offline baseline improves from 6/8 to 8/8; four mobile-width browser scenarios pass. | Qualify native embedded checkout, Universal Checkout access, and physical-iPad behavior before claiming payment completion. |
 | 2026-11-06 | Profile and updates | Moved What’s New into the signed-in top bar. Collapsed priority invite details into the Invite a friend row and moved Sign out into Settings. | Browser fixture checks covered 390px and desktop layouts, keyboard navigation to updates, invite copying, and access to feedback. | Verify on device after deployment. |
