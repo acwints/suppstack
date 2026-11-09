@@ -50,7 +50,7 @@ export function InviteLinkCard({
 }
 
 /** UUID invite link plus the priority rule. No prices, so it can show in the iOS shell. */
-export function InviteLink() {
+export function InviteLink({ onCopied }: { onCopied?: () => void } = {}) {
   const { user, session } = useAuth();
   const [copyState, setCopyState] = useState(copyLinkResult(false));
   const [copyAttempted, setCopyAttempted] = useState(false);
@@ -117,6 +117,7 @@ export function InviteLink() {
           () => {
             setCopyAttempted(true);
             setCopyState(copyLinkResult(true));
+            onCopied?.();
           },
           () => {
             setCopyAttempted(true);

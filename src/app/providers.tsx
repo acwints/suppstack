@@ -7,6 +7,7 @@ import { StackIngredientsProvider } from './context/StackIngredientsContext';
 import { ToastProvider, ToastContainer } from '@/components/ui';
 import { PaywallHost } from '@/components/composite/Billing';
 import { ReferralCapture } from '@/components/composite/Growth';
+import { PostIntentInvite } from '@/components/composite/Growth/PostIntentInvite';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -16,6 +17,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <ToastProvider>
             <PremiumProvider>
               <ReferralCapture />
+              <PostIntentInvite />
               {children}
               <PaywallHost />
             </PremiumProvider>
