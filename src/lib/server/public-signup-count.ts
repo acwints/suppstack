@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { countPublicFirstProductAdds, type FirstProductRow } from '@/lib/activation/first-product-adds';
 import {
   publicCountFromUsers,
   publicReferralCount,
@@ -21,6 +22,8 @@ const buckets = new Map<string, { windowStart: number; count: number }>();
 type CountPayload = {
   count: number;
   referrals: number;
+  first_product_adds_today: number;
+  first_product_adds_7d: number;
   updated_at: string;
 };
 
@@ -96,6 +99,31 @@ async function fetchListedUsers(): Promise<{ total: number; users: ListedUser[] 
   throw new Error('signup_count_page_cap');
 }
 
+async function fetchStackRows(): Promise<FirstProductRow[]> {
+  const supabase = getSupabaseServiceClient();
+  if (!supabase) {
+    throw new Error('missing_service_role');
+  }
+
+  const rows: FirstProductRow[] = [];
+  for (let page = 0; page < MAX_PAGES; page += 1) {
+    const from = page * PAGE_SIZE;
+    const { data, error } = await supabase
+      .from('users_products')
+      .select('user_id, created_at')
+      .order('user_id', { ascending: true })
+      .order('created_at', { ascending: true })
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+
+    const batch = (data ?? []) as FirstProductRow[];
+    rows.push(...batch);
+    if (batch.length < PAGE_SIZE) return rows;
+  }
+
+  throw new Error('stack_count_page_cap');
+}
+
 async function fetchReferralEvents(): Promise<ReferralCountEvent[]> {
   const supabase = getSupabaseServiceClient();
   if (!supabase) {
@@ -123,17 +151,31 @@ async function fetchReferralEvents(): Promise<ReferralCountEvent[]> {
 async function loadSignupCount(): Promise<CountPayload> {
   const now = Date.now();
   if (cached && cached.expiresAt > now) {
-    return { count: cached.count, referrals: cached.referrals, updated_at: cached.updated_at };
+    return {
+      count: cached.count,
+      referrals: cached.referrals,
+      first_product_adds_today: cached.first_product_adds_today,
+      first_product_adds_7d: cached.first_product_adds_7d,
+      updated_at: cached.updated_at,
+    };
   }
 
   if (!inFlight) {
     inFlight = (async () => {
       const patterns = testAccountPatterns(process.env.TEST_ACCOUNT_EMAILS);
-      const [{ total, users }, events] = await Promise.all([fetchListedUsers(), fetchReferralEvents()]);
+      const now = new Date();
+      const [{ total, users }, events, stackRows] = await Promise.all([
+        fetchListedUsers(),
+        fetchReferralEvents(),
+        fetchStackRows(),
+      ]);
+      const firstAdds = countPublicFirstProductAdds(users, stackRows, patterns, now);
       const payload = {
         count: publicCountFromUsers(total, users, patterns),
         referrals: publicReferralCount(events, users, patterns),
-        updated_at: new Date().toISOString(),
+        first_product_adds_today: firstAdds.first_product_adds_today,
+        first_product_adds_7d: firstAdds.first_product_adds_7d,
+        updated_at: now.toISOString(),
       };
       cached = { ...payload, expiresAt: Date.now() + CACHE_MS };
       return payload;
