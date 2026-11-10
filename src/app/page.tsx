@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { FiCamera } from 'react-icons/fi';
-import { useSupplements } from '@/hooks';
+import { useAuth } from '@/app/context/AuthContext';
+import { EmptyStackStarter } from '@/components/composite/Stack';
+import { useMyStack, useSupplements } from '@/hooks';
 import { brandSlug, buildCatalogBrandDiscovery } from '@/lib/catalog/brand-discovery';
 import { SkeletonGrid, SkeletonCard, EmptyState, Inline, VStack } from '@/components/ui';
 import { EnhancedSearchBar } from '@/components/composite/Search';
@@ -20,6 +22,9 @@ import { isNativeApp } from '@/lib/native/capacitor';
 
 export default function HomePage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  const { stack, isLoading: stackLoading, refetch: refetchStack } = useMyStack();
+  const showFirstAdd = Boolean(user) && !authLoading && !stackLoading && stack.length === 0;
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState<SortFilterValue>('name');
@@ -84,6 +89,15 @@ export default function HomePage() {
       </div>
 
       <div className="mx-auto max-w-7xl px-3 sm:px-6 py-6">
+        {showFirstAdd && (
+          <div className="mb-10 max-w-xl">
+            <EmptyStackStarter
+              onAdded={() => {
+                void refetchStack();
+              }}
+            />
+          </div>
+        )}
         {isLoading ? (
           <SkeletonGrid count={15} CardComponent={SkeletonCard} />
         ) : (

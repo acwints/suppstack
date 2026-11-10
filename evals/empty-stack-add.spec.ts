@@ -161,3 +161,37 @@ test('a stack that already has a product does not show the first-add list', asyn
   await expect(page.getByText('Priority early access')).toHaveCount(0);
   expect(session.funnelCalls).toEqual([]);
 });
+
+test('guest shop does not show the first-add list', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Shop by Goal' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Add the first thing you take' })).toHaveCount(0);
+});
+
+test('empty signed-in shop shows the first-add list and the existing invite', async ({ page }) => {
+  const session = await prepareStack(page, false);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+
+  const starter = page.getByRole('heading', { name: 'Add the first thing you take' });
+  await expect(starter).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Shop by Goal' })).toBeVisible();
+  await page.getByRole('button', { name: /^Add / }).first().click();
+
+  await expect(starter).toHaveCount(0);
+  await expect(page.getByText('Priority early access')).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(session.saved()).toBe(true);
+  expect(session.funnelCalls).toEqual([]);
+});
+
+test('a signed-in shop with a product does not show the first-add list', async ({ page }) => {
+  await prepareStack(page, true);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+
+  await expect(page.getByRole('heading', { name: 'Shop by Goal' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Add the first thing you take' })).toHaveCount(0);
+  await expect(page.getByText('Priority early access')).toHaveCount(0);
+});
