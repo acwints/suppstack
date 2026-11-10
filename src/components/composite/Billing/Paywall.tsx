@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { FiCamera, FiCheck, FiClock, FiLayers, FiX } from 'react-icons/fi';
 import { useAuth } from '@/app/context/AuthContext';
@@ -83,12 +83,14 @@ export interface PaywallProps {
  */
 export function Paywall({ feature, onClose, closeLabel, className }: PaywallProps) {
   const { user } = useAuth();
+  const planGroup = useId();
   const { isPremium, entitlement, isNative, purchasable, markPremium, loading } = usePremium();
   const toast = useToast();
   const [offers, setOffers] = useState<PremiumOffer[] | null>(null);
   const [offersError, setOffersError] = useState<string | null>(null);
   const [offerAttempt, setOfferAttempt] = useState(0);
   const [selected, setSelected] = useState<PremiumOffer['period']>('annual');
+  const [purchasePending, setPurchasePending] = useState(false);
   const [busy, setBusy] = useState<'purchase' | 'restore' | null>(null);
 
   useEffect(() => {
@@ -148,11 +150,15 @@ export function Paywall({ feature, onClose, closeLabel, className }: PaywallProp
         markPremium();
         toast.success('Welcome to Premium');
         onClose?.();
+      } else {
+        setPurchasePending(true);
+        toast.info('Your purchase is awaiting activation. Restore purchases to check access before trying again.');
       }
     } catch (error) {
       if (!isPurchaseCancellation(error)) {
         console.error('Purchase failed:', error);
-        toast.error('Purchase did not complete. You have not been charged.');
+        setPurchasePending(true);
+        toast.error('We could not confirm your purchase. Restore purchases to check access before trying again.');
       }
     } finally {
       setBusy(null);
@@ -168,6 +174,7 @@ export function Paywall({ feature, onClose, closeLabel, className }: PaywallProp
         toast.success('Premium restored');
         onClose?.();
       } else {
+        setPurchasePending(false);
         toast.info('No previous purchase found for this Apple ID.');
       }
     } catch (error) {
@@ -214,7 +221,7 @@ export function Paywall({ feature, onClose, closeLabel, className }: PaywallProp
       )}
 
       <header className="pt-2 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+        <p className="text-sm font-medium text-gray-500">
           SuppStack Premium
         </p>
         <h2 className="mt-3 text-balance font-serif text-3xl leading-tight text-gray-900">
@@ -278,26 +285,14 @@ export function Paywall({ feature, onClose, closeLabel, className }: PaywallProp
                 {(offers ?? []).map((item) => {
                   const active = item.period === offer.period;
                   return (
-                    <button
+                    <label
                       key={item.pkg.product.identifier}
-                      type="button"
-                      role="radio"
-                      aria-checked={active}
-                      onClick={() => setSelected(item.period)}
                       className={cn(
                         'flex min-h-[64px] w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900',
                         active ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white'
                       )}
                     >
-                      <span
-                        aria-hidden="true"
-                        className={cn(
-                          'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border',
-                          active ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-300'
-                        )}
-                      >
-                        {active && <FiCheck size={12} strokeWidth={3} />}
-                      </span>
+                      <input type="radio" name={planGroup} checked={active} onChange={() => setSelected(item.period)} disabled={busy !== null} className="h-5 w-5 accent-gray-900" aria-label={`${item.period === 'annual' ? 'Yearly' : 'Monthly'}, ${item.priceString} per ${periodLabel(item)}`} />
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-2 text-base font-medium text-gray-900">
                           {item.period === 'annual' ? 'Yearly' : 'Monthly'}
@@ -321,7 +316,7 @@ export function Paywall({ feature, onClose, closeLabel, className }: PaywallProp
                           per month
                         </span>
                       )}
-                    </button>
+                    </label>
                   );
                 })}
               </div>
@@ -344,12 +339,14 @@ export function Paywall({ feature, onClose, closeLabel, className }: PaywallProp
 
               <button
                 type="button"
-                onClick={handlePurchase}
+                onClick={purchasePending ? handleRestore : handlePurchase}
                 disabled={busy !== null}
                 className={cn(PRIMARY_CTA, 'mt-6')}
               >
                 {busy === 'purchase' ? (
                   <Spinner size="sm" color="white" />
+                ) : purchasePending ? (
+                  'Check purchase with Restore'
                 ) : trialDays ? (
                   `Start ${trialDays}-day free trial`
                 ) : (
@@ -490,32 +487,33 @@ function PaywallSheet({
   feature?: PremiumFeatureId;
   onClose: () => void;
 }) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
+    const dialog = dialogRef.current;
+    if (!open || !dialog) return;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    dialog.showModal();
     document.body.style.overflow = 'hidden';
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = previous;
-      window.removeEventListener('keydown', onKey);
+      dialog.close();
+      document.body.style.overflow = previousOverflow;
+      previousFocus?.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
+      onCancel={(event) => { event.preventDefault(); onClose(); }}
       aria-label="SuppStack Premium"
-      className="fixed inset-0 z-[70] overflow-y-auto bg-white animate-fade-in motion-reduce:animate-none"
+      className="fixed inset-0 m-0 h-[100dvh] max-h-none w-full max-w-none overflow-y-auto border-0 bg-white p-0 animate-fade-in motion-reduce:animate-none"
     >
       <div className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
         <Paywall feature={feature} onClose={onClose} />
       </div>
-    </div>
+    </dialog>
   );
 }
