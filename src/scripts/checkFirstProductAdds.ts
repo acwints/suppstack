@@ -5,7 +5,12 @@
  * TS_NODE_COMPILER_OPTIONS='{"module":"commonjs","moduleResolution":"node","esModuleInterop":true}' npx ts-node -r tsconfig-paths/register src/scripts/checkFirstProductAdds.ts
  */
 import assert from 'node:assert/strict';
-import { countFirstProductAdds, FIRST_PRODUCT_WINDOW_START } from '../lib/activation/first-product-adds';
+import {
+  countFirstProductAdds,
+  countPublicFirstProductAdds,
+  FIRST_PRODUCT_WINDOW_START,
+  losAngelesDayStart,
+} from '../lib/activation/first-product-adds';
 import type { ListedUser } from '../lib/public-signup-count';
 
 const WINDOW = FIRST_PRODUCT_WINDOW_START;
@@ -64,5 +69,40 @@ const exact = countFirstProductAdds(
   WINDOW
 );
 assert.equal(exact.first_product_adds, 1);
+
+const winterNow = new Date('2026-11-10T15:30:00.000Z');
+assert.equal(losAngelesDayStart(winterNow).toISOString(), '2026-11-10T08:00:00.000Z');
+const summerNow = new Date('2026-07-15T18:00:00.000Z');
+assert.equal(losAngelesDayStart(summerNow).toISOString(), '2026-07-15T07:00:00.000Z');
+
+const TODAY = '88888888-8888-4888-8888-888888888888';
+const WEEK = '99999999-9999-4999-8999-999999999999';
+const OLD = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+const LATE = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+const patterns = ['*@suppstack.app', '*@mail.grokbot.com'];
+const publicUsers: ListedUser[] = [
+  user(TODAY, 'today@example.com'),
+  user(WEEK, 'week@example.com'),
+  user(OLD, 'old@example.com'),
+  user(LATE, 'late@example.com'),
+  user(STAFF, 'review@suppstack.app'),
+  user(BOT, 'bot@mail.grokbot.com'),
+  user(FLAGGED, 'flagged@example.com', { app_metadata: { is_test: true } }),
+  user(UNDATED, 'undated@example.com'),
+];
+const publicRows = [
+  { user_id: TODAY, created_at: '2026-11-10T08:00:00.000Z' },
+  { user_id: TODAY, created_at: '2026-11-10T16:00:00.000Z' },
+  { user_id: WEEK, created_at: '2026-11-03T15:30:00.000Z' },
+  { user_id: OLD, created_at: '2026-11-03T15:29:59.000Z' },
+  { user_id: OLD, created_at: '2026-11-10T12:00:00.000Z' },
+  { user_id: STAFF, created_at: '2026-11-10T12:00:00.000Z' },
+  { user_id: BOT, created_at: '2026-11-10T12:00:00.000Z' },
+  { user_id: FLAGGED, created_at: '2026-11-10T12:00:00.000Z' },
+  { user_id: UNDATED, created_at: null },
+  { user_id: LATE, created_at: '2026-11-10T07:59:59.000Z' },
+];
+const publicTotals = countPublicFirstProductAdds(publicUsers, publicRows, patterns, winterNow);
+assert.deepEqual(publicTotals, { first_product_adds_today: 1, first_product_adds_7d: 3 });
 
 console.log('first-product add fixtures passed');

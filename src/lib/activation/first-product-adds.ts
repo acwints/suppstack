@@ -40,6 +40,75 @@ function timestamp(value: string | null | undefined): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+const LOS_ANGELES = 'America/Los_Angeles';
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+const LOS_ANGELES_DAY = new Intl.DateTimeFormat('en-US', {
+  timeZone: LOS_ANGELES,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+const LOS_ANGELES_CLOCK = new Intl.DateTimeFormat('en-US', {
+  timeZone: LOS_ANGELES,
+  hourCycle: 'h23',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+});
+
+function zonedParts(date: Date, formatter: Intl.DateTimeFormat): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const part of formatter.formatToParts(date)) {
+    if (part.type !== 'literal') map[part.type] = part.value;
+  }
+  return map;
+}
+
+/** Midnight at the start of `now`'s calendar day in America/Los_Angeles. */
+export function losAngelesDayStart(now: Date): Date {
+  const day = zonedParts(now, LOS_ANGELES_DAY);
+  const utcGuess = Date.UTC(Number(day.year), Number(day.month) - 1, Number(day.day));
+  const clock = zonedParts(new Date(utcGuess), LOS_ANGELES_CLOCK);
+  const asUtc = Date.UTC(
+    Number(clock.year),
+    Number(clock.month) - 1,
+    Number(clock.day),
+    Number(clock.hour),
+    Number(clock.minute),
+    Number(clock.second)
+  );
+  return new Date(utcGuess - (asUtc - utcGuess));
+}
+
+export type PublicFirstProductAdds = {
+  first_product_adds_today: number;
+  first_product_adds_7d: number;
+};
+
+/**
+ * Public windows over the same first-add rule as `countFirstProductAdds`.
+ * Today starts at Los Angeles midnight. Seven days is a rolling 7 × 24 hours.
+ */
+export function countPublicFirstProductAdds(
+  users: readonly ListedUser[],
+  rows: readonly FirstProductRow[],
+  patterns: readonly string[],
+  now: Date
+): PublicFirstProductAdds {
+  const today = countFirstProductAdds(users, rows, patterns, losAngelesDayStart(now).toISOString());
+  const weekStart = new Date(now.getTime() - SEVEN_DAYS_MS).toISOString();
+  const week = countFirstProductAdds(users, rows, patterns, weekStart);
+  return {
+    first_product_adds_today: today.first_product_adds,
+    first_product_adds_7d: week.first_product_adds,
+  };
+}
+
 /**
  * One count per account: the earliest `users_products.created_at`. A later
  * product does not count as a first add. Test accounts are left out.
