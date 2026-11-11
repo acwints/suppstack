@@ -16,7 +16,14 @@ import type { Product } from '@/types';
  * screen signed-in people already land on, so the first save does not
  * require a catalog detour.
  */
-export function EmptyStackStarter({ onAdded }: { onAdded: () => void }) {
+export function EmptyStackStarter({
+  onAdded,
+  requestInvite = true,
+}: {
+  onAdded: () => void;
+  /** Welcome already shows its invite card, so it does not request a second one. */
+  requestInvite?: boolean;
+}) {
   const products = useMemo(() => starterStackProducts(), []);
 
   return (
@@ -29,7 +36,12 @@ export function EmptyStackStarter({ onAdded }: { onAdded: () => void }) {
       </p>
       <ul className="mt-4 divide-y divide-gray-100 border-y border-gray-100">
         {products.map((product) => (
-          <StarterRow key={String(product.product_id)} product={product} onAdded={onAdded} />
+          <StarterRow
+            key={String(product.product_id)}
+            product={product}
+            onAdded={onAdded}
+            requestInvite={requestInvite}
+          />
         ))}
       </ul>
       <Link
@@ -42,7 +54,15 @@ export function EmptyStackStarter({ onAdded }: { onAdded: () => void }) {
   );
 }
 
-function StarterRow({ product, onAdded }: { product: Product; onAdded: () => void }) {
+function StarterRow({
+  product,
+  onAdded,
+  requestInvite,
+}: {
+  product: Product;
+  onAdded: () => void;
+  requestInvite: boolean;
+}) {
   const toast = useToast();
   const { isInStack, isUpdating, addToStack } = useProductInStack(product);
   const [saved, setSaved] = useState(false);
@@ -54,7 +74,7 @@ function StarterRow({ product, onAdded }: { product: Product; onAdded: () => voi
     try {
       await addToStack();
       setSaved(true);
-      requestPostIntentInvite();
+      if (requestInvite) requestPostIntentInvite();
       onAdded();
     } catch {
       toast.error('Failed to add product to stack. Please try again.');

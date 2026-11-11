@@ -17,7 +17,8 @@ import {
   type HealthGoalId,
 } from '@/lib/catalog/health-goal-directory';
 import type { Product } from '@/types';
-import { usePremium, useProductInStack } from '@/hooks';
+import { EmptyStackStarter } from '@/components/composite/Stack';
+import { useMyStack, usePremium, useProductInStack } from '@/hooks';
 
 /**
  * First-run onboarding for new accounts: pick goals → add what you already
@@ -63,6 +64,8 @@ export default function WelcomePage() {
   const router = useRouter();
   const toast = useToast();
   const { isPremium, purchasable } = usePremium();
+  const { stack, isLoading: stackLoading, refetch: refetchStack } = useMyStack();
+  const showFirstAdd = !stackLoading && stack.length === 0;
   const [step, setStep] = useState<Step>('goals');
   const [goals, setGoals] = useState<HealthGoalId[]>([]);
   const [addedCount, setAddedCount] = useState(0);
@@ -143,6 +146,16 @@ export default function WelcomePage() {
         <InviteLink />
         {step === 'goals' ? (
           <>
+            {showFirstAdd && (
+              <div className="mb-8">
+                <EmptyStackStarter
+                  requestInvite={false}
+                  onAdded={() => {
+                    void refetchStack();
+                  }}
+                />
+              </div>
+            )}
             <h1 className="text-balance font-serif text-3xl leading-tight text-gray-900">
               What are you building a stack for?
             </h1>
