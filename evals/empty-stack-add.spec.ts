@@ -195,3 +195,31 @@ test('a signed-in shop with a product does not show the first-add list', async (
   await expect(page.getByRole('heading', { name: 'Add the first thing you take' })).toHaveCount(0);
   await expect(page.getByText('Priority early access')).toHaveCount(0);
 });
+
+test('empty welcome leads with one-tap adds and keeps a single invite card', async ({ page }) => {
+  const session = await prepareStack(page, false);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/welcome');
+
+  const starter = page.getByRole('heading', { name: 'Add the first thing you take' });
+  await expect(starter).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'What are you building a stack for?' })).toBeVisible();
+  await expect(page.getByText('Priority early access')).toHaveCount(1);
+
+  await page.getByRole('button', { name: /^Add / }).first().click();
+
+  await expect(starter).toHaveCount(0);
+  await expect(page.getByText('Priority early access')).toHaveCount(1);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(session.saved()).toBe(true);
+  expect(session.funnelCalls).toEqual([]);
+});
+
+test('welcome with a product does not show the first-add list', async ({ page }) => {
+  await prepareStack(page, true);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/welcome');
+
+  await expect(page.getByRole('heading', { name: 'What are you building a stack for?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Add the first thing you take' })).toHaveCount(0);
+});
